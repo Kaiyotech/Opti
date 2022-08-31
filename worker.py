@@ -67,6 +67,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
+                  db=1,  # testing
                   )
 
     # remote Redis
@@ -76,7 +77,8 @@ if __name__ == "__main__":
                   username="user1",
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
-                  retry=Retry(ExponentialBackoff(cap=10, base=1), 25)
+                  retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
+                  db=1,  # testing
                   )
 
     model_name = "necto-model-30Y.pt"

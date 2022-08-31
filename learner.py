@@ -52,7 +52,7 @@ if __name__ == "__main__":
                         id=run_id,
                         config=config,
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"])  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=1)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -69,7 +69,7 @@ if __name__ == "__main__":
                                         save_every=logger.config.save_every,
                                         model_every=logger.config.model_every,
                                         logger=logger,
-                                        clear=False,
+                                        clear=True, # TODO check this
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
@@ -81,8 +81,8 @@ if __name__ == "__main__":
                         LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
-    actor = Sequential(Linear(237, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 90))
+    actor = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 91))
 
     actor = DiscretePolicy(actor, (91,))
 
