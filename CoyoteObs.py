@@ -8,23 +8,20 @@ from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
 from itertools import chain
 
-# TODO add boosts?
+# TODO profile
 
 
-# shamelessly stolen from Impossibum
-class ImpossibumObs(ObsBuilder):
-    def __init__(self, tick_skip=8, expanding: bool = True):
+# inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
+class CoyoteObsBuilder(ObsBuilder):
+    def __init__(self, tick_skip=8, team_size=3, expanding: bool = True):
         super().__init__()
         self.expanding = expanding
         self.POS_STD = 2300
         self.VEL_STD = 2300
         self.ANG_STD = 5.5
-        self.BALL = [1, 0, 0, 0, 0, 0]
-        self.PLAYER = [0, 1, 0, 0, 0, 0]
-        self.TEAMMATE = [0, 0, 1, 0, 0, 0]
-        self.OPPONENT = [0, 0, 0, 1, 0, 0]
-        self.BOOST = [0, 0, 0, 0, 1, 0]
-        self.dummy_player = [0] * 32
+        self.BOOST_TIMER_STD = 10
+        self.DEMO_TIMER_STD = 3
+        self.dummy_player = [0] * 34
         self.boost_locations = np.array(BOOST_LOCATIONS)
         self.inverted_boost_locations = self.boost_locations[::-1]
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -35,22 +32,37 @@ class ImpossibumObs(ObsBuilder):
         self.inverted_boost_objs = []
         self.state = None
         self.time_interval = tick_skip / 120
+        self.demo_timers = None
+        self.num_players = team_size * 2
+        self.generic_obs = None
+        self.blue_obs = None
+        self.orange_obs = None
 
     def reset(self, initial_state: GameState):
         self.state = None
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
         self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
-        self.boosts_availability = np.zeros(self.boost_locations.shape[0])
-        self.inverted_boosts_availability = np.zeros(self.boost_locations.shape[0])
+        self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players))
+        self.blue_obs = []
+        self.orange_obs = []
 
-    def update_boost_timers(self, state: GameState):
+    def pre_step(self, state: GameState):
+        self.state = state
+        # create player/team agnostic items (do these even exist?)
+        self._update_timers(state)
+        # create team specific things
+        self.blue_obs.extend(self.boost_timers / self.BOOST_TIMER_STD)
+        self.orange_obs.extend(self.inverted_boost_timers / self.BOOST_TIMER_STD)
+
+    def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
         boost_locs = self.boost_locations
+        demo_states = [[p.car_id, p.is_demoed] for p in state.players]
 
         for i in range(len(current_boosts)):
             if current_boosts[i] == self.boosts_availability[i]:
                 if self.boosts_availability[i] == 0:
-                    self.boost_timers[i] = max(0, self.boost_timers[i]-self.time_interval)
+                    self.boost_timers[i] = max(0, self.boost_timers[i] - self.time_interval)
             else:
                 if self.boosts_availability[i] == 0:
                     self.boosts_availability[i] = 1
@@ -65,6 +77,16 @@ class ImpossibumObs(ObsBuilder):
         self.inverted_boost_timers = self.boost_timers[::-1]
         self.inverted_boosts_availability = self.boosts_availability[::-1]
 
+        for cid, dm in demo_states:
+            if dm == 1:  # Demoed
+                prev_timer = self.demo_timers[cid]
+                if prev_timer > 0:
+                    self.demo_timers[cid] = max(0, prev_timer - self.time_interval)
+                else:
+                    self.demo_timers[cid] = 3
+            else:  # Not demoed
+                self.demo_timers[cid] = 0
+
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
             ball.position / self.POS_STD,
@@ -72,8 +94,7 @@ class ImpossibumObs(ObsBuilder):
             ball.angular_velocity / self.ANG_STD,
             [
                 math.sqrt(sum([x * x for x in ball.linear_velocity]))/2300,
-                int(ball.position[2] <= 100),
-                int(abs(ball.position[0]) >= 3095 or abs(ball.position[1]) >= 5000),
+                int(ball.position[2] <= 100)
             ],
         ]
         return list(chain(*p))
@@ -94,6 +115,7 @@ class ImpossibumObs(ObsBuilder):
                 int(player.has_flip),
                 int(player.is_demoed),
             ],
+            self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act,
         ]
         return list(chain(*p))
@@ -116,44 +138,11 @@ class ImpossibumObs(ObsBuilder):
                     int(_car.on_ground),
                     int(_car.has_flip),
                     int(_car.is_demoed),
-                    magnitude/self.POS_STD]
+                    magnitude/self.POS_STD],
+                teammate,
+                self.demo_timers[_car.car_id] / self.DEMO_TIMER_STD,
             ]
         return list(chain(*p))
-
-    def create_boost_packet(self, player_car: PhysicsObject, boost_index: int, inverted: bool):
-        b_a_l = self.inverted_boosts_availability if inverted else self.boosts_availability
-        loc = self.boost_locations[boost_index] if not inverted else self.inverted_boost_locations[boost_index]
-        diff = loc - player_car.position
-        magnitude = np.linalg.norm(diff)
-        p = [
-            diff / self.POS_STD,  # direction
-            [0 if not bool(b_a_l[boost_index]) else (1.0 if loc[2] == 73.0 else 0.12),  # current boost value
-             magnitude / self.POS_STD  # current distance scaled by pos std
-             ]
-        ]
-        return list(chain(*p))
-
-    def create_boost_lists(self):
-        normal = []
-        inverted = []
-
-        for i in range(len(self.boosts_availability)):
-            normal.append(0 if not bool(self.boosts_availability[i]) else
-                          (1.0 if self.boost_locations[i][2] == 73.0 else 0.12))
-            inverted.append(0 if not bool(self.inverted_boosts_availability[i]) else
-                            (1.0 if self.inverted_boost_locations[i][2] == 73.0 else 0.12))
-
-        self.boost_objs = normal
-        self.inverted_boost_objs = inverted
-
-    def add_boosts_to_obs(self, obs: List, player_car: PhysicsObject, inverted: bool):
-
-        # for i in range(self.boost_locations.shape[0]):
-        #     obs.extend(self.create_boost_packet(player_car, i, inverted))
-        if inverted:
-            obs.extend(self.inverted_boost_objs)
-        else:
-            obs.extend(self.boost_objs)
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
                            prev_act: np.ndarray, inverted: bool):
@@ -201,11 +190,6 @@ class ImpossibumObs(ObsBuilder):
         return player_data
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> Any:
-        if state != self.state:
-            self.boosts_availability = state.boost_pads
-            self.inverted_boosts_availability = state.inverted_boost_pads
-            self.state = state
-            self.create_boost_lists()
 
         if player.team_num == 1:
             inverted = True
@@ -221,7 +205,10 @@ class ImpossibumObs(ObsBuilder):
         obs.extend(self.create_ball_packet(ball))
         for p in players_data:
             obs.extend(p)
-        self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
+        if inverted:
+            obs.extend(self.orange_obs)
+        else:
+            obs.extend(self.blue_obs)
         if self.expanding:
             return np.expand_dims(obs, 0)
         return obs

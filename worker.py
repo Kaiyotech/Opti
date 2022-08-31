@@ -4,7 +4,7 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
-from CoyoteObs import ImpossibumObs
+from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import TimeoutCondition,\
     NoTouchTimeoutCondition, GoalScoredCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         spawn_opponents=True,
         team_size=3,
         state_setter=CoyoteSetter(),
-        obs_builder=ImpossibumObs(expanding=True),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
         action_parser=CoyoteAction(),
         terminal_conditions=[TimeoutCondition(fps * 300), NoTouchTimeoutCondition(fps * 45), GoalScoredCondition()],
         reward_function=rew,

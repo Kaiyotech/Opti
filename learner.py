@@ -8,7 +8,7 @@ from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
-from CoyoteObs import ImpossibumObs
+from CoyoteObs import CoyoteObsBuilder
 
 from CoyoteParser import CoyoteAction
 import numpy as np
@@ -22,7 +22,7 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
     MaxGoalSpeed
-
+# TODO profile everything before starting to make sure everything is as fast as possible
 set_num_threads(1)
 
 if __name__ == "__main__":
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     rollout_gen = RedisRolloutGenerator("cAIyote",
                                         redis,
-                                        lambda: ImpossibumObs(expanding=True),
+                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
                                         lambda: ZeroSumReward(zero_sum=ZERO_SUM),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,
@@ -75,7 +75,7 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(237, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    critic = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
 
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
                         LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
