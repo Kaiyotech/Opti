@@ -23,6 +23,14 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
     MaxGoalSpeed
 # TODO profile everything before starting to make sure everything is as fast as possible
+
+# ideas for models:
+# get to ball as fast as possible, sometimes with no boost, rewards exist
+# pinches (ceiling and kuxir and team?), score in as few touches as possible with high velocity
+# half flip, wavedash, wall dash, how to do this one?
+# lix reset?
+# normal play as well as possible, rewards exist
+# aerial play without pinch, rewards exist
 set_num_threads(1)
 
 if __name__ == "__main__":

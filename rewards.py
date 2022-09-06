@@ -63,6 +63,10 @@ class ZeroSumReward(RewardFunction):
         kickoff_w=0.1,
         double_tap_w=0,
         aerial_goal_w=0,
+        flip_reset_w=0,
+        flip_reset_goal_w=0,
+        punish_low_touch_w=0,
+        punish_ceiling_pinch_w=0,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
         zero_sum=True,
@@ -90,6 +94,10 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_w = kickoff_w * (tick_skip / 8)
         self.double_tap_w = double_tap_w
         self.aerial_goal_w = aerial_goal_w
+        self.flip_reset_w = flip_reset_w
+        self.flip_reset_goal_w = flip_reset_goal_w
+        self.punish_low_touch_w = punish_low_touch_w
+        self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
         self.rewards = None
         self.current_state = None
         self.last_state = None
@@ -106,9 +114,11 @@ class ZeroSumReward(RewardFunction):
         self.n = 0
         self.cons_touches = 0
         self.zero_sum = zero_sum
+        self.num_touches = []
         # for double tap
         self.backboard_bounce = False
         self.floor_bounce = False
+        self.got_reset = []
         # for aerial goal
         self.blue_touch_height = -1
         self.orange_touch_height = -1
@@ -160,7 +170,7 @@ class ZeroSumReward(RewardFunction):
                 # acel_ball
                 vel_difference = abs(np.linalg.norm(self.last_state.ball.linear_velocity -
                                                     self.current_state.ball.linear_velocity))
-                player_rewards[i] += vel_difference / 4600.0
+                player_rewards[i] += self.acel_ball_w * vel_difference / 4600.0
 
                 # jumptouch
                 min_height = 120
@@ -173,6 +183,14 @@ class ZeroSumReward(RewardFunction):
                 min_height = 350
                 if player.on_ground and state.ball.position[2] > min_height:
                     player_self_rewards[i] += self.wall_touch_w * (state.ball.position[2] - min_height) / rnge
+
+                # ground/kuxir/team pinch training
+                if state.ball.position[2] < 250:
+                    player_self_rewards[i] += self.punish_low_touch_w
+
+                # anti-ceiling pinch
+                if state.ball.position[2] > CEILING_Z - 2 * BALL_RADIUS:
+                    player_self_rewards += self.punish_ceiling_pinch_w
 
                 # cons air touches, max reward of 5, normalized to 1, initial reward 1.4, only starts at second touch
                 if state.ball.position[2] > 140 and not player.on_ground:
@@ -231,6 +249,13 @@ class ZeroSumReward(RewardFunction):
                     self.kickoff_timer < self.kickoff_timeout:
                 player_self_rewards[i] += self.kickoff_w * -1
 
+            # flip reset
+            if not last.has_jump and player.has_jump and player.car_data.position[2] > 500 and not player.on_ground:
+                self.got_reset[i] = True
+                player_rewards[i] += self.flip_reset_w
+            if player.on_ground:
+                self.got_reset[i] = False
+
         mid = len(player_rewards) // 2
 
         # Handle goals with no scorer for critic consistency,
@@ -243,12 +268,14 @@ class ZeroSumReward(RewardFunction):
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
+                    if self.got_reset[self.blue_toucher]:
+                        player_rewards[self.blue_toucher] += self.flip_reset_goal_w
+                    if self.backboard_bounce and not self.floor_bounce:
+                        player_rewards[self.blue_toucher] += self.double_tap_w
+                    if self.blue_touch_height > GOAL_HEIGHT:
+                        player_rewards[self.blue_toucher] += self.aerial_goal_w
                     player_rewards[:mid] += self.team_spirit * goal_reward
                 player_rewards[mid:] += self.concede_w
-                if self.backboard_bounce and not self.floor_bounce:
-                    player_rewards[self.blue_toucher] += self.double_tap_w
-                if self.blue_touch_height > GOAL_HEIGHT:
-                    player_rewards[self.blue_toucher] += self.aerial_goal_w
 
             if d_orange > 0:
                 goal_speed = norm(self.last_state.ball.linear_velocity)
@@ -256,11 +283,13 @@ class ZeroSumReward(RewardFunction):
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward
                     player_rewards[mid:] += self.team_spirit * goal_reward
+                    if self.got_reset[self.orange_toucher]:
+                        player_rewards[self.orange_toucher] += self.flip_reset_goal_w
+                    if self.backboard_bounce and not self.floor_bounce:
+                        player_rewards[self.orange_toucher] += self.double_tap_w
+                    if self.orange_touch_height > GOAL_HEIGHT:
+                        player_rewards[self.orange_toucher] += self.aerial_goal_w
                 player_rewards[:mid] += self.concede_w
-                if self.backboard_bounce and not self.floor_bounce:
-                    player_rewards[self.orange_toucher] += self.double_tap_w
-                if self.orange_touch_height > GOAL_HEIGHT:
-                    player_rewards[self.orange_toucher] += self.aerial_goal_w
 
         # zero mean
         if self.zero_sum:
@@ -272,6 +301,12 @@ class ZeroSumReward(RewardFunction):
         self.last_state = state
         self.rewards = player_rewards + player_self_rewards
         self.last_touched_frame = [x + 1 for x in self.last_touched_frame]
+
+    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
+        if not self.pinch_training:
+            return 0
+
+
 
     def reset(self, initial_state: GameState):
         self.n = 0
@@ -287,6 +322,8 @@ class ZeroSumReward(RewardFunction):
         self.closest_reset_blue, self.closest_reset_orange = _closest_to_ball(initial_state)
         self.backboard_bounce = False
         self.floor_bounce = False
+        self.got_reset = [False] * len(initial_state.players)
+        self.num_touches = [0] * len(initial_state.players)
         self.blue_touch_height = -1
         self.orange_touch_height = -1
 
