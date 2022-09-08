@@ -20,7 +20,16 @@ set_num_threads(1)
 
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=ZERO_SUM)
+    rew = ZeroSumReward(zero_sum=ZERO_SUM,
+                        goal_w=10,
+                        concede_w=-10,
+                        velocity_pb_w=0.01,
+                        boost_gain_w=1,
+                        demo_w=5,
+                        got_demoed_w=-5,
+                        kickoff_w=0.1,
+                        ball_opp_half_w=0.05,
+                        team_spirit=0)
     frame_skip = FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -29,10 +38,10 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 0.01
+    evaluation_prob = 0
     past_version_prob = 0.1
     deterministic_streamer = True
-    force_old_deterministic = True
+    force_old_deterministic = False
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -54,10 +63,10 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=3,
-        state_setter=CoyoteSetter(),
+        state_setter=CoyoteSetter(mode="kickoff"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
         action_parser=CoyoteAction(),
-        terminal_conditions=[TimeoutCondition(fps * 300), NoTouchTimeoutCondition(fps * 45), GoalScoredCondition()],
+        terminal_conditions=[TimeoutCondition(fps * 5), GoalScoredCondition()],
         reward_function=rew,
         tick_skip=frame_skip,
     )
@@ -81,13 +90,6 @@ if __name__ == "__main__":
                   db=1,  # testing
                   )
 
-    model_name = "necto-model-30Y.pt"
-    nectov1 = NectoV1(model_string=model_name, n_players=6)
-    model_name = "nexto-model.pt"
-    nexto = NextoV2(model_string=model_name, n_players=6)
-
-    pretrained_agents = {nectov1: 0, nexto: 0.1}
-
     RedisRolloutWorker(r, name, match,
                        past_version_prob=past_version_prob,
                        sigma_target=2,
@@ -97,7 +99,6 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       pretrained_agents=pretrained_agents,
                        gamemode_weights=None,  # {'1v1': 0.3, '2v2': 0.25, '3v3': 0.45}  # testing weights
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,

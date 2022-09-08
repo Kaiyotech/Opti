@@ -1,9 +1,9 @@
 from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
-    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z
+    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y
 import numpy as np
 from rlgym.utils.gamestates import PlayerData, GameState
 from rlgym.utils.reward_functions import RewardFunction
-from Constants import FRAME_SKIP
+from Constants_kickoff import FRAME_SKIP
 
 from numpy.linalg import norm
 
@@ -47,26 +47,27 @@ class ZeroSumReward(RewardFunction):
     # (https://github.com/Rolv-Arild/Necto/blob/master/training/reward.py)
     def __init__(
         self,
-        goal_w=5,  # go to 10 after working
-        concede_w=-5,
-        velocity_pb_w=0.01,
-        velocity_bg_w=0.05,
-        touch_grass_w=-0.005,
-        acel_ball_w=1.5,
-        boost_gain_w=1.5,
+        goal_w=0,  # go to 10 after working
+        concede_w=0,
+        velocity_pb_w=0,  # 0.01,
+        velocity_bg_w=0,  # 0.05,
+        touch_grass_w=0,  # -0.005,
+        acel_ball_w=0,  # 1.5,
+        boost_gain_w=0,  # 1.5,
         punish_boost=False,  # punish once they start wasting and understand the game a bit
-        jump_touch_w=3,
+        jump_touch_w=0,  # 3,
         cons_air_touches_w=0,  # 6,
-        wall_touch_w=0.25,
-        demo_w=3,  # 6,
-        got_demoed_w=-3,  # -6,
-        kickoff_w=0.1,
+        wall_touch_w=0,  # 0.25,
+        demo_w=0,  # 3,  # 6,
+        got_demoed_w=0,  # -3,  # -6,
+        kickoff_w=0,  # 0.1,
         double_tap_w=0,
         aerial_goal_w=0,
         flip_reset_w=0,
         flip_reset_goal_w=0,
         punish_low_touch_w=0,
         punish_ceiling_pinch_w=0,
+        ball_opp_half_w=0,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
         zero_sum=True,
@@ -98,6 +99,7 @@ class ZeroSumReward(RewardFunction):
         self.flip_reset_goal_w = flip_reset_goal_w
         self.punish_low_touch_w = punish_low_touch_w
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
+        self.ball_opp_half_w = ball_opp_half_w
         self.rewards = None
         self.current_state = None
         self.last_state = None
@@ -215,6 +217,14 @@ class ZeroSumReward(RewardFunction):
                 norm_vel = vel / BALL_MAX_SPEED
                 vel_bg_reward = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.velocity_bg_w * vel_bg_reward
+
+            # distance ball from halfway (for kickoffs)
+            # 1 at max oppo wall, 0 at midfield, -1 at our wall
+            if player.team_num == BLUE_TEAM:
+                objective = BACK_WALL_Y - BALL_RADIUS
+            else:
+                objective = -BACK_WALL_Y + BALL_RADIUS
+            player_rewards[i] += self.ball_opp_half_w * (1 + (state.ball.position[1] - objective) / objective)
 
             # boost
             # don't punish or reward boost when above  approx single jump height

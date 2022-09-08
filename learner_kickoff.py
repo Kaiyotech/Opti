@@ -74,7 +74,16 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Valger_kickoff",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
-                                        lambda: ZeroSumReward(zero_sum=ZERO_SUM),
+                                        lambda: ZeroSumReward(zero_sum=ZERO_SUM,
+                                                              goal_w=10,
+                                                              concede_w=-10,
+                                                              velocity_pb_w=0.01,
+                                                              boost_gain_w=1,
+                                                              demo_w=5,
+                                                              got_demoed_w=-5,
+                                                              kickoff_w=0.1,
+                                                              ball_opp_half_w=0.05,
+                                                              team_spirit=0),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,
                                         model_every=logger.config.model_every,
@@ -88,11 +97,11 @@ if __name__ == "__main__":
     critic = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
 
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
-                        LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
     actor = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 91))
+                       Linear(512, 512), LeakyReLU(), Linear(512, 91))
 
     actor = DiscretePolicy(actor, (91,))
 
