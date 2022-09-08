@@ -62,7 +62,33 @@ def parse_ceiling_shots(file_name, _num_cars):
                 output.append(data[_i])
 
     print(f"Created {len(output)} car ceiling states from {file_name}")
-    output_file = f"flip_resets_{file_name}"
+    output_file = f"ceiling_{file_name}"
+    if os.path.exists(output_file):
+        os.remove(output_file)
+    np.save(output_file, output)
+
+
+# curate kickoff states
+def parse_kickoffs(file_name, _num_cars):
+    data = np.load(file_name)
+    output = []
+    ball_positions = data[:, BALL_POSITION]
+    for _i, ball_state in enumerate(ball_positions):
+        do_it = True
+        if ball_state[0] == ball_state[1] == 0:
+            cars = np.split(data[_i][9:], _num_cars)
+            for _j in range(_num_cars):
+                car_pos = cars[_j][CAR_POS]
+                if (abs(car_pos[0]) == 2048 and abs(car_pos[1]) == 2560) or \
+                        (abs(car_pos[0]) == 256 and abs(car_pos[1]) == 3840) or \
+                        (abs(car_pos[0]) == 0 and abs(car_pos[1]) == 4608):
+                    do_it = False
+                    break
+            if do_it:
+                output.append(data[_i])
+
+    print(f"Created {len(output)} car kickoff states from {file_name}")
+    output_file = f"kickoff_{file_name}"
     if os.path.exists(output_file):
         os.remove(output_file)
     np.save(output_file, output)
@@ -83,6 +109,7 @@ for i, file in enumerate(input_files):
     parse_aerial(file, num_cars)
     parse_flip_resets(file, num_cars)
     parse_ceiling_shots(file, num_cars)
+    parse_kickoffs(file, num_cars)
 
 
 
