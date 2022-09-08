@@ -6,10 +6,17 @@ from typing import Any, List
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
-from itertools import chain
+from collections.abc import Iterable
 
 # TODO profile
 
+
+def flatten(xs):
+    for x in xs:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        else:
+            yield x
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
@@ -43,7 +50,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.state = None
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
         self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
-        self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players))
+        self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
         self.blue_obs = []
         self.orange_obs = []
 
@@ -52,8 +59,8 @@ class CoyoteObsBuilder(ObsBuilder):
         # create player/team agnostic items (do these even exist?)
         self._update_timers(state)
         # create team specific things
-        self.blue_obs.extend(self.boost_timers / self.BOOST_TIMER_STD)
-        self.orange_obs.extend(self.inverted_boost_timers / self.BOOST_TIMER_STD)
+        self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
+        self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
@@ -79,7 +86,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.inverted_boosts_availability = self.boosts_availability[::-1]
 
         for cid, dm in demo_states:
-            if dm == 1:  # Demoed
+            if dm == True:  # Demoed
                 prev_timer = self.demo_timers[cid]
                 if prev_timer > 0:
                     self.demo_timers[cid] = max(0, prev_timer - self.time_interval)
@@ -98,7 +105,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 int(ball.position[2] <= 100)
             ],
         ]
-        return list(chain(*p))
+        return list(flatten(p))
 
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray):
         p = [
@@ -120,7 +127,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act,
         ]
-        return list(chain(*p))
+        return list(flatten(p))
 
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
                           _car: PlayerData, ball: PhysicsObject, teammate: bool):
@@ -145,7 +152,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 teammate,
                 self.demo_timers[_car.car_id] / self.DEMO_TIMER_STD,
             ]
-        return list(chain(*p))
+        return list(flatten(p))
 
     def create_boost_packet(self, player_car: PhysicsObject, boost_index: int, inverted: bool):
         # for each boost give the direction, distance, and availability of boost
@@ -160,7 +167,7 @@ class CoyoteObsBuilder(ObsBuilder):
              mag / self.POS_STD
              ]
         ]
-        return list(chain(*p))
+        return list(flatten(p))
 
     def add_boosts_to_obs(self, obs, player_car: PhysicsObject, inverted: bool):
         for i in range(self.boost_locations.shape[0]):

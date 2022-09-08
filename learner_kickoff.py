@@ -94,14 +94,12 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
-                        LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
-    actor = Sequential(Linear(247, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 512), LeakyReLU(), Linear(512, 91))
+    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 91))
 
     actor = DiscretePolicy(actor, (91,))
 

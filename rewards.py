@@ -312,12 +312,6 @@ class ZeroSumReward(RewardFunction):
         self.rewards = player_rewards + player_self_rewards
         self.last_touched_frame = [x + 1 for x in self.last_touched_frame]
 
-    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
-        if not self.pinch_training:
-            return 0
-
-
-
     def reset(self, initial_state: GameState):
         self.n = 0
         self.last_state = None
