@@ -55,14 +55,14 @@ if __name__ == "__main__":
     run_id = "kickoff_test1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Valger_kickoff",
-                        project="Valger",
+                        name="Project2_Kickoff",
+                        project="Project2",
                         entity="kaiyotech",
                         id=run_id,
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=1)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=0)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -77,7 +77,7 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
-                                                              velocity_pb_w=0.01,
+                                                              velocity_pb_w=0,
                                                               boost_gain_w=1,
                                                               demo_w=5,
                                                               got_demoed_w=-5,
@@ -99,9 +99,9 @@ if __name__ == "__main__":
                         Linear(512, 1))
 
     actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 91))
+                       Linear(512, 373))
 
-    actor = DiscretePolicy(actor, (91,))
+    actor = DiscretePolicy(actor, (373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},

@@ -76,7 +76,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=1,  # testing
+                  db=0,  # testing
                   )
 
     # remote Redis
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights=None,  # {'1v1': 0.3, '2v2': 0.25, '3v3': 0.45}  # testing weights
+                       gamemode_weights={'1v1': 0.6, '2v2': 0.2, '3v3': 0.2},
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

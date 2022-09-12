@@ -11,11 +11,12 @@ from mybots_statesets import GroundAirDribble, WallDribble
 class CoyoteSetter(DynamicGMSetter):
     def __init__(self, mode):
         self.setters = []  # [1v1, 2v2, 3v3]
-        replays = ["ssl_1v1.npy", "ssl_2v2.npy", "ssl_3v3.npy"]
-        aerial_replays = ["aerial_ssl_1v1.npy", "aerial_ssl_2v2.npy", "aerial_ssl_3v3.npy"]
-        flip_reset_replays = ["flip_resets_ssl_1v1.npy", "flip_resets_ssl_2v2.npy", "flip_resets_ssl_3v3.npy"]
-        kickoff_replays = ["kickoff_ssl_1v1.npy", "kickoff_ssl_2v2.npy", "kickoff_ssl_3v3.npy"]
-        ceiling_replays = ["ceiling_ssl_1v1.npy", "ceiling_ssl_2v2.npy", "ceiling_ssl_3v3.npy"]
+        replays = ["replays/ssl_1v1.npy", "replays/ssl_2v2.npy", "replays/ssl_3v3.npy"]
+        aerial_replays = ["replays/aerial_ssl_1v1.npy", "replays/aerial_ssl_2v2.npy", "replays/aerial_ssl_3v3.npy"]
+        flip_reset_replays = ["replays/flip_resets_ssl_1v1.npy", "replays/flip_resets_ssl_2v2.npy",
+                              "replays/flip_resets_ssl_3v3.npy"]
+        kickoff_replays = ["replays/kickoff_ssl_1v1.npy", "replays/kickoff_ssl_2v2.npy", "replays/kickoff_ssl_3v3.npy"]
+        ceiling_replays = ["replays/ceiling_ssl_1v1.npy", "replays/ceiling_ssl_2v2.npy", "replays/ceiling_ssl_3v3.npy"]
         if mode is None or mode is "normal":
             for i in range(3):
                 self.setters.append(

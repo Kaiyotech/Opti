@@ -16,16 +16,16 @@ class CoyoteAction(ActionParser):
     def make_lookup_table():
         actions = []
         # Ground
-        for throttle in (-1, 0, 1):
-            for steer in (-1, 0, 1):
+        for throttle in (-1, 0, 0.5, 1):
+            for steer in (-1, -0.5, 0, 0.5, 1):
                 for boost in (0, 1):
                     for handbrake in (0, 1):
                         if boost == 1 and throttle != 1:
                             continue
                         actions.append([throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
         # Aerial
-        for pitch in (-1, 0, 1):
-            for yaw in (-1, 0, 1):
+        for pitch in (-1, -0.75, -0.5, 0, 0.5, 0.75, 1):
+            for yaw in (-1, -0.75, -0.5, 0, 0.5, 0.75, 1):
                 for roll in (-1, 0, 1):
                     for jump in (0, 1):
                         for boost in (0, 1):
