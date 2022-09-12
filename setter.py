@@ -17,7 +17,7 @@ class CoyoteSetter(DynamicGMSetter):
                               "replays/flip_resets_ssl_3v3.npy"]
         kickoff_replays = ["replays/kickoff_ssl_1v1.npy", "replays/kickoff_ssl_2v2.npy", "replays/kickoff_ssl_3v3.npy"]
         ceiling_replays = ["replays/ceiling_ssl_1v1.npy", "replays/ceiling_ssl_2v2.npy", "replays/ceiling_ssl_3v3.npy"]
-        if mode is None or mode is "normal":
+        if mode is None or mode == "normal":
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
@@ -34,12 +34,12 @@ class CoyoteSetter(DynamicGMSetter):
                         (0.5, 0.2, 0.1, 0, 0, 0.1, 0.1)
                     )
                 )
-        elif mode is "kickoff":
+        elif mode == "kickoff":
             for i in range(3):
                 self.setters.append(
                     AugmentSetter(ReplaySetter(kickoff_replays[i]))
                 )
-        elif mode is "aerial":
+        elif mode == "aerial":
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
