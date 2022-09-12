@@ -87,7 +87,7 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=1,  # testing
+                  db=0,  # testing
                   )
 
     RedisRolloutWorker(r, name, match,
