@@ -42,6 +42,8 @@ if __name__ == "__main__":
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
+    team_size = 1
+    dynamic_game = False
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -50,9 +52,11 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         name = sys.argv[2]
     if len(sys.argv) > 3:
-        if sys.argv[3] == 'GAMESTATE':
+        team_size = int(sys.argv[3])
+    if len(sys.argv) > 4:
+        if sys.argv[4] == 'GAMESTATE':
             send_gamestate = True
-        elif sys.argv[3] == 'STREAMER':
+        elif sys.argv[4] == 'STREAMER':
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
@@ -62,7 +66,7 @@ if __name__ == "__main__":
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
-        team_size=3,
+        team_size=team_size,
         state_setter=CoyoteSetter(mode="kickoff"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
         action_parser=CoyoteAction(),
@@ -95,11 +99,11 @@ if __name__ == "__main__":
                        sigma_target=2,
                        evaluation_prob=evaluation_prob,
                        force_paging=True,
-                       dynamic_gm=True,
+                       dynamic_gm=dynamic_game,
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.6, '2v2': 0.2, '3v3': 0.2},
+                       # gamemode_weights={'1v1': 0.6, '2v2': 0.2, '3v3': 0.2},
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
