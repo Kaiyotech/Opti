@@ -40,15 +40,15 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=2e-4,
-        critic_lr=2e-4,
-        n_steps=100_000,
+        actor_lr=1e-4,
+        critic_lr=1e-4,
+        n_steps=250_000,
         batch_size=100_000,
         minibatch_size=50_000,
         epochs=50,
         gamma=gamma,
-        save_every=100,
-        model_every=1000,
+        save_every=40,
+        model_every=400,
         ent_coef=0.01,
     )
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                                         save_every=logger.config.save_every,
                                         model_every=logger.config.model_every,
                                         logger=logger,
-                                        clear=True, # TODO check this
+                                        clear=False,
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("model_saves/")
+    alg.load("kickoff_saves/Project2_1663077408.7282434/Project2_700/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
