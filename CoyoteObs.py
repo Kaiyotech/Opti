@@ -8,16 +8,6 @@ from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
 from collections.abc import Iterable
 
-# TODO profile
-
-
-def flatten(xs):
-    for x in xs:
-        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
-            yield from flatten(x)
-        else:
-            yield x
-
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True):
@@ -97,77 +87,81 @@ class CoyoteObsBuilder(ObsBuilder):
 
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
-            ball.position / self.POS_STD,
-            ball.linear_velocity / self.VEL_STD,
-            ball.angular_velocity / self.ANG_STD,
-            [
-                math.sqrt(sum([x * x for x in ball.linear_velocity]))/2300,
-                int(ball.position[2] <= 100)
-            ],
+            ball.position[0] / self.POS_STD, ball.position[1] / self.POS_STD, ball.position[2] / self.POS_STD,
+            ball.linear_velocity[0] / self.VEL_STD, ball.linear_velocity[1] / self.VEL_STD, ball.linear_velocity[2] / self.VEL_STD,
+            ball.angular_velocity[0] / self.ANG_STD, ball.angular_velocity[1] / self.ANG_STD, ball.angular_velocity[2] / self.ANG_STD,
+            math.sqrt(ball.linear_velocity[0] ** 2 + ball.linear_velocity[1] ** 2 + ball.linear_velocity[2] ** 2)/2300,
+            int(ball.position[2] <= 100),
         ]
-        return list(flatten(p))
+        return p
 
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray):
+        pos_diff = ball.position - car.position
+        vel_diff = ball.linear_velocity - car.linear_velocity
+        fwd = car.forward()
+        up = car.up()
         p = [
-            car.position / self.POS_STD,
-            car.linear_velocity / self.VEL_STD,
-            car.angular_velocity / self.ANG_STD,
-            (ball.position - car.position) / self.POS_STD,
-            (ball.linear_velocity - car.linear_velocity) / self.VEL_STD,
-            car.forward(),
-            car.up(),
-            [
-                np.linalg.norm(car.linear_velocity)/2300,
-                player.boost_amount,
-                int(player.on_ground),
-                int(player.has_flip),
-                int(player.is_demoed),
-                int(player.has_jump),
-            ],
+            car.position[0] / self.POS_STD, car.position[1] / self.POS_STD, car.position[2] / self.POS_STD,
+            car.linear_velocity[0] / self.VEL_STD, car.linear_velocity[1] / self.VEL_STD, car.linear_velocity[2] / self.VEL_STD,
+            car.angular_velocity[0] / self.ANG_STD, car.angular_velocity[1] / self.ANG_STD, car.angular_velocity[2] / self.ANG_STD,
+            pos_diff[0] / self.POS_STD, pos_diff[1] / self.POS_STD, pos_diff[2] / self.POS_STD,
+            vel_diff[0] / self.VEL_STD, vel_diff[1] / self.VEL_STD, vel_diff[2] / self.VEL_STD,
+            fwd[0], fwd[1], fwd[2],
+            up[0], up[1], up[2],
+            math.sqrt(car.linear_velocity[0] ** 2 + car.linear_velocity[1] ** 2 + car.linear_velocity[2] ** 2)/2300,
+            player.boost_amount,
+            int(player.on_ground),
+            int(player.has_flip),
+            int(player.is_demoed),
+            int(player.has_jump),
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
-            prev_act,
+            prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
         ]
-        return list(flatten(p))
+        return p
 
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
                           _car: PlayerData, ball: PhysicsObject, teammate: bool):
         diff = car.position - player_car.position
-        magnitude = np.linalg.norm(diff)
+        magnitude = math.sqrt(diff[0] ** 2 + diff[1] ** 2 + diff[2] ** 2)
+        car_play_vel = car.linear_velocity - player_car.linear_velocity
+        pos_diff = ball.position - car.position
+        ball_car_vel = ball.linear_velocity - car.linear_velocity
+        fwd = car.forward()
+        up = car.up()
         p = [
-                car.position / self.POS_STD,
-                car.linear_velocity / self.VEL_STD,
-                car.angular_velocity / self.ANG_STD,
-                diff / self.POS_STD,
-                (car.linear_velocity - player_car.linear_velocity) / self.VEL_STD,
-                (ball.position - car.position) / self.POS_STD,
-                (ball.linear_velocity - car.linear_velocity) / self.VEL_STD,
-                car.forward(),
-                car.up(),
-                [_car.boost_amount,
-                    int(_car.on_ground),
-                    int(_car.has_flip),
-                    int(_car.is_demoed),
-                    int(_car.has_jump),
-                    magnitude/self.POS_STD],
+                car.position[0] / self.POS_STD, car.position[1] / self.POS_STD, car.position[2] / self.POS_STD,
+                car.linear_velocity[0] / self.VEL_STD, car.linear_velocity[1] / self.VEL_STD, car.linear_velocity[2] / self.VEL_STD,
+                car.angular_velocity[0] / self.ANG_STD, car.angular_velocity[1] / self.ANG_STD, car.angular_velocity[2] / self.ANG_STD,
+                diff[0] / self.POS_STD, diff[1] / self.POS_STD, diff[2] / self.POS_STD,
+                car_play_vel[0] / self.VEL_STD, car_play_vel[1] / self.VEL_STD, car_play_vel[2] / self.VEL_STD,
+                pos_diff[0] / self.POS_STD, pos_diff[1] / self.POS_STD, pos_diff[2] / self.POS_STD,
+                ball_car_vel[0] / self.VEL_STD, ball_car_vel[1] / self.VEL_STD, ball_car_vel[2] / self.VEL_STD,
+                fwd[0], fwd[1], fwd[2],
+                up[0], up[1], up[2],
+                _car.boost_amount,
+                int(_car.on_ground),
+                int(_car.has_flip),
+                int(_car.is_demoed),
+                int(_car.has_jump),
+                magnitude/self.POS_STD,
                 teammate,
                 self.demo_timers[_car.car_id] / self.DEMO_TIMER_STD,
             ]
-        return list(flatten(p))
+        return p
 
     def create_boost_packet(self, player_car: PhysicsObject, boost_index: int, inverted: bool):
         # for each boost give the direction, distance, and availability of boost
         boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
         location = self.inverted_boost_locations[boost_index] if inverted else self.boost_locations[boost_index]
         dist = location - player_car.position
-        mag = np.linalg.norm(dist)
+        mag = math.sqrt(dist[0] ** 2 + dist[1] ** 2 + dist[2] ** 2) / self.POS_STD
         val = 0 if not bool(boost_avail_list[boost_index]) else (1.0 if location[2] == 73.0 else 0.12)
         p = [
-            dist / self.POS_STD,
-            [val,
-             mag / self.POS_STD
-             ]
+            dist[0] / self.POS_STD, dist[1] / self.POS_STD, dist[2] / self.POS_STD,
+            val,
+            mag
         ]
-        return list(flatten(p))
+        return p
 
     def add_boosts_to_obs(self, obs, player_car: PhysicsObject, inverted: bool):
         for i in range(self.boost_locations.shape[0]):
