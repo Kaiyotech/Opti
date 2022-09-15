@@ -11,10 +11,8 @@ from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRollo
 from setter import CoyoteSetter
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
-from pretrained_agents.necto.necto_v1 import NectoV1
 from torch import set_num_threads
 from Constants_kickoff import FRAME_SKIP, ZERO_SUM, STEP_SIZE
-from pretrained_agents.nexto.nexto_v2 import NextoV2
 import os
 set_num_threads(1)
 

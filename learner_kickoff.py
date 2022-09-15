@@ -40,7 +40,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=0,
+        actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=STEP_SIZE,
         batch_size=100_000,
@@ -55,8 +55,8 @@ if __name__ == "__main__":
     run_id = "kickoff_test1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Project2_Kickoff",
-                        project="Project2",
+                        name="Opti_Kickoff",
+                        project="Opti",
                         entity="kaiyotech",
                         id=run_id,
                         config=config,
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Project2_1663116897.082309/Project2_3320/checkpoint.pt")
+    alg.load("/kickoff_saves/Project2_1663267136.6011782/Project2_3350/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
