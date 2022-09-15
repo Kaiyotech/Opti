@@ -21,15 +21,15 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=ZERO_SUM,
-                        goal_w=10,
-                        concede_w=-10,
-                        velocity_pb_w=0.01,
-                        boost_gain_w=1,
-                        demo_w=5,
-                        got_demoed_w=-5,
-                        kickoff_w=0.1,
-                        ball_opp_half_w=0.05,
-                        team_spirit=0)
+                      goal_w=10,
+                      concede_w=-10,
+                      velocity_pb_w=0,
+                      boost_gain_w=1,
+                      demo_w=5,
+                      got_demoed_w=-5,
+                      kickoff_w=0.1,
+                      ball_opp_half_w=0.05,
+                      team_spirit=1),
     frame_skip = FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
