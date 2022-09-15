@@ -29,7 +29,7 @@ if __name__ == "__main__":
                       got_demoed_w=-5,
                       kickoff_w=0.1,
                       ball_opp_half_w=0.05,
-                      team_spirit=1),
+                      team_spirit=1)
     frame_skip = FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
