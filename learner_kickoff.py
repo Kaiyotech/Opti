@@ -13,7 +13,7 @@ from CoyoteObs import CoyoteObsBuilder
 from CoyoteParser import CoyoteAction
 import numpy as np
 from rewards import ZeroSumReward
-from Constants_kickoff import FRAME_SKIP, TIME_HORIZON, ZERO_SUM
+from Constants_kickoff import FRAME_SKIP, TIME_HORIZON, ZERO_SUM, STEP_SIZE
 
 from utils.misc import count_parameters
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        n_steps=250_000,
+        n_steps=STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
         epochs=50,

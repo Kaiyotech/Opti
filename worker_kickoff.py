@@ -13,7 +13,7 @@ from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from pretrained_agents.necto.necto_v1 import NectoV1
 from torch import set_num_threads
-from Constants_kickoff import FRAME_SKIP, ZERO_SUM
+from Constants_kickoff import FRAME_SKIP, ZERO_SUM, STEP_SIZE
 from pretrained_agents.nexto.nexto_v2 import NextoV2
 import os
 set_num_threads(1)
@@ -107,4 +107,7 @@ if __name__ == "__main__":
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
+                       # testing
+                       batch_mode=True,
+                       step_size=STEP_SIZE,
                        ).run()
