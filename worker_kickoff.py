@@ -7,6 +7,7 @@ from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import TimeoutCondition,\
     NoTouchTimeoutCondition, GoalScoredCondition
+from mybots_terminals import KickoffTrainer, BallTouchGroundCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from setter import CoyoteSetter
 from CoyoteParser import CoyoteAction
@@ -67,9 +68,9 @@ if __name__ == "__main__":
         spawn_opponents=True,
         team_size=team_size,
         state_setter=CoyoteSetter(mode="kickoff"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=team_size),
         action_parser=CoyoteAction(),
-        terminal_conditions=[TimeoutCondition(fps * 4), GoalScoredCondition()],
+        terminal_conditions=[TimeoutCondition(fps * 30), GoalScoredCondition(), KickoffTrainer(tick_skip=FRAME_SKIP)],
         reward_function=rew,
         tick_skip=frame_skip,
     )
@@ -102,7 +103,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.5, '2v2': 0.25, '3v3': 0.25},
+                       gamemode_weights={'1v1': 1, '2v2': 0, '3v3': 0},
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
