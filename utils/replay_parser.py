@@ -2,6 +2,8 @@ import numpy as np
 import os
 from rlgym.utils.common_values import CEILING_Z, BALL_RADIUS, GOAL_HEIGHT
 from rlgym.utils.math import euler_to_rotation, cosine_similarity
+from rlgym_tools.extra_state_setters.replay_setter import ReplaySetter
+import random
 
 
 # curate aerial states with ball and at least one car above 750
@@ -94,6 +96,25 @@ def parse_kickoffs(file_name, _num_cars):
     np.save(output_file, output)
 
 
+def parse_kickoffs_direct(data, _num_cars, output):
+    ball_positions = data[:, BALL_POSITION]
+    for _i, ball_state in enumerate(ball_positions):
+        do_it = True
+        if ball_state[0] == ball_state[1] == 0:
+            cars = np.split(data[_i][9:], _num_cars)
+            for _j in range(_num_cars):
+                car_pos = cars[_j][CAR_POS]
+                if (abs(car_pos[0]) == 2048 and abs(car_pos[1]) == 2560) or \
+                        (abs(car_pos[0]) == 256 and abs(car_pos[1]) == 3840) or \
+                        (abs(car_pos[0]) == 0 and abs(car_pos[1]) == 4608):
+                    do_it = False
+                    break
+            if do_it:
+                output.append(data[_i])
+
+    return
+
+
 BALL_POSITION = slice(0, 3)
 BALL_LIN_VEL = slice(3, 6)
 BALL_ANG_VEL = slice(6, 9)
@@ -103,13 +124,37 @@ CAR_LIN_VEL = slice(6, 9)
 CAR_ANG_VEL = slice(9, 12)
 CAR_BOOST = slice(12, 13)
 
-input_files = ['ssl_1v1.npy', 'ssl_2v2.npy', 'ssl_3v3.npy']
-for i, file in enumerate(input_files):
-    num_cars = (i + 1) * 2
-    parse_aerial(file, num_cars)
-    parse_flip_resets(file, num_cars)
-    parse_ceiling_shots(file, num_cars)
-    parse_kickoffs(file, num_cars)
+# input_files = ['ssl_1v1.npy', 'ssl_2v2.npy', 'ssl_3v3.npy']
+
+path_rlcs = "D:/Replay Files/RLCS"
+path_ssl = "D:/Replay Files/2021-ssl-replays"
+path_ranked = "D:/Replay Files/2021-ranked-replays"
+
+folders = [path_rlcs, path_ssl]
+replay_names = []
+for folder in folders:
+    for root, dirs, files in os.walk(folder):
+        for filename in files:
+            replay_names.append(os.path.join(root, filename))
+
+random.shuffle(replay_names)
+for replay in replay_names:
+    states = ReplaySetter.convert_replays([replay], frame_skip=8)
+    parse_kickoffs_direct(states, )
+
+
+
+# need to make this numpy instead of files
+# input_files = ['ssl_1v1.npy', 'ssl_2v2.npy', 'ssl_3v3.npy']
+# for i, file in enumerate(input_files):
+#     num_cars = (i + 1) * 2
+#     parse_aerial(file, num_cars)
+#     parse_flip_resets(file, num_cars)
+#     parse_ceiling_shots(file, num_cars)
+#     parse_kickoffs(file, num_cars)
+
+
+
 
 
 

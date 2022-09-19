@@ -68,6 +68,7 @@ class ZeroSumReward(RewardFunction):
         punish_low_touch_w=0,
         punish_ceiling_pinch_w=0,
         ball_opp_half_w=0,
+        kickoff_special_touch_ground_w=0,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
         zero_sum=True,
@@ -100,6 +101,7 @@ class ZeroSumReward(RewardFunction):
         self.punish_low_touch_w = punish_low_touch_w
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
         self.ball_opp_half_w = ball_opp_half_w
+        self.kickoff_special_touch_ground_w = kickoff_special_touch_ground_w
         self.rewards = None
         self.current_state = None
         self.last_state = None
@@ -238,6 +240,8 @@ class ZeroSumReward(RewardFunction):
             # touch_grass
             if player.on_ground and player.car_data.position[2] < 25:
                 player_self_rewards[i] += self.touch_grass_w
+                if self.closest_reset_blue == i or self.closest_reset_orange == i:
+                    player_self_rewards[i] += self.kickoff_special_touch_ground_w
 
             # demo
             if player.is_demoed and not last.is_demoed:

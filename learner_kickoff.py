@@ -52,7 +52,7 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "kickoff_test1"
+    run_id = "kickoff_run2"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
                         name="Opti_Kickoff",
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         GoalSpeed(), MaxGoalSpeed(),
     ]
 
-    rollout_gen = RedisRolloutGenerator("Valger_kickoff",
+    rollout_gen = RedisRolloutGenerator("Opti_kickoff",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
                                         lambda: ZeroSumReward(zero_sum=ZERO_SUM,
@@ -79,16 +79,17 @@ if __name__ == "__main__":
                                                               concede_w=-10,
                                                               velocity_pb_w=0,
                                                               boost_gain_w=1,
-                                                              demo_w=5,
-                                                              got_demoed_w=-5,
-                                                              kickoff_w=0.1,
+                                                              demo_w=1,
+                                                              got_demoed_w=1,
+                                                              kickoff_w=0.2,
                                                               ball_opp_half_w=0.05,
+                                                              kickoff_special_touch_ground_w=-0.1,
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,
                                         model_every=logger.config.model_every,
                                         logger=logger,
-                                        clear=False,
+                                        clear=True,
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
@@ -126,7 +127,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("/kickoff_saves/Project2_1663267136.6011782/Project2_3350/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1663274816.8918712/Opti_3980/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

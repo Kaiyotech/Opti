@@ -37,7 +37,13 @@ class CoyoteSetter(DynamicGMSetter):
         elif mode == "kickoff":
             for i in range(3):
                 self.setters.append(
-                    AugmentSetter(ReplaySetter(kickoff_replays[i]))
+                    WeightedSampleSetter(
+                        (
+                            AugmentSetter(ReplaySetter(kickoff_replays[i])),
+                            DefaultState(),
+                        ),
+                        (0.8, 0.2)
+                    )
                 )
         elif mode == "aerial":
             for i in range(3):

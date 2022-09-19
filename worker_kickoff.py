@@ -22,12 +22,13 @@ if __name__ == "__main__":
                       goal_w=10,
                       concede_w=-10,
                       velocity_pb_w=0,
-                      boost_gain_w=1,
-                      demo_w=5,
-                      got_demoed_w=-5,
-                      kickoff_w=0.1,
+                      boost_gain_w=0,
+                      demo_w=1,
+                      got_demoed_w=1,
+                      kickoff_w=0.2,
                       ball_opp_half_w=0.05,
-                      team_spirit=1)
+                        kickoff_special_touch_ground_w=-0.1,
+                        team_spirit=1)
     frame_skip = FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -68,7 +69,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="kickoff"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=3),
         action_parser=CoyoteAction(),
-        terminal_conditions=[TimeoutCondition(fps * 5), GoalScoredCondition()],
+        terminal_conditions=[TimeoutCondition(fps * 4), GoalScoredCondition()],
         reward_function=rew,
         tick_skip=frame_skip,
     )
@@ -101,7 +102,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.6, '2v2': 0.2, '3v3': 0.2},
+                       gamemode_weights={'1v1': 0.5, '2v2': 0.25, '3v3': 0.25},
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
