@@ -22,7 +22,6 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
     MaxGoalSpeed
-# TODO profile everything before starting to make sure everything is as fast as possible
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -127,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Opti_1663274816.8918712/Opti_3980/checkpoint.pt")
+    # alg.load("kickoff_saves/Opti_1663274816.8918712/Opti_3980/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0
-    past_version_prob = 0.1
+    past_version_prob = 0
     deterministic_streamer = True
     force_old_deterministic = False
     team_size = 3
