@@ -88,7 +88,7 @@ if __name__ == "__main__":
                                         save_every=logger.config.save_every,
                                         model_every=logger.config.model_every,
                                         logger=logger,
-                                        clear=True,
+                                        clear=False,
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,

@@ -40,7 +40,7 @@ class KickoffTrainer(TerminalCondition):
 
     def reset(self, initial_state: GameState):
         self.steps = 0
-        self.touch_steps = 0
+        self.touch_steps = 10_000_000
         pass
 
     def is_terminal(self, current_state: GameState) -> bool:
@@ -48,8 +48,10 @@ class KickoffTrainer(TerminalCondition):
         return True if ball is touching the ground and it has been minimum number of steps
         """
         self.steps += 1
-        if current_state.last_touch != -1:
-            self.touch_steps = self.steps
+        for player in current_state.players:
+            if player.ball_touched:
+                self.touch_steps = self.steps
+                break
         if self.steps > self.touch_steps + self.min_steps:
             return True
         elif (current_state.ball.position[1] > (BACK_WALL_Y - 2 * BALL_RADIUS) and
