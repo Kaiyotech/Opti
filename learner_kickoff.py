@@ -76,7 +76,7 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
-                                                              velocity_pb_w=0,
+                                                              velocity_pb_w=0.02,
                                                               boost_gain_w=1,
                                                               demo_w=1,
                                                               got_demoed_w=1,
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("kickoff_saves/Opti_1663274816.8918712/Opti_3980/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1663651147.3055632/Opti_10/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

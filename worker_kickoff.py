@@ -22,7 +22,7 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=ZERO_SUM,
                       goal_w=10,
                       concede_w=-10,
-                      velocity_pb_w=0,
+                      velocity_pb_w=0.02,
                       boost_gain_w=0,
                       demo_w=1,
                       got_demoed_w=1,
