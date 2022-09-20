@@ -12,11 +12,15 @@ class CoyoteSetter(DynamicGMSetter):
     def __init__(self, mode):
         self.setters = []  # [1v1, 2v2, 3v3]
         replays = ["replays/ssl_1v1.npy", "replays/ssl_2v2.npy", "replays/ssl_3v3.npy"]
-        aerial_replays = ["replays/aerial_ssl_1v1.npy", "replays/aerial_ssl_2v2.npy", "replays/aerial_ssl_3v3.npy"]
-        flip_reset_replays = ["replays/flip_resets_ssl_1v1.npy", "replays/flip_resets_ssl_2v2.npy",
-                              "replays/flip_resets_ssl_3v3.npy"]
-        kickoff_replays = ["replays/kickoff_ssl_1v1.npy", "replays/kickoff_ssl_2v2.npy", "replays/kickoff_ssl_3v3.npy"]
-        ceiling_replays = ["replays/ceiling_ssl_1v1.npy", "replays/ceiling_ssl_2v2.npy", "replays/ceiling_ssl_3v3.npy"]
+        aerial_replays = ["replays/aerial_1v1.npy", "replays/aerial_2v2.npy", "replays/aerial_3v3.npy"]
+        flip_reset_replays = ["replays/flip_resets_1v1.npy", "replays/flip_resets_2v2.npy",
+                              "replays/flip_resets_3v3.npy"]
+        kickoff_replays = ["replays/kickoff_1v1.npy", "replays/kickoff_2v2.npy", "replays/kickoff_3v3.npy"]
+        ceiling_replays = ["replays/ceiling_1v1.npy", "replays/ceiling_2v2.npy", "replays/ceiling_3v3.npy"]
+        air_dribble_replays = ["replays/air_dribble_1v1.npy", "replays/air_dribble_2v2.npy",
+                               "replays/air_dribble_3v3.npy"]
+        team_pinch_replays = ["replays/team_pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
+        pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
         if mode is None or mode == "normal":
             for i in range(3):
                 self.setters.append(
@@ -53,10 +57,22 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(aerial_replays[i])),
                             AugmentSetter(ReplaySetter(flip_reset_replays[i])),
                             AugmentSetter(ReplaySetter(ceiling_replays[i])),
+                            AugmentSetter(ReplaySetter(air_dribble_replays[i])),
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False)),
                         ),
-                        (0.55, 0.15, 0.15, 0.1, 0.05)
+                        (0.25, 0.25, 0.13, 0.20, 0.15, 0.02)
+                    )
+                )
+        elif mode == "pinch":
+            for i in range(3):
+                self.setters.append(
+                    WeightedSampleSetter(
+                        (
+                            AugmentSetter(ReplaySetter(pinch_replays[i])),
+                            AugmentSetter(ReplaySetter(team_pinch_replays[i])),
+                        ),
+                        (0.70, 0.30)
                     )
                 )
 
