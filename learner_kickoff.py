@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "kickoff_run2"
+    run_id = "kickoff_run3"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Opti_Kickoff",
+                        name="Opti_Kickoff-v3",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -76,12 +76,12 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=ZERO_SUM,
                                                               goal_w=3,
                                                               concede_w=-3,
-                                                              velocity_pb_w=0.05,
+                                                              velocity_pb_w=0.03,
                                                               boost_gain_w=0,
                                                               demo_w=0,
                                                               got_demoed_w=0,
                                                               kickoff_w=0.1,
-                                                              ball_opp_half_w=0.05,
+                                                              ball_opp_half_w=0.2,
                                                               kickoff_special_touch_ground_w=-0.01,
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Opti_1663682535.1043937/Opti_40/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1663701597.3340023/Opti_180/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
