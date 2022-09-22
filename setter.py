@@ -46,7 +46,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(kickoff_replays[i])),
                             DefaultState(),
                         ),
-                        (0.5, 0.5)
+                        (0.3, 0.7)
                     )
                 )
         elif mode == "aerial":
