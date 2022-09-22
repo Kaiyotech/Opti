@@ -62,31 +62,36 @@ class KickoffTrainer(TerminalCondition):
             return False
 
 
-class PinchTrainer(TerminalCondition):
+class BallStopped(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
-    def __init__(self, min_time_sec=5, tick_skip=8):
+    def __init__(self, min_time_sec=5, tick_skip=8, max_time_sec=10_000_000):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.steps = 0
-        self.touch_steps = 0
+        self.max_steps = max_time_sec * (120 // tick_skip)
+        # self.touch_steps = 0
 
     def reset(self, initial_state: GameState):
         self.steps = 0
-        self.touch_steps = 10_000_000
+        # self.touch_steps = 10_000_000
         pass
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
-        return True if ball is touching the ground and it has been minimum number of steps
+        return True if ball is touching the ground and stopped and it has been minimum number of steps
         """
         self.steps += 1
-        for player in current_state.players:
-            if player.ball_touched:
-                self.touch_steps = self.steps
-                break
-        if self.steps > self.touch_steps + self.min_steps and current_state.ball.position[2] < (2 * BALL_RADIUS):
+        # for player in current_state.players:
+        #     if player.ball_touched:
+        #         self.touch_steps = self.steps
+        #         break
+        if self.steps > self.max_steps:
+            return True
+        if self.steps > self.min_steps and current_state.ball.position[2] < (2 * BALL_RADIUS) \
+            and current_state.ball.linear_velocity[0] == 0 and current_state.ball.linear_velocity[1] == 0 and \
+                current_state.ball.linear_velocity[2] == 0:
             return True
         else:
             return False

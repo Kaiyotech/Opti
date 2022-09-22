@@ -13,13 +13,13 @@ class CoyoteSetter(DynamicGMSetter):
         self.setters = []  # [1v1, 2v2, 3v3]
         replays = ["replays/ssl_1v1.npy", "replays/ssl_2v2.npy", "replays/ssl_3v3.npy"]
         aerial_replays = ["replays/aerial_1v1.npy", "replays/aerial_2v2.npy", "replays/aerial_3v3.npy"]
-        flip_reset_replays = ["replays/flip_resets_1v1.npy", "replays/flip_resets_2v2.npy",
-                              "replays/flip_resets_3v3.npy"]
+        flip_reset_replays = ["replays/flip_reset_1v1.npy", "replays/flip_reset_2v2.npy",
+                              "replays/flip_reset_3v3.npy"]
         kickoff_replays = ["replays/kickoff_1v1.npy", "replays/kickoff_2v2.npy", "replays/kickoff_3v3.npy"]
         ceiling_replays = ["replays/ceiling_1v1.npy", "replays/ceiling_2v2.npy", "replays/ceiling_3v3.npy"]
         air_dribble_replays = ["replays/air_dribble_1v1.npy", "replays/air_dribble_2v2.npy",
                                "replays/air_dribble_3v3.npy"]
-        team_pinch_replays = ["replays/team_pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
+        team_pinch_replays = ["replays/pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
         pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
         if mode is None or mode == "normal":
             for i in range(3):

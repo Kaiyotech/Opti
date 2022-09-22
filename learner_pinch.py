@@ -61,7 +61,7 @@ if __name__ == "__main__":
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=1)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_pinch.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -77,10 +77,10 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_pinch.ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
-                                                              velocity_pb_w=0.05,
-                                                              velocity_bg_w=0.2,
+                                                              velocity_pb_w=0.025,
+                                                              velocity_bg_w=0.5,
                                                               acel_ball_w=3,
-                                                              punish_low_touch_w=-0.1,  # increase later
+                                                              punish_low_touch_w=0,  # increase later
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,
@@ -128,4 +128,4 @@ if __name__ == "__main__":
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="kickoff_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="pinch_saves")
