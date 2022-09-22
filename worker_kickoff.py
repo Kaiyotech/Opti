@@ -22,12 +22,12 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=ZERO_SUM,
                       goal_w=3,
                       concede_w=-3,
-                      velocity_pb_w=0.03,
+                      velocity_pb_w=0,
                       boost_gain_w=0,
                       demo_w=0,
                       got_demoed_w=0,
-                      kickoff_w=0.1,
-                      ball_opp_half_w=0.2,
+                      kickoff_w=0.2,
+                      ball_opp_half_w=0.15,
                         kickoff_special_touch_ground_w=-0.01,
                         team_spirit=1)
     frame_skip = FRAME_SKIP
