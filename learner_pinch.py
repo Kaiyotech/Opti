@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                                               velocity_pb_w=0.025,
                                                               velocity_bg_w=0.5,
                                                               acel_ball_w=3,
-                                                              punish_low_touch_w=0,  # increase later
+                                                              punish_low_touch_w=-0.1,  # increase later
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,

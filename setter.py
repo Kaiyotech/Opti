@@ -71,8 +71,9 @@ class CoyoteSetter(DynamicGMSetter):
                         (
                             AugmentSetter(ReplaySetter(pinch_replays[i])),
                             AugmentSetter(ReplaySetter(team_pinch_replays[i])),
+                            AugmentSetter(WallDribble(), True, False, False),
                         ),
-                        (0.70, 0.30)
+                        (0.60, 0.20, 0.20)
                     )
                 )
 
