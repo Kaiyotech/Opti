@@ -26,7 +26,10 @@ if __name__ == "__main__":
                         velocity_bg_w=0.5,
                         acel_ball_w=3,
                         punish_low_touch_w=-0.1,  # increase later
-                        team_spirit=1)
+                        team_spirit=1,
+                        cons_air_touches_w=1,
+                        jump_touch_w=1.5,
+                        wall_touch_w=1)
     frame_skip = Constants_pinch.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
