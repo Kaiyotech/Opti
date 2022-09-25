@@ -70,7 +70,7 @@ if __name__ == "__main__":
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(), BallStopped(min_time_sec=1,
                                                                 tick_skip=Constants_pinch.FRAME_SKIP,
-                                                                max_time_sec=10)],
+                                                                max_time_sec=4)],
         reward_function=rew,
         tick_skip=frame_skip,
     )
