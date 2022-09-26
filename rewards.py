@@ -69,6 +69,8 @@ class ZeroSumReward(RewardFunction):
         punish_ceiling_pinch_w=0,
         ball_opp_half_w=0,
         kickoff_special_touch_ground_w=0,
+        kickoff_final_boost_w=0,
+        kickoff_vpb_after_0_w=0,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
         zero_sum=True,
@@ -102,6 +104,8 @@ class ZeroSumReward(RewardFunction):
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
         self.ball_opp_half_w = ball_opp_half_w
         self.kickoff_special_touch_ground_w = kickoff_special_touch_ground_w
+        self.kickoff_final_boost_w = kickoff_final_boost_w
+        self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
         self.rewards = None
         self.current_state = None
         self.last_state = None
@@ -220,6 +224,7 @@ class ZeroSumReward(RewardFunction):
                 vel_bg_reward = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.velocity_bg_w * vel_bg_reward
 
+
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall
             if player.team_num == BLUE_TEAM:
@@ -256,6 +261,8 @@ class ZeroSumReward(RewardFunction):
             norm_vel = vel / CAR_MAX_SPEED
             speed_rew = float(np.dot(norm_pos_diff, norm_vel))
             player_rewards[i] += self.velocity_pb_w * speed_rew
+            if state.ball.position[0] != 0 and state.ball.position[1] != 0:
+                player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
 
             # kickoff reward
             if state.ball.position[0] == 0 and state.ball.position[1] == 0 and \
@@ -339,3 +346,6 @@ class ZeroSumReward(RewardFunction):
         rew = self.rewards[self.n]
         self.n += 1
         return float(rew)
+
+    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
+        return float(player.boost_amount * self.kickoff_final_boost_w)

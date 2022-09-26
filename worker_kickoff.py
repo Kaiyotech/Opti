@@ -29,6 +29,8 @@ if __name__ == "__main__":
                       kickoff_w=0.2,
                       ball_opp_half_w=0.15,
                         kickoff_special_touch_ground_w=0,
+                        kickoff_final_boost_w=2,
+                        kickoff_vpb_after_0_w=0.35,
                         team_spirit=1)
     frame_skip = FRAME_SKIP
     fps = 120 // frame_skip
@@ -70,7 +72,8 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="kickoff"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=team_size),
         action_parser=CoyoteAction(),
-        terminal_conditions=[TimeoutCondition(fps * 30), GoalScoredCondition(), KickoffTrainer(tick_skip=FRAME_SKIP)],
+        terminal_conditions=[TimeoutCondition(fps * 30), GoalScoredCondition(), KickoffTrainer(min_time_sec=1,
+                                                                                               tick_skip=FRAME_SKIP)],
         reward_function=rew,
         tick_skip=frame_skip,
     )
