@@ -84,7 +84,7 @@ if __name__ == "__main__":
                                                               ball_opp_half_w=0.15,
                                                               kickoff_special_touch_ground_w=0,
                                                               kickoff_final_boost_w=3,
-                                                              kickoff_vpb_after_0_w=0.35,
+                                                              kickoff_vpb_after_0_w=0.1,
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,
