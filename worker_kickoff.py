@@ -72,7 +72,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="kickoff"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=FRAME_SKIP, team_size=team_size),
         action_parser=CoyoteAction(),
-        terminal_conditions=[TimeoutCondition(fps * 30), GoalScoredCondition(), KickoffTrainer(min_time_sec=1,
+        terminal_conditions=[TimeoutCondition(fps * 30), GoalScoredCondition(), KickoffTrainer(min_time_sec=2,
                                                                                                tick_skip=FRAME_SKIP)],
         reward_function=rew,
         tick_skip=frame_skip,
