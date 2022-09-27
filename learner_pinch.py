@@ -39,7 +39,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
+        actor_lr=0,
         critic_lr=1e-4,
         n_steps=Constants_pinch.STEP_SIZE,
         batch_size=100_000,
@@ -79,11 +79,11 @@ if __name__ == "__main__":
                                                               concede_w=-10,
                                                               velocity_pb_w=0.025,
                                                               velocity_bg_w=0.5,
-                                                              acel_ball_w=3,
-                                                              punish_low_touch_w=-0.1,  # increase later
+                                                              acel_ball_w=5,
+                                                              punish_low_touch_w=-0.5,  # increase later
                                                               team_spirit=1,
                                                               cons_air_touches_w=1,
-                                                              jump_touch_w=1.5,
+                                                              jump_touch_w=1,
                                                               wall_touch_w=1,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("pinch_saves/Opti_1664165982.0115736/Opti_2070/checkpoint.pt")
+    alg.load("pinch_saves/Opti_1664215027.7179081/Opti_2550/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
+        actor_lr=0,
         critic_lr=1e-4,
         n_steps=STEP_SIZE,
         batch_size=100_000,
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Opti_1664201562.2237294/Opti_1640/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1664218733.7430687/Opti_1800/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
