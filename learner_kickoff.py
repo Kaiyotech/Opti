@@ -39,7 +39,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=0,
+        actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=STEP_SIZE,
         batch_size=100_000,
@@ -77,13 +77,13 @@ if __name__ == "__main__":
                                                               goal_w=3,
                                                               concede_w=-3,
                                                               velocity_pb_w=0,
-                                                              boost_gain_w=1,
+                                                              boost_gain_w=2,
                                                               demo_w=0,
                                                               got_demoed_w=0,
                                                               kickoff_w=0.2,
                                                               ball_opp_half_w=0.15,
                                                               kickoff_special_touch_ground_w=0,
-                                                              kickoff_final_boost_w=3,
+                                                              kickoff_final_boost_w=4,
                                                               kickoff_vpb_after_0_w=0.1,
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Opti_1664218733.7430687/Opti_1800/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1664287999.5503156/Opti_1870/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

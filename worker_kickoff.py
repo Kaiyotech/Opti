@@ -23,13 +23,13 @@ if __name__ == "__main__":
                       goal_w=3,
                       concede_w=-3,
                       velocity_pb_w=0,
-                      boost_gain_w=1,
+                      boost_gain_w=2,
                       demo_w=0,
                       got_demoed_w=0,
                       kickoff_w=0.2,
                       ball_opp_half_w=0.15,
                         kickoff_special_touch_ground_w=0,
-                        kickoff_final_boost_w=3,
+                        kickoff_final_boost_w=4,
                         kickoff_vpb_after_0_w=0.1,
                         team_spirit=1)
     frame_skip = FRAME_SKIP
