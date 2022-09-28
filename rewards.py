@@ -162,15 +162,17 @@ class ZeroSumReward(RewardFunction):
 
             if player.ball_touched:
                 if player.team_num == BLUE_TEAM:
-                    # new blue toucher for aerial touches
+                    # new blue toucher for aerial touches (or kickoff touch)
                     if self.blue_toucher != i or self.orange_touch_timer <= self.blue_touch_timer:
                         self.cons_touches = 0
+                        player_rewards += player.boost_amount * self.kickoff_final_boost_w
                     self.blue_toucher = i
                     self.blue_touch_timer = 0
                     self.blue_touch_height = player.car_data.position[2]
                 else:
                     if self.orange_toucher != i or self.blue_touch_timer <= self.orange_touch_timer:
                         self.cons_touches = 0
+                        player_rewards += player.boost_amount * self.kickoff_final_boost_w
                     self.orange_toucher = i
                     self.orange_touch_timer = 0
                     self.orange_touch_height = player.car_data.position[2]
@@ -346,6 +348,3 @@ class ZeroSumReward(RewardFunction):
         rew = self.rewards[self.n]
         self.n += 1
         return float(rew)
-
-    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
-        return float(player.boost_amount * self.kickoff_final_boost_w)

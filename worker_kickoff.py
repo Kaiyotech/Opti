@@ -29,7 +29,7 @@ if __name__ == "__main__":
                       kickoff_w=0.2,
                       ball_opp_half_w=0.15,
                         kickoff_special_touch_ground_w=0,
-                        kickoff_final_boost_w=4,
+                        kickoff_final_boost_w=2,
                         kickoff_vpb_after_0_w=0.1,
                         team_spirit=1)
     frame_skip = FRAME_SKIP

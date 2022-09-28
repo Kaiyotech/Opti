@@ -83,7 +83,7 @@ if __name__ == "__main__":
                                                               kickoff_w=0.2,
                                                               ball_opp_half_w=0.15,
                                                               kickoff_special_touch_ground_w=0,
-                                                              kickoff_final_boost_w=4,
+                                                              kickoff_final_boost_w=2,
                                                               kickoff_vpb_after_0_w=0.1,
                                                               team_spirit=1),
                                         lambda: CoyoteAction(),
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("kickoff_saves/Opti_1664287999.5503156/Opti_1870/checkpoint.pt")
+    alg.load("kickoff_saves/Opti_1664377236.3197534/Opti_2070/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
