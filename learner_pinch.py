@@ -78,11 +78,11 @@ if __name__ == "__main__":
                                                               goal_w=10,
                                                               concede_w=-10,
                                                               velocity_pb_w=0.025,
-                                                              velocity_bg_w=0.5,
-                                                              acel_ball_w=5,
+                                                              velocity_bg_w=1,
+                                                              acel_ball_w=2.5,
                                                               punish_low_touch_w=-0.5,  # increase later
                                                               team_spirit=1,
-                                                              cons_air_touches_w=1,
+                                                              cons_air_touches_w=0.75,
                                                               jump_touch_w=1,
                                                               wall_touch_w=1,
                                                               ),
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("pinch_saves/Opti_1664311433.96562/Opti_2900/checkpoint.pt")
+    alg.load("pinch_saves/Opti_1664547386.2168088/Opti_4100/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

@@ -2,17 +2,17 @@ import torch
 import os
 
 from rocket_learn.agent.discrete_policy import DiscretePolicy
-from torch.nn import Linear, Sequential, GELU
+from torch.nn import Linear, Sequential, GELU, LeakyReLU
 from rocket_learn.utils.util import SplitLayer
 
 
 # TODO add your network here
 
 
-actor = Sequential(Linear(237, 512), GELU(), Linear(512, 512), GELU(),
-                       Linear(512, 512), GELU(), Linear(512, 512), GELU(), Linear(512, 90))
+actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
 
-actor = DiscretePolicy(actor, (90,))
+actor = DiscretePolicy(actor, (373,))
 
 # PPO REQUIRES AN ACTOR/CRITIC AGENT
 

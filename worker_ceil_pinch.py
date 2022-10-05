@@ -5,32 +5,31 @@ from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import TimeoutCondition,\
-    NoTouchTimeoutCondition, GoalScoredCondition
-from mybots_terminals import KickoffTrainer, BallTouchGroundCondition, BallStopped
+from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition
+from mybots_terminals import BallTouchGroundCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
-from setter import CoyoteSetter
+from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
+from mybots_statesets import WallDribble
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
-import Constants_pinch
+import Constants_ceil_pinch
 import os
 set_num_threads(1)
 
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=Constants_pinch.ZERO_SUM,
-                          goal_w=10,
-                          concede_w=-10,
-                          velocity_pb_w=0.025,
-                          velocity_bg_w=1,
-                          acel_ball_w=2.5,
-                          punish_low_touch_w=-0.5,  # increase later
-                          team_spirit=1,
-                          cons_air_touches_w=0.75,
-                          jump_touch_w=1,
-                          wall_touch_w=1)
-    frame_skip = Constants_pinch.FRAME_SKIP
+    rew = ZeroSumReward(zero_sum=Constants_ceil_pinch.ZERO_SUM,
+                                                              goal_w=10,
+                                                              concede_w=-10,
+                                                              velocity_pb_w=0.025,
+                                                              velocity_bg_w=1,
+                                                              acel_ball_w=2,
+                                                              team_spirit=0,
+                                                              cons_air_touches_w=0.25,
+                                                              jump_touch_w=0.5,
+                                                              wall_touch_w=0.5)
+    frame_skip = Constants_ceil_pinch.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -67,15 +66,14 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="pinch"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_pinch.FRAME_SKIP, team_size=team_size,
+        state_setter=AugmentSetter(WallDribble(), True, False, False),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_ceil_pinch.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             BallStopped(min_time_sec=1, tick_skip=Constants_pinch.FRAME_SKIP, max_time_sec=900),
-                             BallTouchGroundCondition(min_time_sec=5,
-                                                      tick_skip=Constants_pinch.FRAME_SKIP,
-                                                      time_after_ground_sec=3),
+                             BallTouchGroundCondition(min_time_sec=0,
+                                                      tick_skip=Constants_ceil_pinch.FRAME_SKIP,
+                                                      time_after_ground_sec=1),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -86,7 +84,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_pinch.DB_NUM,
+                  db=Constants_ceil_pinch.DB_NUM,
                   )
 
     # remote Redis
@@ -97,7 +95,7 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=Constants_pinch.DB_NUM,
+                  db=Constants_ceil_pinch.DB_NUM,
                   )
 
     RedisRolloutWorker(r, name, match,
@@ -109,11 +107,11 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.2, '2v2': 0.4, '3v3': 0.4},  # default 1/3
+                       gamemode_weights={'1v1': 0.8, '2v2': 0.1, '3v3': 0.1},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
                        # testing
                        batch_mode=True,
-                       step_size=Constants_pinch.STEP_SIZE,
+                       step_size=Constants_ceil_pinch.STEP_SIZE,
                        ).run()
