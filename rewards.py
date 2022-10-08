@@ -71,6 +71,8 @@ class ZeroSumReward(RewardFunction):
         kickoff_special_touch_ground_w=0,
         kickoff_final_boost_w=0,
         kickoff_vpb_after_0_w=0,
+        goal_speed_exp=1,
+        touch_height_exp=1,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
         zero_sum=True,
@@ -106,6 +108,8 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_special_touch_ground_w = kickoff_special_touch_ground_w
         self.kickoff_final_boost_w = kickoff_final_boost_w
         self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
+        self.goal_speed_exp = goal_speed_exp
+        self.touch_height_exp = touch_height_exp
         self.rewards = None
         self.current_state = None
         self.last_state = None
@@ -187,7 +191,7 @@ class ZeroSumReward(RewardFunction):
                 max_height = CEILING_Z - BALL_RADIUS
                 rnge = max_height - min_height
                 if not player.on_ground and state.ball.position[2] > min_height:
-                    player_rewards[i] += self.jump_touch_w * (state.ball.position[2] - min_height) / rnge
+                    player_rewards[i] += self.jump_touch_w * ((state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
 
                 # wall touch
                 min_height = 350
@@ -287,7 +291,7 @@ class ZeroSumReward(RewardFunction):
             d_blue = state.blue_score - self.last_state.blue_score
             d_orange = state.orange_score - self.last_state.orange_score
             if d_blue > 0:
-                goal_speed = norm(self.last_state.ball.linear_velocity)
+                goal_speed = norm(self.last_state.ball.linear_velocity) ** self.goal_speed_exp
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
@@ -301,7 +305,7 @@ class ZeroSumReward(RewardFunction):
                 player_rewards[mid:] += self.concede_w
 
             if d_orange > 0:
-                goal_speed = norm(self.last_state.ball.linear_velocity)
+                goal_speed = norm(self.last_state.ball.linear_velocity)  ** self.goal_speed_exp
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward

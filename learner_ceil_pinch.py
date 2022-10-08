@@ -81,9 +81,11 @@ if __name__ == "__main__":
                                                               velocity_bg_w=1,
                                                               acel_ball_w=2,
                                                               team_spirit=0,
-                                                              cons_air_touches_w=0.25,
+                                                              cons_air_touches_w=0.4,
                                                               jump_touch_w=0.5,
                                                               wall_touch_w=0.5,
+                                                              goal_speed_exp=1.3,
+                                                              touch_height_exp=1.3
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every,

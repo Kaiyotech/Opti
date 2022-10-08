@@ -91,6 +91,12 @@ class GroundAirDribble(StateSetter):
 
 
 class WallDribble(StateSetter):
+    def __init__(
+            self,
+            max_rand_z=500,
+    ):
+        self.rand_z_max = max_rand_z
+
     def reset(self, state_wrapper: StateWrapper):
         rng = np.random.default_rng()
         # Set up our desired spawn location and orientation for car0 - special one on wall
@@ -114,7 +120,7 @@ class WallDribble(StateSetter):
         x_choice = rand.choice([0, 2]) - 1
         rand_x = x_choice * (SIDE_WALL_X - 17)
         rand_y = rng.uniform(-BACK_WALL_Y + 1300, BACK_WALL_Y - 1300)
-        rand_z = rng.uniform(100, 500)
+        rand_z = rng.uniform(100, self.rand_z_max)
         desired_car_pos = [rand_x, rand_y, rand_z]  # x, y, z
         desired_pitch = (90 + orange_fix * (rng.uniform(-20, -5))) * DEG_TO_RAD
         desired_yaw = 90 * DEG_TO_RAD

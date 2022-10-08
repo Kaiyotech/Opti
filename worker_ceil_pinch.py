@@ -26,9 +26,11 @@ if __name__ == "__main__":
                                                               velocity_bg_w=1,
                                                               acel_ball_w=2,
                                                               team_spirit=0,
-                                                              cons_air_touches_w=0.25,
+                                                              cons_air_touches_w=0.4,
                                                               jump_touch_w=0.5,
-                                                              wall_touch_w=0.5)
+                                                              wall_touch_w=0.5,
+                                                              goal_speed_exp=1.3,
+                                                              touch_height_exp=1.3)
     frame_skip = Constants_ceil_pinch.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -66,7 +68,7 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=AugmentSetter(WallDribble(), True, False, False),
+        state_setter=AugmentSetter(WallDribble(max_rand_z=1200), True, False, False),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_ceil_pinch.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False),
         action_parser=CoyoteAction(),
