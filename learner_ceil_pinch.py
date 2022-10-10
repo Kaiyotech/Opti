@@ -75,14 +75,16 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_ceil_pinch.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_ceil_pinch.ZERO_SUM,
-                                                              goal_w=10,
+                                                              goal_w=0,
+                                                              aerial_goal_w=10,
+                                                              double_tap_w=20,
                                                               concede_w=-10,
                                                               velocity_pb_w=0.025,
                                                               velocity_bg_w=1,
                                                               acel_ball_w=2,
                                                               team_spirit=0,
-                                                              cons_air_touches_w=0.4,
-                                                              jump_touch_w=0.5,
+                                                              cons_air_touches_w=3,
+                                                              jump_touch_w=1,
                                                               wall_touch_w=0.5,
                                                               goal_speed_exp=1.3,
                                                               touch_height_exp=1.3
@@ -129,7 +131,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("pinch_saves/Opti_1664547386.2168088/Opti_4100/checkpoint.pt")
+    alg.load("ceil_pinch_saves/Opti_1665202459.2035518/Opti_1580/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

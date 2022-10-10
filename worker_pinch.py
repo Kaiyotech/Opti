@@ -21,6 +21,8 @@ set_num_threads(1)
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_pinch.ZERO_SUM,
                           goal_w=10,
+                        aerial_goal_w=5,
+                        double_tap_w=20,
                           concede_w=-10,
                           velocity_pb_w=0.025,
                           velocity_bg_w=1,

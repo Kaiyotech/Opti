@@ -76,6 +76,8 @@ if __name__ == "__main__":
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_pinch.ZERO_SUM,
                                                               goal_w=10,
+                                                              aerial_goal_w=5,
+                                                              double_tap_w=20,
                                                               concede_w=-10,
                                                               velocity_pb_w=0.025,
                                                               velocity_bg_w=1,
@@ -128,7 +130,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("pinch_saves/Opti_1664717622.8871117/Opti_5250/checkpoint.pt")
+    alg.load("pinch_saves/Opti_1664986495.3918428/Opti_6930/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
