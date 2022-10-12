@@ -90,7 +90,7 @@ if __name__ == "__main__":
                                                               touch_height_exp=1.3
                                                               ),
                                         lambda: CoyoteAction(),
-                                        save_every=logger.config.save_every,
+                                        save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
                                         logger=logger,
                                         clear=False,

@@ -129,7 +129,7 @@ class WallDribble(StateSetter):
 
         car_attack.set_pos(*desired_car_pos)
         car_attack.set_rot(*desired_rotation)
-        car_attack.boost = 100
+        car_attack.boost = rand.uniform(0.3, 1.0)
 
         car_attack.set_lin_vel(0, orange_fix * 200 * x_choice, rng.uniform(1375, 1425))
         car_attack.set_ang_vel(0, 0, 0)

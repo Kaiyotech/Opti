@@ -105,7 +105,7 @@ if __name__ == "__main__":
                        past_version_prob=past_version_prob,
                        sigma_target=2,
                        evaluation_prob=evaluation_prob,
-                       force_paging=True,
+                       force_paging=False,
                        dynamic_gm=dynamic_game,
                        send_obs=True,
                        auto_minimize=auto_minimize,
