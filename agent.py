@@ -4,6 +4,9 @@ from torch.nn import Linear
 from torch import nn
 import torch as th
 from typing import Tuple
+import numpy as np
+import torch.nn.functional as F
+from torch.distributions import Categorical
 
 
 class ActorCriticEmbedderAgent(ActorCriticAgent):
@@ -30,3 +33,28 @@ class DiscreteEmbed(DiscretePolicy):
         new_obs.extend(th.max(embedded, -2))
         logits = self.net(new_obs)
         return logits
+
+    def get_action_distribution(self, obs):
+        if isinstance(obs, np.ndarray):
+            obs = th.from_numpy(obs).float()
+        elif isinstance(obs, tuple):
+            obs = tuple(o if isinstance(o, th.Tensor) else th.from_numpy(o).float() for o in obs)
+
+
+        logits = self(obs)
+
+        if isinstance(logits, th.Tensor):
+            logits = (logits,)
+
+        max_shape = max(self.shape)
+        logits = th.stack(
+            [
+                l
+                if l.shape[-1] == max_shape
+                else F.pad(l, pad=(0, max_shape - l.shape[-1]), value=float("-inf"))
+                for l in logits
+            ],
+            dim=1
+        )
+
+        return Categorical(logits=logits)
