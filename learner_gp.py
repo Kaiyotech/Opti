@@ -5,8 +5,8 @@ from torch.nn import Linear, Sequential, LeakyReLU, Embedding
 
 from redis import Redis
 # from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import ActorCriticEmbedderAgent
-from rocket_learn.agent.discrete_policy import DiscretePolicy
+from agent import ActorCriticEmbedderAgent, DiscreteEmbed
+# from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from CoyoteObs import CoyoteObsBuilder
@@ -104,16 +104,16 @@ if __name__ == "__main__":
     critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
     actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                        Linear(512, 373))
 
-    actor = DiscretePolicy(actor, (373,))
+    embedder = Linear(35, 35 * 5)
 
-    embedder = Linear(35, 35*5)
+    actor = DiscreteEmbed(actor, shape=(373,), embedder=Linear(35, 35*5))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
