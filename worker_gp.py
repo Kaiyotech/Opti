@@ -71,7 +71,7 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=CoyoteSetter(mode="normal"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=False),
+                                     extra_boost_info=True, embed_players=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,

@@ -10,7 +10,9 @@ from collections.abc import Iterable
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
-    def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True):
+    def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
+                 embed_players=False,
+                 ):
         super().__init__()
         self.expanding = expanding
         self.extra_boost_info = extra_boost_info
@@ -35,6 +37,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.generic_obs = None
         self.blue_obs = None
         self.orange_obs = None
+        self.embed_players = embed_players
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -185,7 +188,7 @@ class CoyoteObsBuilder(ObsBuilder):
 
             if p.team_num == player.team_num and a_count < a_max:
                 a_count += 1
-            elif p.team_num == 1 and o_count < o_max:
+            elif o_count < o_max:
                 o_count += 1
             else:
                 continue
@@ -197,15 +200,15 @@ class CoyoteObsBuilder(ObsBuilder):
                 opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                         p.inverted_car_data if inverted else p.car_data, p, ball,
                                                         p.team_num == player.team_num))
+        if not self.embed_players:
+            for _ in range(a_max - a_count):
+                allies.append(self.dummy_player)
 
-        for _ in range(a_max - a_count):
-            allies.append(self.dummy_player)
+            for _ in range(o_max - o_count):
+                opponents.append(self.dummy_player)
 
-        for _ in range(o_max - o_count):
-            opponents.append(self.dummy_player)
-
-        random.shuffle(allies)
-        random.shuffle(opponents)
+            random.shuffle(allies)
+            random.shuffle(opponents)
 
         obs.extend(allies)
         obs.extend(opponents)
@@ -226,8 +229,9 @@ class CoyoteObsBuilder(ObsBuilder):
         player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
-        for p in players_data:
-            obs.extend(p)
+        if not self.embed_players:
+            for p in players_data:
+                obs.extend(p)
         # this adds boost timers and direction/distance to all boosts
         # unnecessary if only doing aerial stuff
         if self.extra_boost_info:
@@ -236,9 +240,14 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 obs.extend(self.blue_obs)
             self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
-        if self.expanding:
+        if self.expanding and not self.embed_players:
             return np.expand_dims(obs, 0)
-        return obs
+        elif self.expanding and self.embed_players:
+            return np.expand_dims(obs, 0), players_data
+        elif not self.expanding and not self.embed_players:
+            return obs
+        else:
+            return obs, players_data
 
 
 if __name__ == "__main__":

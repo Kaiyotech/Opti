@@ -1,10 +1,11 @@
 import wandb
 import torch.jit
 
-from torch.nn import Linear, Sequential, LeakyReLU
+from torch.nn import Linear, Sequential, LeakyReLU, Embedding
 
 from redis import Redis
-from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
+# from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
+from agent import ActorCriticEmbedderAgent
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
+        embedder_lr=1e-4,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
@@ -73,7 +75,7 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Opti_GP",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False),
+                                                                 team_size=3, extra_boost_info=True, embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
                                                               goal_w=0,
                                                               aerial_goal_w=5,
@@ -99,21 +101,27 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                        Linear(512, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
+    embedder = Linear(35, 35*5)
+
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
-        {"params": critic.parameters(), "lr": logger.config.critic_lr}
+        {"params": critic.parameters(), "lr": logger.config.critic_lr},
+        {"params": embedder.parameters(), "lr": logger.config.embedder_lr},
     ])
 
-    agent = ActorCriticAgent(actor=actor, critic=critic, optimizer=optim)
+    agent = ActorCriticEmbedderAgent(actor=actor, critic=critic, embedder=embedder, optimizer=optim)
     print(f"Gamma is: {gamma}")
     count_parameters(agent)
 
