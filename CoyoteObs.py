@@ -185,7 +185,7 @@ class CoyoteObsBuilder(ObsBuilder):
 
             if p.team_num == player.team_num and a_count < a_max:
                 a_count += 1
-            elif p.team_num == 1 and o_count < o_max:
+            elif o_count < o_max:
                 o_count += 1
             else:
                 continue
