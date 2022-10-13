@@ -79,14 +79,14 @@ if __name__ == "__main__":
                                                               aerial_goal_w=5,
                                                               double_tap_w=10,
                                                               flip_reset_w=5,
-                                                              flip_reset_goal_w=10,
+                                                              flip_reset_goal_w=20,
                                                               punish_ceiling_pinch_w=0,
                                                               concede_w=-10,
                                                               velocity_bg_w=0.25,
                                                               acel_ball_w=1,
                                                               team_spirit=0,
-                                                              cons_air_touches_w=1,
-                                                              jump_touch_w=0.5,
+                                                              cons_air_touches_w=0.1,
+                                                              jump_touch_w=0.2,
                                                               wall_touch_w=0.5,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("aerial_saves/Opti_1665461937.5795825/Opti_340/checkpoint.pt")
+    alg.load("aerial_saves/Opti_1665543656.1286917/Opti_670/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

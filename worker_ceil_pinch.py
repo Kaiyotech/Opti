@@ -25,13 +25,13 @@ if __name__ == "__main__":
                                                               double_tap_w=20,
                                                               concede_w=-10,
                                                               velocity_pb_w=0.025,
-                                                              velocity_bg_w=1,
+                                                              velocity_bg_w=2,
                                                               acel_ball_w=2,
                                                               team_spirit=0,
                                                               cons_air_touches_w=3,
                                                               jump_touch_w=1,
                                                               wall_touch_w=0.5,
-                                                              goal_speed_exp=1.3,
+                                                              goal_speed_exp=1.75,
                                                               touch_height_exp=1.3)
     frame_skip = Constants_ceil_pinch.FRAME_SKIP
     fps = 120 // frame_skip
