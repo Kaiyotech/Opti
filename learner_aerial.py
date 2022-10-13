@@ -131,7 +131,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("aerial_saves/Opti_1665543656.1286917/Opti_670/checkpoint.pt")
+    alg.load("aerial_saves/Opti_1665659381.4329824/Opti_810/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
