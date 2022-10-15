@@ -106,7 +106,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 1, '2v2': 0, '3v3': 0},
+                       gamemode_weights={'1v1': 0.8, '2v2': 0.1, '3v3': 0.1},
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
