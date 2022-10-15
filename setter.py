@@ -61,7 +61,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False)),
                         ),
-                        (0.05, 0.30, 0.20, 0.29, 0.15, 0.01)
+                        (0.05, 0.32, 0.20, 0.32, 0.10, 0.01)
                     )
                 )
         elif mode == "pinch":
