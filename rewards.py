@@ -149,7 +149,7 @@ class ZeroSumReward(RewardFunction):
                 self.floor_bounce = True
             elif 0.55 * self.last_state.ball.linear_velocity[1] < state.ball.linear_velocity[1] > 0.65 * \
                     self.last_state.ball.linear_velocity[1] and \
-                    state.ball.position[1] > 4900 and state.ball.position[2] > 500:
+                    abs(state.ball.position[1]) > 4900 and state.ball.position[2] > 500:
                 self.backboard_bounce = True
             # for aerial
             # player who last touched is now on the ground, don't allow jumping back up to continue "dribble"

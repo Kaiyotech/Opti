@@ -21,6 +21,8 @@ class CoyoteSetter(DynamicGMSetter):
                                "replays/air_dribble_3v3.npy"]
         team_pinch_replays = ["replays/pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
         pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
+        double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy"]
+
         if mode is None or mode == "normal":
             for i in range(3):
                 self.setters.append(
@@ -60,8 +62,9 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True)),
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False)),
+                            AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True)),
                         ),
-                        (0.05, 0.32, 0.20, 0.32, 0.10, 0.01)
+                        (0.05, 0.30, 0.20, 0.20, 0.10, 0.01, 0.14)
                     )
                 )
         elif mode == "pinch":
