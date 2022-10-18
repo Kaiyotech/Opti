@@ -57,12 +57,12 @@ class CoyoteSetter(DynamicGMSetter):
                     WeightedSampleSetter(
                         (
                             AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1)),
                             AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True)),
                             AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True)),
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False)),
-                            AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1)),
                         ),
                         (0.05, 0.30, 0.20, 0.20, 0.10, 0.01, 0.14)
                     )
