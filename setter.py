@@ -5,7 +5,7 @@ from rlgym_tools.extra_state_setters.replay_setter import ReplaySetter
 from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampleSetter
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 from rlgym.utils.state_setters.random_state import RandomState
-from mybots_statesets import GroundAirDribble, WallDribble
+from mybots_statesets import GroundAirDribble, WallDribble, FlickSetter
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -76,8 +76,13 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True)),
                             AugmentSetter(WallDribble(), True, False, False),
                         ),
-                        (0.65, 0.10, 0.25)
+                        (0.85, 0.15, 0)
                     )
+                )
+        elif mode == "flick":
+            for i in range(3):
+                self.setters.append(
+                    AugmentSetter(FlickSetter(), True, False, False)
                 )
 
     def reset(self, state_wrapper: StateWrapper):

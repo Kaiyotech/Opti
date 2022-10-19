@@ -50,6 +50,9 @@ class CoyoteAction(ActionParser):
         # strip out fillers, pass through 8sets, get look up table values, recombine
         parsed_actions = []
         for action in actions:
+            # test
+            # parsed_actions.append([0, 0, 0, 0, 0, 0, 0, 0])
+            # continue
             # support reconstruction
             if action.size != 8:
                 if action.shape == 0:

@@ -8,13 +8,14 @@ class BallTouchGroundCondition(TerminalCondition):
     A condition that will terminate an episode after ball touches ground
     """
 
-    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0):
+    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.steps = 0
         self.steps_after_ground = time_after_ground_sec * (120 // tick_skip)
         self.touch_time = 0
         self.touched = False
+        self.min_height = min_height
 
     def reset(self, initial_state: GameState):
         self.steps = 0
@@ -27,11 +28,11 @@ class BallTouchGroundCondition(TerminalCondition):
         of seconds since the ball first touched the ground.
         """
         self.steps += 1
-        if not self.touched and current_state.ball.position[2] < (2 * BALL_RADIUS):
+        if not self.touched and current_state.ball.position[2] < self.min_height:
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
-            return current_state.ball.position[2] < (2 * BALL_RADIUS)
+            return current_state.ball.position[2] < self.min_height
         else:
             return False
 

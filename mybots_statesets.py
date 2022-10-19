@@ -78,14 +78,14 @@ class GroundAirDribble(StateSetter):
 
             # put the defense car in front of ball to block a ground shot, try to force aerial pop
             elif car.id == car_defend.id:
-                car.set_pos(ball_x, orange_fix * rng.uniform(3800, 5000), 0)
+                car.set_pos(ball_x, orange_fix * rng.uniform(3800, 5000), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
                 continue
 
             # rest of the cars are random
             else:
-                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 0)
+                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
 
@@ -153,14 +153,14 @@ class WallDribble(StateSetter):
 
             # put the defense car in front of net
             elif car.id == car_defend.id:
-                car.set_pos(rng.uniform(-1600, 1600), orange_fix * rng.uniform(3800, 5000), 0)
+                car.set_pos(rng.uniform(-1600, 1600), orange_fix * rng.uniform(3800, 5000), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
                 continue
 
             # rest of the cars are random
             else:
-                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 0)
+                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
 
@@ -221,13 +221,79 @@ class AirDrag(StateSetter):
 
             # put the defense car in front of net
             elif car.id == car_defend.id:
-                car.set_pos(rng.uniform(-1600, 1600), orange_fix * rng.uniform(3800, 5000), 0)
+                car.set_pos(rng.uniform(-1600, 1600), orange_fix * rng.uniform(3800, 5000), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
                 continue
 
             # rest of the cars are random
             else:
-                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 0)
+                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
+                car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
+                car.boost = 0.33
+
+
+class FlickSetter(StateSetter):
+    def reset(self, state_wrapper: StateWrapper):
+        rng = np.random.default_rng()
+
+        car_attack = state_wrapper.cars[0]
+        car_defend = None
+        for car_y in state_wrapper.cars:
+            if car_y.team_num == ORANGE_TEAM:
+                car_defend = car_y
+        orange_fix = 1
+        if rand.choice([0, 1]) and len(state_wrapper.cars) > 1:
+            for car_i in state_wrapper.cars:
+                if car_i.team_num == ORANGE_TEAM:
+                    car_attack = car_i
+                    car_defend = state_wrapper.cars[0]  # blue is always 0
+                    orange_fix = -1
+                    continue
+
+        x_choice = rand.choice([0, 2]) - 1
+
+        rand_x = int(x_choice * rng.uniform(0, 3000))
+        rand_y = int(rng.uniform(-2000, 2000))
+        rand_z = 19
+        rand_x_vel = rng.uniform(0, 250)
+        rand_y_vel = rng.uniform(0, 2000)
+        desired_car_pos = [rand_x, rand_y, rand_z]  # x, y, z
+        desired_yaw = (orange_fix * 90 + x_choice * orange_fix * (rng.uniform(5, 15))) * DEG_TO_RAD
+        desired_pitch = 0
+        desired_roll = 0
+        desired_rotation = [desired_pitch, desired_yaw, desired_roll]
+
+        car_attack.set_pos(*desired_car_pos)
+        car_attack.set_rot(*desired_rotation)
+        car_attack.boost = rand.uniform(0, 1)
+        desired_car_vel = [rand_x_vel * x_choice, rand_y_vel * orange_fix, 0]
+        car_attack.set_lin_vel(*desired_car_vel)
+        car_attack.set_ang_vel(0, 0, 0)
+
+        # put ball on top of car, slight random perturbations
+        desired_ball_pos = [0, 0, 0]
+        desired_ball_pos[0] = desired_car_pos[0] + rng.uniform(-5, 5)
+        desired_ball_pos[1] = desired_car_pos[1] + rng.uniform(-5, 5) + orange_fix * 10
+        desired_ball_pos[2] = 150 + rng.uniform(-10, 20)
+        state_wrapper.ball.set_pos(*desired_ball_pos)
+        state_wrapper.ball.set_lin_vel(*desired_car_vel)
+        state_wrapper.ball.set_ang_vel(rng.uniform(-2, 2), rng.uniform(-2, 2), rng.uniform(-2, 2))
+
+        # Loop over every car in the game, skipping 1 since we already did it
+        for car in state_wrapper.cars:
+            if car.id == car_attack.id:
+                pass
+
+            # put the defense car in front of goal
+            elif car.id == car_defend.id:
+                car.set_pos(rng.uniform(-1600, 1600), orange_fix * rng.uniform(3800, 5000), 17)
+                car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
+                car.boost = 0.33
+                continue
+
+            # rest of the cars are random
+            else:
+                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
