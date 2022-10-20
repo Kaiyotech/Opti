@@ -104,3 +104,43 @@ class BallStopped(TerminalCondition):
             return True
         else:
             return False
+
+
+class PlayerTwoTouch(TerminalCondition):
+    """
+    A condition that triggers after ball touches ground after min_time_sec after first touch
+    """
+    def __init__(self, time_to_arm=0.25, tick_skip=8):
+        super().__init__()
+        self.time_to_arm_steps = time_to_arm * (120 // tick_skip)
+        self.steps = 0
+        self.toucher = -1
+        self.touched = False
+        self.no_touch_steps = 0
+
+    def reset(self, initial_state: GameState):
+        self.steps = 0
+        self.toucher = -1
+        self.touched = False
+        self.no_touch_steps = 10_000_000
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        """
+        return True if first player to touch the ball stops touching it for time_to_arm seconds and then touches again
+        """
+        self.steps += 1
+        if not self.touched:
+            for player in current_state.players:
+                if player.ball_touched:
+                    self.toucher = player.car_id
+                    self.touched = True
+                    return False
+        else:
+            if not current_state.players[self.toucher].ball_touched:
+                self.no_touch_steps = self.steps
+            elif (self.steps > self.no_touch_steps + self.time_to_arm_steps) and \
+                    current_state.players[self.toucher].ball_touched:
+                return True
+            elif current_state.players[self.toucher].ball_touched:
+                self.no_touch_steps = 10_000_000
+        return False

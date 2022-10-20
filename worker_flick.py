@@ -6,7 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition
-from mybots_terminals import BallTouchGroundCondition
+from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
@@ -68,8 +68,9 @@ if __name__ == "__main__":
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flick.FRAME_SKIP,
-                                                      time_after_ground_sec=0,
-                                                      min_height=110),
+                                                      time_after_ground_sec=1,
+                                                      min_height=94),
+                             PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
