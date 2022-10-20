@@ -79,7 +79,8 @@ if __name__ == "__main__":
                                                               concede_w=-5,
                                                               velocity_bg_w=0.25,
                                                               acel_ball_w=1.5,
-                                                              team_spirit=0,
+                                                              team_spirit=0.25,
+                                                              goal_speed_exp=1.3,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -91,11 +92,11 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 256), LeakyReLU(),
+    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 256),  LeakyReLU(),
+    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256),  LeakyReLU(),
                        Linear(256, 256), LeakyReLU(),
                        Linear(256, 373))
 

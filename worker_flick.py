@@ -14,16 +14,17 @@ from torch import set_num_threads
 from setter import CoyoteSetter
 import Constants_flick
 import os
-set_num_threads(1)
 
+set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
-                                                              goal_w=5,
-                                                              concede_w=-5,
-                                                              velocity_bg_w=0.25,
-                                                              acel_ball_w=1.5,
-                                                              team_spirit=0,)
+                        goal_w=5,
+                        concede_w=-5,
+                        velocity_bg_w=0.25,
+                        acel_ball_w=1.5,
+                        team_spirit=0.25,
+                        goal_speed_exp=1.3, )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
