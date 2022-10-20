@@ -22,6 +22,8 @@ class CoyoteSetter(DynamicGMSetter):
         team_pinch_replays = ["replays/pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
         pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
         double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy"]
+        ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
+                               "replays/ground_dribble_3v3.npy"]
 
         if mode is None or mode == "normal":
             for i in range(3):
@@ -79,10 +81,15 @@ class CoyoteSetter(DynamicGMSetter):
                         (0.85, 0.15, 0)
                     )
                 )
+        # elif mode == "flick":
+        #     for i in range(3):
+        #         self.setters.append(
+        #             AugmentSetter(FlickSetter(), True, False, False)
+        #         )
         elif mode == "flick":
             for i in range(3):
                 self.setters.append(
-                    AugmentSetter(FlickSetter(), True, False, False)
+                            AugmentSetter(ReplaySetter(ground_dribble_replays[i], random_boost=True))
                 )
 
     def reset(self, state_wrapper: StateWrapper):
