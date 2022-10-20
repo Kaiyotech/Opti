@@ -51,6 +51,7 @@ if __name__ == "__main__":
         # minibatch_size=50_000,
         n_steps = 10_000,
         batch_size = 10_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -109,18 +110,25 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    embedder = Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5))
 
-    critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
 
-    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+    # critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 1))
+    #
+    # actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+    #                    LeakyReLU(),
+    #                    Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                    Linear(512, 373))
+
+    critic = Sequential(Linear(426, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 1))
+
+    actor = Sequential(Linear(426, 256), LeakyReLU(), Linear(256, 256),
                        LeakyReLU(),
-                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
+                       Linear(256, 373))
 
     critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
 
