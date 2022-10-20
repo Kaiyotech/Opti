@@ -76,9 +76,7 @@ class Opti(nn.Module):  # takes an embedder and a network and runs the embedder 
 
     def forward(self, inp: tuple):
         main, cars = inp
-        result = self.embedder(cars)
-        # if isinstance(result, tuple):
-        #     result, weights = result
-        full_obs = th.cat((main, result), dim=1)
-        result = self.net(full_obs)
+        shaped_cars = th.reshape(cars, (len(main), 5, len(cars[0])))
+        out = th.max(self.embedder(shaped_cars), -2)[0]
+        result = self.net(th.cat((main, out), dim=1))
         return result

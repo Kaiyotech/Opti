@@ -200,13 +200,14 @@ class CoyoteObsBuilder(ObsBuilder):
                 opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                         p.inverted_car_data if inverted else p.car_data, p, ball,
                                                         p.team_num == player.team_num))
+
+        for _ in range(a_max - a_count):
+            allies.append(self.dummy_player)
+
+        for _ in range(o_max - o_count):
+            opponents.append(self.dummy_player)
+
         if not self.embed_players:
-            for _ in range(a_max - a_count):
-                allies.append(self.dummy_player)
-
-            for _ in range(o_max - o_count):
-                opponents.append(self.dummy_player)
-
             random.shuffle(allies)
             random.shuffle(opponents)
 

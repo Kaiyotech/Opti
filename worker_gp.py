@@ -14,25 +14,29 @@ from torch import set_num_threads
 from setter import CoyoteSetter
 import Constants_gp
 import os
+from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
+from rlgym.utils.reward_functions.combined_reward import CombinedReward
 set_num_threads(1)
 
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                                                              goal_w=0,
-                                                              aerial_goal_w=5,
-                                                              double_tap_w=10,
-                                                              flip_reset_w=5,
-                                                              flip_reset_goal_w=10,
-                                                              punish_ceiling_pinch_w=-2,
-                                                              concede_w=-10,
-                                                              velocity_bg_w=0.25,
-                                                              acel_ball_w=1,
-                                                              team_spirit=0,
-                                                              cons_air_touches_w=2,
-                                                              jump_touch_w=1,
-                                                              wall_touch_w=0.5)
-    frame_skip = Constants_gp.FRAME_SKIP
+    # rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
+    #                                                           goal_w=0,
+    #                                                           aerial_goal_w=5,
+    #                                                           double_tap_w=10,
+    #                                                           flip_reset_w=5,
+    #                                                           flip_reset_goal_w=10,
+    #                                                           punish_ceiling_pinch_w=-2,
+    #                                                           concede_w=-10,
+    #                                                           velocity_bg_w=0.25,
+    #                                                           acel_ball_w=1,
+    #                                                           team_spirit=0,
+    #                                                           cons_air_touches_w=2,
+    #                                                           jump_touch_w=1,
+    #                                                           wall_touch_w=0.5)
+    rew = CombinedReward((EventReward(demo=5), VelocityReward()),(1, 0.01))
+    # frame_skip = Constants_gp.FRAME_SKIP
+    frame_skip = 8
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False

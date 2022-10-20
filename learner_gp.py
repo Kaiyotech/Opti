@@ -23,6 +23,8 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
+from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
+from rlgym.utils.reward_functions.combined_reward import CombinedReward
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -35,7 +37,8 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_gp.FRAME_SKIP
+    # frame_skip = Constants_gp.FRAME_SKIP
+    frame_skip = 8
     half_life_seconds = Constants_gp.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
@@ -43,9 +46,11 @@ if __name__ == "__main__":
         actor_lr=1e-4,
         critic_lr=1e-4,
         # embedder_lr=1e-4,
-        n_steps=Constants_gp.STEP_SIZE,
-        batch_size=100_000,
-        minibatch_size=50_000,
+        # n_steps=Constants_gp.STEP_SIZE,
+        # batch_size=100_000,
+        # minibatch_size=50_000,
+        n_steps = 10_000,
+        batch_size = 10_000,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -53,10 +58,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run1"
+    run_id = "TESTgp_run1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run1",
+                        name="TESTGP_Run1",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -78,21 +83,22 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=True,
                                                                  embed_players=True),
-                                        lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                                                              goal_w=0,
-                                                              aerial_goal_w=5,
-                                                              double_tap_w=10,
-                                                              flip_reset_w=5,
-                                                              flip_reset_goal_w=10,
-                                                              punish_ceiling_pinch_w=-2,
-                                                              concede_w=-10,
-                                                              velocity_bg_w=0.25,
-                                                              acel_ball_w=1,
-                                                              team_spirit=0,
-                                                              cons_air_touches_w=2,
-                                                              jump_touch_w=1,
-                                                              wall_touch_w=0.5,
-                                                              ),
+                                        # lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
+                                        #                       goal_w=0,
+                                        #                       aerial_goal_w=5,
+                                        #                       double_tap_w=10,
+                                        #                       flip_reset_w=5,
+                                        #                       flip_reset_goal_w=10,
+                                        #                       punish_ceiling_pinch_w=-2,
+                                        #                       concede_w=-10,
+                                        #                       velocity_bg_w=0.25,
+                                        #                       acel_ball_w=1,
+                                        #                       team_spirit=0,
+                                        #                       cons_air_touches_w=2,
+                                        #                       jump_touch_w=1,
+                                        #                       wall_touch_w=0.5,
+                                        #                       ),
+                                        lambda : CombinedReward((EventReward(demo=5), VelocityReward()),(1, 0.01)),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
