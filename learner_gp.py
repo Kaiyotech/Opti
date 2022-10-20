@@ -4,9 +4,9 @@ import torch.jit
 from torch.nn import Linear, Sequential, LeakyReLU, Embedding
 
 from redis import Redis
-# from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import ActorCriticEmbedderAgent, DiscreteEmbed
-# from rocket_learn.agent.discrete_policy import DiscretePolicy
+from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
+from agent import ActorCriticEmbedderAgent, DiscreteEmbed, Opti
+from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from CoyoteObs import CoyoteObsBuilder
@@ -21,7 +21,7 @@ from utils.misc import count_parameters
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
 
 # ideas for models:
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        embedder_lr=1e-4,
+        # embedder_lr=1e-4,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
@@ -63,7 +63,8 @@ if __name__ == "__main__":
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_gp.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_gp.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -75,7 +76,8 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Opti_GP",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=True, embed_players=True),
+                                                                 team_size=3, extra_boost_info=True,
+                                                                 embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
                                                               goal_w=0,
                                                               aerial_goal_w=5,
@@ -101,27 +103,32 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
+    embedder = Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5))
+
     critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
-    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+                       LeakyReLU(),
                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                        Linear(512, 373))
 
-    embedder = Linear(35, 35 * 5)
+    critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
 
-    actor = DiscreteEmbed(actor, shape=(373,), embedder=Linear(35, 35*5))
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
+
+    actor = DiscretePolicy(actor, shape=(373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
         {"params": critic.parameters(), "lr": logger.config.critic_lr},
-        {"params": embedder.parameters(), "lr": logger.config.embedder_lr},
+        # {"params": embedder.parameters(), "lr": logger.config.embedder_lr},
     ])
 
-    agent = ActorCriticEmbedderAgent(actor=actor, critic=critic, embedder=embedder, optimizer=optim)
+    agent = ActorCriticAgent(actor=actor, critic=critic, optimizer=optim)
     print(f"Gamma is: {gamma}")
     count_parameters(agent)
 

@@ -7,11 +7,12 @@ from typing import Tuple
 import numpy as np
 import torch.nn.functional as F
 from torch.distributions import Categorical
+from torch.nn.init import xavier_uniform
 
 
 class ActorCriticEmbedderAgent(ActorCriticAgent):
     def __init__(self, actor, critic, embedder: Linear, optimizer):
-
+        return NotImplemented
         super().__init__(actor=actor, critic=critic, optimizer=optimizer)
         self.embedder = embedder
 
@@ -24,6 +25,7 @@ class ActorCriticEmbedderAgent(ActorCriticAgent):
 
 class DiscreteEmbed(DiscretePolicy):
     def __init__(self, net: nn.Module,  embedder: Linear, shape: Tuple[int, ...] = (3,) * 5 + (2,) * 3, deterministic=False):
+        return NotImplemented
         super ().__init__(net=net, shape=shape, deterministic=deterministic)
         self.embedder = embedder
 
@@ -58,3 +60,25 @@ class DiscreteEmbed(DiscretePolicy):
         )
 
         return Categorical(logits=logits)
+
+
+class Opti(nn.Module):  # takes an embedder and a network and runs the embedder on the car obs before passing to the network
+    def __init__(self, embedder: nn.Module, net: nn.Module):
+        super().__init__()
+        self.embedder = embedder
+        self.net = net
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                xavier_uniform(p)
+
+    def forward(self, inp: tuple):
+        main, cars = inp
+        result = self.embedder(cars)
+        # if isinstance(result, tuple):
+        #     result, weights = result
+        full_obs = th.cat((main, result), dim=1)
+        result = self.net(full_obs)
+        return result
