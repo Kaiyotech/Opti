@@ -130,9 +130,9 @@ class PlayerTwoTouch(TerminalCondition):
         """
         self.steps += 1
         if not self.touched:
-            for player in current_state.players:
+            for i, player in enumerate(current_state.players):
                 if player.ball_touched:
-                    self.toucher = player.car_id
+                    self.toucher = i
                     self.touched = True
                     return False
         else:
