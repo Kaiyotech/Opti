@@ -1,11 +1,11 @@
 import wandb
 import torch.jit
 
-from torch.nn import Linear, Sequential, LeakyReLU, Embedding
+from torch.nn import Linear, Sequential, LeakyReLU
 
 from redis import Redis
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import ActorCriticEmbedderAgent, DiscreteEmbed, Opti
+from agent import Opti
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -37,8 +37,7 @@ from rlgym.utils.reward_functions.combined_reward import CombinedReward
 set_num_threads(1)
 
 if __name__ == "__main__":
-    # frame_skip = Constants_gp.FRAME_SKIP
-    frame_skip = 8
+    frame_skip = Constants_gp.FRAME_SKIP
     half_life_seconds = Constants_gp.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
@@ -49,8 +48,8 @@ if __name__ == "__main__":
         # n_steps=Constants_gp.STEP_SIZE,
         # batch_size=100_000,
         # minibatch_size=50_000,
-        n_steps = 10_000,
-        batch_size = 10_000,
+        n_steps = 100_000,
+        batch_size = 100_000,
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
