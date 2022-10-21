@@ -3,6 +3,9 @@ import random
 
 import numpy as np
 from typing import Any, List
+
+from gym import Space
+from gym.spaces import Tuple, Box
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
@@ -244,11 +247,19 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.expanding and not self.embed_players:
             return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            return np.expand_dims(obs, 0), players_data
+            return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs
         else:
             return obs, players_data
+
+    def get_obs_space(self) -> Space:
+        players = self.num_players-1 or 5
+        car_size = len(self.dummy_player)
+        return Tuple((
+            Box(-np.inf, np.inf, (1, 251)),
+            Box(-np.inf, np.inf, (1, players, car_size)),
+        ))
 
 
 if __name__ == "__main__":
