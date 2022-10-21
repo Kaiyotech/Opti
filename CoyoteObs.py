@@ -3,6 +3,9 @@ import random
 
 import numpy as np
 from typing import Any, List
+
+from gym import Space
+from gym.spaces import Tuple, Box
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
@@ -10,7 +13,9 @@ from collections.abc import Iterable
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
-    def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True):
+    def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
+                 embed_players=False,
+                 ):
         super().__init__()
         self.expanding = expanding
         self.extra_boost_info = extra_boost_info
@@ -35,6 +40,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.generic_obs = None
         self.blue_obs = None
         self.orange_obs = None
+        self.embed_players = embed_players
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -204,8 +210,9 @@ class CoyoteObsBuilder(ObsBuilder):
         for _ in range(o_max - o_count):
             opponents.append(self.dummy_player)
 
-        random.shuffle(allies)
-        random.shuffle(opponents)
+        if not self.embed_players:
+            random.shuffle(allies)
+            random.shuffle(opponents)
 
         obs.extend(allies)
         obs.extend(opponents)
@@ -226,8 +233,9 @@ class CoyoteObsBuilder(ObsBuilder):
         player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
-        for p in players_data:
-            obs.extend(p)
+        if not self.embed_players:
+            for p in players_data:
+                obs.extend(p)
         # this adds boost timers and direction/distance to all boosts
         # unnecessary if only doing aerial stuff
         if self.extra_boost_info:
@@ -236,9 +244,22 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 obs.extend(self.blue_obs)
             self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
-        if self.expanding:
+        if self.expanding and not self.embed_players:
             return np.expand_dims(obs, 0)
-        return obs
+        elif self.expanding and self.embed_players:
+            return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
+        elif not self.expanding and not self.embed_players:
+            return obs
+        else:
+            return obs, players_data
+
+    def get_obs_space(self) -> Space:
+        players = self.num_players-1 or 5
+        car_size = len(self.dummy_player)
+        return Tuple((
+            Box(-np.inf, np.inf, (1, 251)),
+            Box(-np.inf, np.inf, (1, players, car_size)),
+        ))
 
 
 if __name__ == "__main__":

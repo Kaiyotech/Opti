@@ -1,10 +1,11 @@
 import wandb
 import torch.jit
 
-from torch.nn import Linear, Sequential, LeakyReLU
+from torch.nn import Linear, Sequential, LeakyReLU, Embedding
 
 from redis import Redis
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
+from agent import ActorCriticEmbedderAgent, DiscreteEmbed, Opti
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -20,8 +21,10 @@ from utils.misc import count_parameters
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
+from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
+from rlgym.utils.reward_functions.combined_reward import CombinedReward
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -34,16 +37,21 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_gp.FRAME_SKIP
+    # frame_skip = Constants_gp.FRAME_SKIP
+    frame_skip = 8
     half_life_seconds = Constants_gp.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        n_steps=Constants_gp.STEP_SIZE,
-        batch_size=100_000,
-        minibatch_size=50_000,
+        # embedder_lr=1e-4,
+        # n_steps=Constants_gp.STEP_SIZE,
+        # batch_size=100_000,
+        # minibatch_size=50_000,
+        n_steps = 10_000,
+        batch_size = 10_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -51,17 +59,18 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run1"
+    run_id = "TESTgp_run1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run1",
+                        name="TESTGP_Run1",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_gp.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_gp.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -73,22 +82,24 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Opti_GP",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False),
-                                        lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                                                              goal_w=0,
-                                                              aerial_goal_w=5,
-                                                              double_tap_w=10,
-                                                              flip_reset_w=5,
-                                                              flip_reset_goal_w=10,
-                                                              punish_ceiling_pinch_w=-2,
-                                                              concede_w=-10,
-                                                              velocity_bg_w=0.25,
-                                                              acel_ball_w=1,
-                                                              team_spirit=0,
-                                                              cons_air_touches_w=2,
-                                                              jump_touch_w=1,
-                                                              wall_touch_w=0.5,
-                                                              ),
+                                                                 team_size=3, extra_boost_info=True,
+                                                                 embed_players=True),
+                                        # lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
+                                        #                       goal_w=0,
+                                        #                       aerial_goal_w=5,
+                                        #                       double_tap_w=10,
+                                        #                       flip_reset_w=5,
+                                        #                       flip_reset_goal_w=10,
+                                        #                       punish_ceiling_pinch_w=-2,
+                                        #                       concede_w=-10,
+                                        #                       velocity_bg_w=0.25,
+                                        #                       acel_ball_w=1,
+                                        #                       team_spirit=0,
+                                        #                       cons_air_touches_w=2,
+                                        #                       jump_touch_w=1,
+                                        #                       wall_touch_w=0.5,
+                                        #                       ),
+                                        lambda : CombinedReward((EventReward(demo=5), VelocityReward()),(1, 0.01)),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
@@ -99,18 +110,36 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
 
-    actor = DiscretePolicy(actor, (373,))
+    # critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 1))
+    #
+    # actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+    #                    LeakyReLU(),
+    #                    Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                    Linear(512, 373))
+
+    critic = Sequential(Linear(426, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 1))
+
+    actor = Sequential(Linear(426, 256), LeakyReLU(), Linear(256, 256),
+                       LeakyReLU(),
+                       Linear(256, 373))
+
+    critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
+
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
+
+    actor = DiscretePolicy(actor, shape=(373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
-        {"params": critic.parameters(), "lr": logger.config.critic_lr}
+        {"params": critic.parameters(), "lr": logger.config.critic_lr},
+        # {"params": embedder.parameters(), "lr": logger.config.embedder_lr},
     ])
 
     agent = ActorCriticAgent(actor=actor, critic=critic, optimizer=optim)
