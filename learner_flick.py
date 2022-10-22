@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flick_run1"
+    run_id = "flick_run2"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flick_Run1",
+                        name="Flick_Run2",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -77,10 +77,11 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
-                                                              velocity_bg_w=0.25,
-                                                              acel_ball_w=1.5,
-                                                              team_spirit=0.25,
+                                                              velocity_bg_w=0.05,
+                                                              acel_ball_w=.2,
+                                                              team_spirit=0,
                                                               goal_speed_exp=1.3,
+                                                              dribble_w=0.1,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,

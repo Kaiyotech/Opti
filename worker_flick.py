@@ -21,10 +21,12 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                         goal_w=5,
                         concede_w=-5,
-                        velocity_bg_w=0.25,
-                        acel_ball_w=1.5,
-                        team_spirit=0.25,
-                        goal_speed_exp=1.3, )
+                        velocity_bg_w=0.05,
+                        acel_ball_w=.2,
+                        team_spirit=0,
+                        goal_speed_exp=1.3,
+                        dribble_w=0.1,
+                        )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"

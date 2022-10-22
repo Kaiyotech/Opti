@@ -71,6 +71,7 @@ class ZeroSumReward(RewardFunction):
         kickoff_special_touch_ground_w=0,
         kickoff_final_boost_w=0,
         kickoff_vpb_after_0_w=0,
+        dribble_w=0,
         goal_speed_exp=1,
         touch_height_exp=1,
         tick_skip=FRAME_SKIP,
@@ -108,6 +109,7 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_special_touch_ground_w = kickoff_special_touch_ground_w
         self.kickoff_final_boost_w = kickoff_final_boost_w
         self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
+        self.dribble_w = dribble_w
         self.goal_speed_exp = goal_speed_exp
         self.touch_height_exp = touch_height_exp
         self.rewards = None
@@ -213,6 +215,11 @@ class ZeroSumReward(RewardFunction):
                         player_rewards[i] += self.cons_air_touches_w * min((1.4 ** self.cons_touches), 5) / 5
                 else:
                     self.cons_touches = 0
+
+                # dribble
+                if state.ball.position[2] > 120 and player.on_ground:
+                    player_rewards[i] += self.dribble_w
+
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
                 self.cons_touches = 0
