@@ -13,14 +13,14 @@ from CoyoteObs import CoyoteObsBuilder
 from CoyoteParser import CoyoteAction
 import numpy as np
 from rewards import ZeroSumReward
-import Constants_flick
+import Constants_flip_reset
 
 from utils.misc import count_parameters
 
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
 
 # ideas for models:
@@ -34,14 +34,14 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_flick.FRAME_SKIP
-    half_life_seconds = Constants_flick.TIME_HORIZON
+    frame_skip = Constants_flip_reset.FRAME_SKIP
+    half_life_seconds = Constants_flip_reset.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        n_steps=Constants_flick.STEP_SIZE,
+        n_steps=Constants_flip_reset.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=100_000,
         epochs=30,
@@ -51,17 +51,18 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flick_run4"
+    run_id = "flip_reset_run1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flick_Run4",
+                        name="Flip_reset_1",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_flick.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_flip_reset.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -70,18 +71,26 @@ if __name__ == "__main__":
         GoalSpeed(), MaxGoalSpeed(),
     ]
 
-    rollout_gen = RedisRolloutGenerator("Flick",
+    rollout_gen = RedisRolloutGenerator("Flip_reset",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP,
+                                        lambda: CoyoteObsBuilder(expanding=True,
+                                                                 tick_skip=Constants_flip_reset.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False),
-                                        lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
-                                                              goal_w=0,
-                                                              concede_w=0,
-                                                              velocity_bg_w=0.005,
-                                                              acel_ball_w=.001,
+                                        lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
+                                                              goal_w=2,
+                                                              aerial_goal_w=0,
+                                                              double_tap_w=0,
+                                                              flip_reset_w=10,
+                                                              flip_reset_goal_w=20,
+                                                              punish_ceiling_pinch_w=0,
+                                                              concede_w=-10,
+                                                              velocity_bg_w=0.25,
+                                                              velocity_pb_w=0.05,
+                                                              acel_ball_w=0,
                                                               team_spirit=0,
-                                                              goal_speed_exp=1.3,
-                                                              dribble_w=0.2,
+                                                              cons_air_touches_w=0.02,
+                                                              jump_touch_w=0.25,
+                                                              wall_touch_w=0.5,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -97,7 +106,7 @@ if __name__ == "__main__":
                         Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256),  LeakyReLU(),
+    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                        Linear(256, 256), LeakyReLU(),
                        Linear(256, 373))
 

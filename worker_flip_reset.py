@@ -12,22 +12,29 @@ from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
-import Constants_flick
+import Constants_flip_reset
 import os
 
 set_num_threads(1)
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
-                        goal_w=0,
-                        concede_w=0,
-                        velocity_bg_w=0.005,
-                        acel_ball_w=.001,
+    rew = ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
+                        goal_w=2,
+                        aerial_goal_w=0,
+                        double_tap_w=0,
+                        flip_reset_w=10,
+                        flip_reset_goal_w=20,
+                        punish_ceiling_pinch_w=0,
+                        concede_w=-10,
+                        velocity_bg_w=0.25,
+                        velocity_pb_w=0.05,
+                        acel_ball_w=0,
                         team_spirit=0,
-                        goal_speed_exp=1.3,
-                        dribble_w=0.2,
+                        cons_air_touches_w=0.02,
+                        jump_touch_w=0.25,
+                        wall_touch_w=0.5,
                         )
-    frame_skip = Constants_flick.FRAME_SKIP
+    frame_skip = Constants_flip_reset.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -64,16 +71,15 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="flick"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP, team_size=team_size,
+        state_setter=CoyoteSetter(mode="flip_reset"),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_flip_reset.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
-                                                      tick_skip=Constants_flick.FRAME_SKIP,
-                                                      time_after_ground_sec=1,
-                                                      min_height=94),
-                             PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
+                                                      tick_skip=Constants_flip_reset.FRAME_SKIP,
+                                                      time_after_ground_sec=0.5,
+                                                      min_height=120),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -84,7 +90,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_flick.DB_NUM,
+                  db=Constants_flip_reset.DB_NUM,
                   )
 
     # remote Redis
@@ -95,7 +101,7 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=Constants_flick.DB_NUM,
+                  db=Constants_flip_reset.DB_NUM,
                   )
 
     RedisRolloutWorker(r, name, match,
@@ -113,5 +119,5 @@ if __name__ == "__main__":
                        force_old_deterministic=force_old_deterministic,
                        # testing
                        batch_mode=True,
-                       step_size=Constants_flick.STEP_SIZE,
+                       step_size=Constants_flip_reset.STEP_SIZE,
                        ).run()

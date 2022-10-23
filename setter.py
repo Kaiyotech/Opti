@@ -91,6 +91,17 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                             AugmentSetter(ReplaySetter(ground_dribble_replays[i], random_boost=True))
                 )
+        elif mode == "flip_reset":
+            for i in range(3):
+                self.setters.append(
+                    WeightedSampleSetter(
+                        (
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1)),
+                            AugmentSetter(WallDribble(), True, False, False),
+                        ),
+                        (0.75, 0.25)
+                    )
+                )
 
     def reset(self, state_wrapper: StateWrapper):
         self.setters[(len(state_wrapper.cars) // 2) - 1].reset(state_wrapper)
