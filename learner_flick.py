@@ -20,7 +20,7 @@ from utils.misc import count_parameters
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
 
 # ideas for models:
@@ -61,7 +61,8 @@ if __name__ == "__main__":
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_flick.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_flick.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -75,13 +76,14 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
-                                                              goal_w=0,
-                                                              concede_w=0,
-                                                              velocity_bg_w=0.005,
-                                                              acel_ball_w=.001,
+                                                              goal_w=5,
+                                                              concede_w=-5,
+                                                              velocity_pb_w=0.005,
+                                                              velocity_bg_w=0.05,
+                                                              acel_ball_w=1,
                                                               team_spirit=0,
                                                               goal_speed_exp=1.3,
-                                                              dribble_w=0.2,
+                                                              dribble_w=0.025,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -97,7 +99,7 @@ if __name__ == "__main__":
                         Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256),  LeakyReLU(),
+    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                        Linear(256, 256), LeakyReLU(),
                        Linear(256, 373))
 
@@ -126,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("aerial_saves/Opti_1665863109.179098/Opti_2300/checkpoint.pt")
+    alg.load("flick_saves/Opti_1666499395.19125/Opti_140/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
