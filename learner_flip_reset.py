@@ -82,7 +82,7 @@ if __name__ == "__main__":
                                                               double_tap_w=0,
                                                               flip_reset_w=10,
                                                               flip_reset_goal_w=20,
-                                                              punish_ceiling_pinch_w=0,
+                                                              punish_ceiling_pinch_w=0.5,
                                                               concede_w=-10,
                                                               velocity_bg_w=0.25,
                                                               velocity_pb_w=0.05,
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("aerial_saves/Opti_1665863109.179098/Opti_2300/checkpoint.pt")
+    alg.load("flick_saves/Opti_1666499153.7961466/Opti_520/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
