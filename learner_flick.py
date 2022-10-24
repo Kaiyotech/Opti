@@ -78,12 +78,12 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
-                                                              velocity_pb_w=0.005,
+                                                              velocity_pb_w=0.025,
                                                               velocity_bg_w=0.05,
                                                               acel_ball_w=1,
                                                               team_spirit=0,
-                                                              goal_speed_exp=1.3,
-                                                              dribble_w=0.025,
+                                                              goal_speed_exp=1.5,
+                                                              dribble_w=0,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flick_saves/Opti_1666499395.19125/Opti_140/checkpoint.pt")
+    alg.load("flick_saves/Opti_1666536422.6232865/Opti_250/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
