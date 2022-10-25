@@ -89,7 +89,12 @@ class CoyoteSetter(DynamicGMSetter):
         elif mode == "flick":
             for i in range(3):
                 self.setters.append(
-                            AugmentSetter(ReplaySetter(ground_dribble_replays[i], random_boost=True))
+                            AugmentSetter(ReplaySetter(ground_dribble_replays[i],
+                                                       random_boost=True,
+                                                       vel_div=True,
+                                                       vel_div_range=(2, 5),
+                                                       )
+                                          )
                 )
         elif mode == "flip_reset":
             for i in range(3):

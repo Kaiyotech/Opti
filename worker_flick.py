@@ -25,8 +25,7 @@ if __name__ == "__main__":
                         velocity_bg_w=0.05,
                         acel_ball_w=1,
                         team_spirit=0,
-                        goal_speed_exp=1.5,
-                        dribble_w=0,
+                        dribble_w=0.01,
                         )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip

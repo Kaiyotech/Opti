@@ -1,6 +1,6 @@
 from torch import nn
 import torch as th
-from torch.nn.init import xavier_uniform
+from torch.nn.init import xavier_uniform_
 
 
 class Opti(nn.Module):  # takes an embedder and a network and runs the embedder on the car obs before passing to the network
@@ -13,7 +13,7 @@ class Opti(nn.Module):  # takes an embedder and a network and runs the embedder 
     def _reset_parameters(self):
         for p in self.parameters():
             if p.dim() > 1:
-                xavier_uniform(p)
+                xavier_uniform_(p)
 
     def forward(self, inp: tuple):
         main, cars = inp

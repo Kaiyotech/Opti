@@ -98,7 +98,7 @@ if __name__ == "__main__":
                                         #                       jump_touch_w=1,
                                         #                       wall_touch_w=0.5,
                                         #                       ),
-                                        lambda : CombinedReward((EventReward(demo=5,), VelocityReward()),(1, 0.01)),
+                                        lambda: ZeroSumReward(zero_sum=False, got_demoed_w=5, demo_w=5),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("aerial_saves/Opti_1665434098.5206559/Opti_80/checkpoint.pt")
+    alg.load("GP_saves/Opti_1666630176.1797009/Opti_270/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

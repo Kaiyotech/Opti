@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flick_run4"
+    run_id = "flick_run4RB"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flick_Run4",
+                        name="Flick_Run4RB",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -82,8 +82,7 @@ if __name__ == "__main__":
                                                               velocity_bg_w=0.05,
                                                               acel_ball_w=1,
                                                               team_spirit=0,
-                                                              goal_speed_exp=1.5,
-                                                              dribble_w=0,
+                                                              dribble_w=0.01,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -128,7 +127,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flick_saves/Opti_1666581255.3992445/Opti_400/checkpoint.pt")
+    alg.load("flick_saves/Opti_1666410256.2516196/Opti_120/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

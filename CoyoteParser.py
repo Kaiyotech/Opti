@@ -5,8 +5,8 @@ import numpy as np
 from gym.spaces import Discrete
 from rlgym.utils.action_parsers import ActionParser
 from rlgym.utils.gamestates import GameState
-from submodels.submodel_agent import SubAgent
 from CoyoteObs import CoyoteObsBuilder
+
 
 class CoyoteAction(ActionParser):
     def __init__(self):
@@ -71,21 +71,24 @@ class CoyoteAction(ActionParser):
 
 
 class SelectorParser(ActionParser):
-    def __init__(self, num_models):
+    def __init__(self):
+        from submodels.submodel_agent import SubAgent
         super().__init__()
-        self.num_models = num_models
-        self._lookup_table = self.make_lookup_table(self.num_models)
+
         self.models = [(SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("gp_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("gp_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("aerial.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("flick.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("flip_reset.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("pinch.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("ceiling_pinch.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        ]
-        self.prev_action = None
-        self.prev_model = None
+        self._lookup_table = self.make_lookup_table(len(self.models))
+        # self.prev_action = None
+        # self.prev_model = None
+        self.prev_action = np.asarray([None] * 8)
 
 
     @staticmethod
@@ -102,17 +105,18 @@ class SelectorParser(ActionParser):
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
         # TODO: test all this shit
-        if len(actions) != len(self.prev_model):
-            self.prev_action = np.asarray([[None] * 8] * len(actions))
-            self.prev_model = [None] * len(actions)
+        # if len(actions) != len(self.prev_model):
+        #     self.prev_action = np.asarray([[None] * 8] * len(actions))
+        #     self.prev_model = [None] * len(actions)
         parsed_actions = []
         for i, action in enumerate(actions):
-            if self.prev_model[i] != action:
-                self.prev_action[i] = None
+            # if self.prev_model[i] != action:
+            #     self.prev_action[i] = None
             player = state.players[i]
-            obs = self.models[action][1].build_obs(player, state, self.prev_action[i])
+            obs = self.models[action][1].build_obs(player, state, self.prev_action)
             parse_action = self.models[action][0].act(obs)
-            self.prev_action[i] = np.asarray(parse_action)
+            # self.prev_action[i] = np.asarray(parse_action)
+            self.prev_action = np.asarray(parse_action)
             parsed_actions.append(parse_action)
         return np.asarray(parsed_actions)
 

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     #                                                           cons_air_touches_w=2,
     #                                                           jump_touch_w=1,
     #                                                           wall_touch_w=0.5)
-    rew = CombinedReward((EventReward(demo=5), VelocityReward()),(1, 0.01))
+    rew = ZeroSumReward(zero_sum=False, got_demoed_w=5, demo_w=5)
     # frame_skip = Constants_gp.FRAME_SKIP
     frame_skip = 8
     fps = 120 // frame_skip

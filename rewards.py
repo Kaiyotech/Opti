@@ -72,7 +72,7 @@ class ZeroSumReward(RewardFunction):
         kickoff_final_boost_w=0,
         kickoff_vpb_after_0_w=0,
         dribble_w=0,
-        goal_speed_exp=1,
+        goal_speed_exp=1,  # fix this eventually
         touch_height_exp=1,
         tick_skip=FRAME_SKIP,
         team_spirit=0,  # increase as they learn
