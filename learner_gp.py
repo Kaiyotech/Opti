@@ -48,7 +48,7 @@ if __name__ == "__main__":
         # n_steps=Constants_gp.STEP_SIZE,
         # batch_size=100_000,
         # minibatch_size=50_000,
-        n_steps = 100_000,
+        n_steps = 1_000_000,
         batch_size = 100_000,
         minibatch_size=None,
         epochs=30,
@@ -58,10 +58,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "TESTgp_run1"
+    run_id = "TESTgp_run2"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="TESTGP_Run1",
+                        name="TESTGP_Run2",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                                         #                       jump_touch_w=1,
                                         #                       wall_touch_w=0.5,
                                         #                       ),
-                                        lambda : CombinedReward((EventReward(demo=5), VelocityReward()),(1, 0.01)),
+                                        lambda : CombinedReward((EventReward(demo=5,), VelocityReward()),(1, 0.01)),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,

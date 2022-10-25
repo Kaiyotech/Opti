@@ -5,7 +5,8 @@ import numpy as np
 from gym.spaces import Discrete
 from rlgym.utils.action_parsers import ActionParser
 from rlgym.utils.gamestates import GameState
-
+from submodels.submodel_agent import SubAgent
+from CoyoteObs import CoyoteObsBuilder
 
 class CoyoteAction(ActionParser):
     def __init__(self):
@@ -66,6 +67,53 @@ class CoyoteAction(ActionParser):
             else:
                 parsed_actions.append(action)
 
+        return np.asarray(parsed_actions)
+
+
+class SelectorParser(ActionParser):
+    def __init__(self, num_models):
+        super().__init__()
+        self.num_models = num_models
+        self._lookup_table = self.make_lookup_table(self.num_models)
+        self.models = [(SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       ]
+        self.prev_action = None
+        self.prev_model = None
+
+
+    @staticmethod
+    def make_lookup_table(num_models):
+        actions = []
+        for index in range(8):
+            chosen = [0] * num_models
+            chosen[index] = 1
+            actions.append(chosen)
+        return actions
+
+    def get_action_space(self) -> gym.spaces.Space:
+        return Discrete(len(self._lookup_table))
+
+    def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
+        # TODO: test all this shit
+        if len(actions) != len(self.prev_model):
+            self.prev_action = np.asarray([[None] * 8] * len(actions))
+            self.prev_model = [None] * len(actions)
+        parsed_actions = []
+        for i, action in enumerate(actions):
+            if self.prev_model[i] != action:
+                self.prev_action[i] = None
+            player = state.players[i]
+            obs = self.models[action][1].build_obs(player, state, self.prev_action[i])
+            parse_action = self.models[action][0].act(obs)
+            self.prev_action[i] = np.asarray(parse_action)
+            parsed_actions.append(parse_action)
         return np.asarray(parsed_actions)
 
 
