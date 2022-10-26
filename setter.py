@@ -39,7 +39,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(RandomState(cars_on_ground=False)),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
-                        (0.3, 0.45, 0.1, 0.025, 0.025, 0.05, 0.05)
+                        (0.1, 0.65, 0.15, 0.025, 0.025, 0.025, 0.025)
                     )
                 )
         elif mode == "kickoff":
