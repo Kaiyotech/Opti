@@ -21,17 +21,17 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
                         goal_w=5,
                         double_tap_w=5,
-                        concede_w=-5,
                         velocity_bg_w=0.05,
-                        velocity_pb_w=0.01,
+                        velocity_pb_w=0.005,
                         boost_gain_w=1,
+                        punish_boost=True,
                         demo_w=4,
-                        got_demoed_w=-3,
                         acel_ball_w=1,
-                        team_spirit=0,
+                        team_spirit=0.25,
                         cons_air_touches_w=2,
                         jump_touch_w=1,
-                        wall_touch_w=0.5)
+                        wall_touch_w=0.5,
+                        touch_grass_w=-0.005, )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"

@@ -42,7 +42,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
+        actor_lr=0,  # 1e-4,
         critic_lr=1e-4,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
@@ -82,17 +82,17 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
                                                               goal_w=5,
                                                               double_tap_w=5,
-                                                              concede_w=-5,
                                                               velocity_bg_w=0.05,
-                                                              velocity_pb_w=0.01,
+                                                              velocity_pb_w=0.005,
                                                               boost_gain_w=1,
+                                                              punish_boost=True,
                                                               demo_w=4,
-                                                              got_demoed_w=-3,
                                                               acel_ball_w=1,
-                                                              team_spirit=0,
+                                                              team_spirit=0.25,
                                                               cons_air_touches_w=2,
                                                               jump_touch_w=1,
                                                               wall_touch_w=0.5,
+                                                              touch_grass_w=-0.005,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("GP_saves/Opti_1666630176.1797009/Opti_270/checkpoint.pt")
+    alg.load("GP_saves/Opti_1666841497.276968/Opti_520/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
