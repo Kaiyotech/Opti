@@ -42,7 +42,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=0,  # 1e-4,
+        actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
