@@ -40,8 +40,8 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 0
-    past_version_prob = 0
+    evaluation_prob = .01
+    past_version_prob = 0.15
     deterministic_streamer = True
     force_old_deterministic = False
     team_size = 3
@@ -109,7 +109,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights=None,  # {'1v1': 0.8, '2v2': 0.1, '3v3': 0.1},  # default 1/3
+                       gamemode_weights={'1v1': 0.24, '2v2': 0.30, '3v3': 0.46},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

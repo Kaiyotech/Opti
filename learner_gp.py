@@ -144,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1666972011.3136349/Opti_1140/checkpoint.pt")
+    alg.load("GP_saves/Opti_1667006884.1357906/Opti_1360/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
