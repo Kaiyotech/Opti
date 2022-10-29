@@ -31,7 +31,7 @@ if __name__ == "__main__":
                         cons_air_touches_w=2,
                         jump_touch_w=2,
                         wall_touch_w=0.5,
-                        touch_grass_w=-0.02, )
+                        touch_grass_w=0, )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
