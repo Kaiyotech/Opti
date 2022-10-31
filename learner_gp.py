@@ -80,13 +80,14 @@ if __name__ == "__main__":
                                                                  team_size=3, extra_boost_info=True,
                                                                  embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                                                              goal_w=5,
+                                                              goal_w=7.5,
                                                               double_tap_w=5,
                                                               velocity_bg_w=0.05,
                                                               velocity_pb_w=0,
-                                                              boost_gain_w=1,
+                                                              boost_gain_w=0.75,
                                                               punish_boost=True,
-                                                              demo_w=4,
+                                                              boost_spend_w=2.25,
+                                                              demo_w=3,
                                                               acel_ball_w=1,
                                                               team_spirit=0.25,
                                                               cons_air_touches_w=2,
@@ -144,7 +145,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1667006884.1357906/Opti_1360/checkpoint.pt")
+    alg.load("GP_saves/Opti_1667049195.2915294/Opti_2090/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

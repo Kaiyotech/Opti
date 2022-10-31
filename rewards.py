@@ -54,6 +54,7 @@ class ZeroSumReward(RewardFunction):
         touch_grass_w=0,  # -0.005,
         acel_ball_w=0,  # 1.5,
         boost_gain_w=0,  # 1.5,
+        boost_spend_w=1.5,  # 1.5 is default
         punish_boost=False,  # punish once they start wasting and understand the game a bit
         jump_touch_w=0,  # 3,
         cons_air_touches_w=0,  # 6,
@@ -88,7 +89,7 @@ class ZeroSumReward(RewardFunction):
         self.acel_ball_w = acel_ball_w
         self.boost_gain_w = boost_gain_w
         if punish_boost:
-            self.boost_spend_w = 1.5 * self.boost_gain_w * ((33.3334 / (120 / tick_skip)) * 0.01)
+            self.boost_spend_w = boost_spend_w * self.boost_gain_w * ((33.3334 / (120 / tick_skip)) * 0.01)
         else:
             self.boost_spend_w = 0
         self.jump_touch_w = jump_touch_w

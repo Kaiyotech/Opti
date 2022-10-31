@@ -19,13 +19,14 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                        goal_w=5,
+                        goal_w=7.5,
                         double_tap_w=5,
                         velocity_bg_w=0.05,
                         velocity_pb_w=0,
-                        boost_gain_w=1,
+                        boost_gain_w=0.75,
                         punish_boost=True,
-                        demo_w=4,
+                        boost_spend_w=2.25,
+                        demo_w=3,
                         acel_ball_w=1,
                         team_spirit=0.25,
                         cons_air_touches_w=2,
