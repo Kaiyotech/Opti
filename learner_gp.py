@@ -88,7 +88,7 @@ if __name__ == "__main__":
                                                               boost_gain_w=0.2,
                                                               # punish_boost=True,
                                                               # boost_spend_w=2.25,
-                                                              # demo_w=3,
+                                                              demo_w=0.5,
                                                               acel_ball_w=1,
                                                               team_spirit=0,
                                                               # cons_air_touches_w=2,
