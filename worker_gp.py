@@ -19,20 +19,21 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                        goal_w=7.5,
-                        double_tap_w=5,
-                        velocity_bg_w=0.05,
-                        velocity_pb_w=0,
-                        boost_gain_w=0.75,
-                        punish_boost=True,
-                        boost_spend_w=2.25,
-                        demo_w=3,
+                        goal_w=10,
+                        concede_w=-10,
+                        # double_tap_w=5,
+                        velocity_bg_w=0.075,
+                        velocity_pb_w=0.025,
+                        boost_gain_w=0.2,
+                        # punish_boost=True,
+                        # boost_spend_w=2.25,
+                        # demo_w=3,
                         acel_ball_w=1,
-                        team_spirit=0.25,
-                        cons_air_touches_w=2,
-                        jump_touch_w=2,
-                        wall_touch_w=0.5,
-                        touch_grass_w=0, )
+                        team_spirit=0,
+                        # cons_air_touches_w=2,
+                        jump_touch_w=1,
+                        wall_touch_w=0.25,
+                        touch_grass_w=0, ),
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = .01
-    past_version_prob = 0.15
+    past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
     team_size = 3
@@ -110,7 +111,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.24, '2v2': 0.30, '3v3': 0.46},  # default 1/3
+                       gamemode_weights={'1v1': 0.50, '2v2': 0.20, '3v3': 0.30},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

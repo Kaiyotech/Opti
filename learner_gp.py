@@ -49,15 +49,15 @@ if __name__ == "__main__":
         minibatch_size=50_000,
         epochs=30,
         gamma=gamma,
-        save_every=10,
-        model_every=100,
+        save_every=100,
+        model_every=1000,
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3"
+    run_id = "gp_run3.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3",
+                        name="GP_Run3.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -80,19 +80,20 @@ if __name__ == "__main__":
                                                                  team_size=3, extra_boost_info=True,
                                                                  embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                                                              goal_w=7.5,
-                                                              double_tap_w=5,
-                                                              velocity_bg_w=0.05,
-                                                              velocity_pb_w=0,
-                                                              boost_gain_w=0.75,
-                                                              punish_boost=True,
-                                                              boost_spend_w=2.25,
-                                                              demo_w=3,
+                                                              goal_w=10,
+                                                              concede_w=-10,
+                                                              # double_tap_w=5,
+                                                              velocity_bg_w=0.075,
+                                                              velocity_pb_w=0.025,
+                                                              boost_gain_w=0.2,
+                                                              # punish_boost=True,
+                                                              # boost_spend_w=2.25,
+                                                              # demo_w=3,
                                                               acel_ball_w=1,
-                                                              team_spirit=0.25,
-                                                              cons_air_touches_w=2,
-                                                              jump_touch_w=2,
-                                                              wall_touch_w=0.5,
+                                                              team_spirit=0,
+                                                              # cons_air_touches_w=2,
+                                                              jump_touch_w=1,
+                                                              wall_touch_w=0.25,
                                                               touch_grass_w=0,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -145,7 +146,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1667049195.2915294/Opti_2090/checkpoint.pt")
+    # alg.load("GP_saves/Opti_1667049195.2915294/Opti_2090/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
