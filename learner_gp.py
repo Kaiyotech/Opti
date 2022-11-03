@@ -49,8 +49,8 @@ if __name__ == "__main__":
         minibatch_size=50_000,
         epochs=30,
         gamma=gamma,
-        save_every=100,
-        model_every=1000,
+        save_every=40,
+        model_every=400,
         ent_coef=0.01,
     )
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("GP_saves/Opti_1667049195.2915294/Opti_2090/checkpoint.pt")
+    alg.load("GP_saves/Opti_1667403829.1253939/Opti_1400/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

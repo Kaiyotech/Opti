@@ -42,7 +42,7 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = .01
+    evaluation_prob = 0  # 0.01
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = True
+            deterministic_streamer = False
             auto_minimize = False
 
     match = Match(
@@ -111,7 +111,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.50, '2v2': 0.20, '3v3': 0.30},  # default 1/3
+                       gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
