@@ -23,7 +23,7 @@ if __name__ == "__main__":
                         concede_w=-10,
                         # double_tap_w=5,
                         velocity_bg_w=0.075,
-                        velocity_pb_w=0.025,
+                        velocity_pb_w=0,
                         boost_gain_w=0.2,
                         # punish_boost=True,
                         # boost_spend_w=2.25,
