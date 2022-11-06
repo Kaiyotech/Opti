@@ -29,7 +29,7 @@ if __name__ == "__main__":
                         # boost_spend_w=2.25,
                         demo_w=0.5,
                         acel_ball_w=1,
-                        team_spirit=0,
+                        team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=1,
                         wall_touch_w=0.25,
