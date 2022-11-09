@@ -55,8 +55,9 @@ class CoyoteObsBuilder(ObsBuilder):
         self.orange_obs = []
 
         self.action_stacks = {}
-        for p in initial_state.players:
-            self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+        if self.stack_size != 0:
+            for p in initial_state.players:
+                self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
 
     def pre_step(self, state: GameState):
         self.state = state
