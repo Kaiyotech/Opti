@@ -14,7 +14,7 @@ from collections.abc import Iterable
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
-                 embed_players=False,
+                 embed_players=False, stack_size=0,
                  ):
         super().__init__()
         self.expanding = expanding
@@ -41,6 +41,10 @@ class CoyoteObsBuilder(ObsBuilder):
         self.blue_obs = None
         self.orange_obs = None
         self.embed_players = embed_players
+        self.default_action = np.zeros(8)
+        self.stack_size = stack_size
+        self.action_stacks = {}
+        self.action_size = self.default_action.shape[0]
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -49,6 +53,10 @@ class CoyoteObsBuilder(ObsBuilder):
         self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
         self.blue_obs = []
         self.orange_obs = []
+
+        self.action_stacks = {}
+        for p in initial_state.players:
+            self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
 
     def pre_step(self, state: GameState):
         self.state = state
@@ -123,6 +131,10 @@ class CoyoteObsBuilder(ObsBuilder):
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
         ]
+        if self.stack_size != 0:
+            self.add_action_to_stack(prev_act, player.car_id)
+            p.extend(list(self.action_stacks[player.car_id]))
+
         return p
 
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
@@ -219,6 +231,11 @@ class CoyoteObsBuilder(ObsBuilder):
 
         return player_data
 
+    def add_action_to_stack(self, new_action: np.ndarray, car_id: int):
+        stack = self.action_stacks[car_id]
+        stack[self.action_size:] = stack[:-self.action_size]
+        stack[:self.action_size] = new_action
+
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> Any:
 
         if player.team_num == 1:
@@ -256,10 +273,26 @@ class CoyoteObsBuilder(ObsBuilder):
     def get_obs_space(self) -> Space:
         players = self.num_players-1 or 5
         car_size = len(self.dummy_player)
+        player_size = 251 + (self.stack_size * self.action_size)
         return Tuple((
-            Box(-np.inf, np.inf, (1, 251)),
+            Box(-np.inf, np.inf, (1, player_size)),
             Box(-np.inf, np.inf, (1, players, car_size)),
         ))
+
+
+class CoyoteStackedObsBuilder(CoyoteObsBuilder):
+    def __init__(self, stack_size: int = 5,
+                 ):
+        super().__init__()
+
+
+    def reset(self, initial_state: GameState):
+        super().reset(initial_state)
+        self.action_stacks = {}
+        for p in initial_state.players:
+            self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+
+
 
 
 if __name__ == "__main__":

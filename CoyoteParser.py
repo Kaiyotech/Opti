@@ -77,8 +77,8 @@ class SelectorParser(ActionParser):
 
         self.models = [(SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        (SubAgent("kickoff_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("gp_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("gp_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("gp_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                       (SubAgent("gp_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
                        (SubAgent("aerial.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        (SubAgent("flick.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        (SubAgent("flip_reset.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
