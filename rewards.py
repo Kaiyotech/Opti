@@ -310,21 +310,33 @@ class ZeroSumReward(RewardFunction):
                     if self.blue_touch_height > GOAL_HEIGHT:
                         player_rewards[self.blue_toucher] += self.aerial_goal_w
                     player_rewards[:mid] += self.team_spirit * goal_reward
-                player_rewards[mid:] += self.concede_w
+
+                if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
+                    if self.zero_sum:
+                        player_rewards[mid:] -= goal_reward
+                    else:
+                        player_rewards[mid:] += self.concede_w
+
+
 
             if d_orange > 0:
-                goal_speed = norm(self.last_state.ball.linear_velocity)  ** self.goal_speed_exp
+                goal_speed = norm(self.last_state.ball.linear_velocity) ** self.goal_speed_exp
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward
-                    player_rewards[mid:] += self.team_spirit * goal_reward
                     if self.got_reset[self.orange_toucher]:
                         player_rewards[self.orange_toucher] += self.flip_reset_goal_w
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.orange_toucher] += self.double_tap_w
                     if self.orange_touch_height > GOAL_HEIGHT:
                         player_rewards[self.orange_toucher] += self.aerial_goal_w
-                player_rewards[:mid] += self.concede_w
+                    player_rewards[mid:] += self.team_spirit * goal_reward
+
+                if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
+                    if self.zero_sum:
+                        player_rewards[:mid] -= goal_reward
+                    else:
+                        player_rewards[:mid] += self.concede_w
 
         # zero mean
         if self.zero_sum:
