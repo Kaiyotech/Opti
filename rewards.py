@@ -73,6 +73,7 @@ class ZeroSumReward(RewardFunction):
         kickoff_final_boost_w=0,
         kickoff_vpb_after_0_w=0,
         dribble_w=0,
+        punish_action_change_w=0,
         goal_speed_exp=1,  # fix this eventually
         touch_height_exp=1,
         tick_skip=FRAME_SKIP,
@@ -111,6 +112,7 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_final_boost_w = kickoff_final_boost_w
         self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
         self.dribble_w = dribble_w
+        self.punish_action_change_w = punish_action_change_w
         self.goal_speed_exp = goal_speed_exp
         self.touch_height_exp = touch_height_exp
         self.rewards = None
