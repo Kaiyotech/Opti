@@ -64,7 +64,7 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = False
+            deterministic_streamer = True
             auto_minimize = False
 
     match = Match(
