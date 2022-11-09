@@ -312,13 +312,11 @@ class ZeroSumReward(RewardFunction):
                     if self.blue_touch_height > GOAL_HEIGHT:
                         player_rewards[self.blue_toucher] += self.aerial_goal_w
                     player_rewards[:mid] += self.team_spirit * goal_reward
+                elif self.orange_touch_timer < self.touch_timeout and self.zero_sum:
+                    player_rewards[mid:] -= goal_reward
 
                 if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
-                    if self.zero_sum:
-                        player_rewards[mid:] -= goal_reward
-                    else:
-                        player_rewards[mid:] += self.concede_w
-
+                    player_rewards[mid:] += self.concede_w
 
 
             if d_orange > 0:
@@ -334,11 +332,11 @@ class ZeroSumReward(RewardFunction):
                         player_rewards[self.orange_toucher] += self.aerial_goal_w
                     player_rewards[mid:] += self.team_spirit * goal_reward
 
+                elif self.blue_touch_timer < self.touch_timeout and self.zero_sum:
+                    player_rewards[:mid] -= goal_reward
+
                 if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
-                    if self.zero_sum:
-                        player_rewards[:mid] -= goal_reward
-                    else:
-                        player_rewards[:mid] += self.concede_w
+                    player_rewards[:mid] += self.concede_w
 
         # zero mean
         if self.zero_sum:
