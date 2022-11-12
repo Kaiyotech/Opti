@@ -85,8 +85,8 @@ if __name__ == "__main__":
                                                               # double_tap_w=5,
                                                               velocity_bg_w=0.075,
                                                               velocity_pb_w=0,
-                                                              boost_gain_w=0.2,
-                                                              # punish_boost=True,
+                                                              boost_gain_w=0.3,
+                                                              punish_boost=True,
                                                               # boost_spend_w=2.25,
                                                               demo_w=0.5,
                                                               acel_ball_w=1,
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1667832352.5237453/Opti_5720/checkpoint.pt")
+    alg.load("GP_saves/Opti_1668014741.7926/Opti_6690/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

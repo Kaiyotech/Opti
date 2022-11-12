@@ -11,10 +11,10 @@ from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from CoyoteObs import CoyoteObsBuilder
 
-from CoyoteParser import CoyoteAction
+from CoyoteParser import SelectorParser
 import numpy as np
 from rewards import ZeroSumReward
-import Constants_gp
+import Constants_selector
 
 from utils.misc import count_parameters
 
@@ -37,16 +37,16 @@ from rlgym.utils.reward_functions.combined_reward import CombinedReward
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_gp.FRAME_SKIP
-    half_life_seconds = Constants_gp.TIME_HORIZON
+    frame_skip = Constants_selector.FRAME_SKIP
+    half_life_seconds = Constants_selector.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        n_steps=Constants_gp.STEP_SIZE,
+        n_steps=Constants_selector.STEP_SIZE,
         batch_size=100_000,
-        minibatch_size=50_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -54,10 +54,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.01"
+    run_id = "selector_run_0.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.01",
+                        name="Selector_Run-0.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         )
     redis = Redis(username="user1", password=os.environ["redis_user1_key"],
-                  db=Constants_gp.DB_NUM)  # host="192.168.0.201",
+                  db=Constants_selector.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -74,29 +74,17 @@ if __name__ == "__main__":
         GoalSpeed(), MaxGoalSpeed(),
     ]
 
-    rollout_gen = RedisRolloutGenerator("Opti_GP",
+    rollout_gen = RedisRolloutGenerator("Opti_Selector",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP,
+                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=True,
-                                                                 embed_players=True),
-                                        lambda: ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
+                                                                 embed_players=True, stack_size=Constants_selector.STACK_SIZE),
+                                        lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
-                                                              # double_tap_w=5,
-                                                              velocity_bg_w=0.075,
-                                                              velocity_pb_w=0,
-                                                              boost_gain_w=0.2,
-                                                              # punish_boost=True,
-                                                              # boost_spend_w=2.25,
-                                                              demo_w=0.5,
-                                                              acel_ball_w=1,
-                                                              team_spirit=1,
-                                                              # cons_air_touches_w=2,
-                                                              jump_touch_w=1,
-                                                              wall_touch_w=0.25,
-                                                              touch_grass_w=0,
+                                                              # swap_action_w=-.05  # TODO implement
                                                               ),
-                                        lambda: CoyoteAction(),
+                                        lambda: SelectorParser(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
                                         logger=logger,
@@ -105,23 +93,20 @@ if __name__ == "__main__":
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
+    input_size = 426 + (Constants_selector.STACK_SIZE * 8)
+    critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 256), LeakyReLU(),
+                        Linear(256, 1))
 
-    critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
-
-    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+    actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
+                       Linear(128, 9))
 
     critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(373,))
+    actor = DiscretePolicy(actor, shape=(9,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -146,8 +131,8 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1667772804.5235054/Opti_5020/checkpoint.pt")
+    # alg.load("GP_saves/Opti_1667772804.5235054/Opti_5020/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="GP_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="Selector_saves")

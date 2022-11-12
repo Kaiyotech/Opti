@@ -42,6 +42,32 @@ class CoyoteSetter(DynamicGMSetter):
                         (0.1, 0.7, 0.10, 0.025, 0.025, 0.025, 0.025)
                     )
                 )
+        elif mode == "selector":
+            for i in range(3):
+                self.setters.append(
+                    WeightedSampleSetter(
+                        (
+                            DefaultState(),
+                            AugmentSetter(ReplaySetter(kickoff_replays[i])),
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True)),
+                            AugmentSetter(GroundAirDribble(), True, False, False),
+                            AugmentSetter(WallDribble(), True, False, False),
+                            AugmentSetter(RandomState(cars_on_ground=True)),
+                            AugmentSetter(RandomState(cars_on_ground=False)),
+                            AugmentSetter(
+                                ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1)),
+                            AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True)),
+                            AugmentSetter(
+                                ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1)),
+                            AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True)),
+                        ),
+                        # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
+                        (0.1, 0.05, 0.22, 0.05, 0.01, 0.02, 0.01, 0.01, 0.1, 0.1, 0.1, 0.09, 0.09, 0.05)
+                    )
+                )
         elif mode == "kickoff":
             for i in range(3):
                 self.setters.append(

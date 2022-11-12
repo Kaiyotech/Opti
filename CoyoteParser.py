@@ -75,15 +75,15 @@ class SelectorParser(ActionParser):
         from submodels.submodel_agent import SubAgent
         super().__init__()
 
-        self.models = [(SubAgent("kickoff_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("gp_1.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-                       (SubAgent("gp_2.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-                       (SubAgent("aerial.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("flick.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("flip_reset.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("pinch.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("ceiling_pinch.jit"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+        self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_2_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("gp_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                       (SubAgent("gp_2_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                       (SubAgent("aerial_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("flick_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("flipreset_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("pinch_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("ceilingpinch_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        ]
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None

@@ -8,33 +8,22 @@ from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
-from CoyoteParser import CoyoteAction
+from CoyoteParser import SelectorParser
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
-import Constants_gp
+import Constants_selector
 import os
 
 set_num_threads(1)
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
+    rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                         goal_w=10,
                         concede_w=-10,
-                        # double_tap_w=5,
-                        velocity_bg_w=0.075,
-                        velocity_pb_w=0,
-                        boost_gain_w=0.2,
-                        # punish_boost=True,
-                        # boost_spend_w=2.25,
-                        demo_w=0.5,
-                        acel_ball_w=1,
-                        team_spirit=1,
-                        # cons_air_touches_w=2,
-                        jump_touch_w=1,
-                        wall_touch_w=0.25,
-                        touch_grass_w=0, )
-    frame_skip = Constants_gp.FRAME_SKIP
+                        # swap_action_w=-.05  # TODO implement
+                        )
+    frame_skip = Constants_selector.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -71,10 +60,10 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True),
-        action_parser=CoyoteAction(),
+        state_setter=CoyoteSetter(mode="selector"),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
+                                     extra_boost_info=True, embed_players=True, stack_size=Constants_selector.STACK_SIZE),
+        action_parser=SelectorParser(),
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
                              TimeoutCondition(fps * 300),
@@ -88,7 +77,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_gp.DB_NUM,
+                  db=Constants_selector.DB_NUM,
                   )
 
     # remote Redis
@@ -99,7 +88,7 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=Constants_gp.DB_NUM,
+                  db=Constants_selector.DB_NUM,
                   )
 
     RedisRolloutWorker(r, name, match,
@@ -117,5 +106,5 @@ if __name__ == "__main__":
                        force_old_deterministic=force_old_deterministic,
                        # testing
                        batch_mode=True,
-                       step_size=Constants_gp.STEP_SIZE,
+                       step_size=Constants_selector.STEP_SIZE,
                        ).run()
