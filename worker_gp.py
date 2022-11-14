@@ -108,7 +108,7 @@ if __name__ == "__main__":
                        evaluation_prob=evaluation_prob,
                        force_paging=False,
                        dynamic_gm=dynamic_game,
-                       send_obs=False,  # True,
+                       send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=True,  # send_gamestate,
                        gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
