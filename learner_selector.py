@@ -73,18 +73,23 @@ if __name__ == "__main__":
         DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
         GoalSpeed(), MaxGoalSpeed(),
     ]
+    parser = SelectorParser()
 
     rollout_gen = RedisRolloutGenerator("Opti_Selector",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP,
+                                        lambda: CoyoteObsBuilder(expanding=True,
+                                                                 tick_skip=Constants_selector.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=True,
-                                                                 embed_players=True, stack_size=Constants_selector.STACK_SIZE),
+                                                                 embed_players=True,
+                                                                 stack_size=Constants_selector.STACK_SIZE,
+                                                                 action_parser=parser),
+
                                         lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
                                                               # swap_action_w=-.05  # TODO implement
                                                               ),
-                                        lambda: SelectorParser(),
+                                        lambda: parser,
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
                                         logger=logger,

@@ -23,6 +23,7 @@ if __name__ == "__main__":
                         concede_w=-10,
                         # swap_action_w=-.05  # TODO implement
                         )
+    parser = SelectorParser()
     frame_skip = Constants_selector.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -62,8 +63,10 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=CoyoteSetter(mode="selector"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True, stack_size=Constants_selector.STACK_SIZE),
-        action_parser=SelectorParser(),
+                                     extra_boost_info=True, embed_players=True,
+                                     stack_size=Constants_selector.STACK_SIZE,
+                                     action_parser=parser),
+        action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
                              TimeoutCondition(fps * 300),

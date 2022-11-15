@@ -14,7 +14,7 @@ from collections.abc import Iterable
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
-                 embed_players=False, stack_size=0,
+                 embed_players=False, stack_size=0, action_parser=None,
                  ):
         super().__init__()
         self.expanding = expanding
@@ -45,6 +45,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.stack_size = stack_size
         self.action_stacks = {}
         self.action_size = self.default_action.shape[0]
+        self.action_parser = action_parser
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -58,6 +59,9 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.stack_size != 0:
             for p in initial_state.players:
                 self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+
+        if self.action_parser is not None:
+            self.action_parser.reset(initial_state)
 
     def pre_step(self, state: GameState):
         self.state = state
@@ -282,16 +286,19 @@ class CoyoteObsBuilder(ObsBuilder):
 
 
 class CoyoteStackedObsBuilder(CoyoteObsBuilder):
-    def __init__(self, stack_size: int = 5,
+    def __init__(self, stack_size: int = 5, action_parser=None
                  ):
+        return NotImplemented
         super().__init__()
-
+        self.action_parser = action_parser
+        self.stack_size = stack_size
 
     def reset(self, initial_state: GameState):
         super().reset(initial_state)
         self.action_stacks = {}
         for p in initial_state.players:
             self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+        self.action_parser.reset(initial_state)
 
 
 
