@@ -21,6 +21,7 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                         goal_w=10,
                         concede_w=-10,
+                        team_spirit=1,
                         # swap_action_w=-.05  # TODO implement
                         )
     parser = SelectorParser()
