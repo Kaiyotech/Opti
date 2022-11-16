@@ -109,7 +109,7 @@ class SelectorParser(ActionParser):
     def get_action_space(self) -> gym.spaces.Space:
         return Discrete(len(self._lookup_table))
 
-    def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
+    def parse_actions(self, actions: Any, state: GameState) -> tuple[np.ndarray, np.ndarray]:
 
         for models in self.models:
             models[1].pre_step(state)
@@ -125,7 +125,7 @@ class SelectorParser(ActionParser):
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
             parsed_actions.append(parse_action)
-        return np.asarray(parsed_actions)
+        return np.asarray(parsed_actions), np.asarray(actions)
 
     # necessary because of the stateful obs
     def reset(self, initial_state: GameState):

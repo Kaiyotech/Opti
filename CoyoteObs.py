@@ -134,7 +134,7 @@ class CoyoteObsBuilder(ObsBuilder):
         ]
         return p
 
-    def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray):
+    def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray, prev_model_act: float):
         pos_diff = ball.position - car.position
         vel_diff = ball.linear_velocity - car.linear_velocity
         fwd = car.forward()
@@ -159,6 +159,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.stack_size != 0:
             self.add_action_to_stack(prev_act, player.car_id)
             p.extend(list(self.action_stacks[player.car_id]))
+        p.extend
 
         return p
 
@@ -261,7 +262,7 @@ class CoyoteObsBuilder(ObsBuilder):
         stack[self.action_size:] = stack[:-self.action_size]
         stack[:self.action_size] = new_action
 
-    def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> Any:
+    def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: float) -> Any:
 
         if player.team_num == 1:
             inverted = True
@@ -272,7 +273,7 @@ class CoyoteObsBuilder(ObsBuilder):
 
         obs = []
         players_data = []
-        player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted)
+        player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted, previous_model_action)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
         if not self.embed_players:
