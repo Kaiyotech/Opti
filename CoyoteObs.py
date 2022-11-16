@@ -68,7 +68,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.action_parser.reset(initial_state)
 
         if self.env is not None:
-            if random.random() < self.infinite_boost_odds:
+            if random.random() <= self.infinite_boost_odds:
                 self.env.update_settings(boost_consumption=0)
                 self.infinite_boost_episode = True
             else:
@@ -86,7 +86,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.env is not None:
             if self.infinite_boost_episode:
                 for player in state.players:
-                    player.boost_amount = float("inf")
+                    player.boost_amount = 1
             else:
                 for player in state.players:
                     player.boost_amount /= 1

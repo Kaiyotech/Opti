@@ -39,6 +39,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
+    infinite_boost_odds = 0.02
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -57,6 +58,7 @@ if __name__ == "__main__":
             game_speed = 1
             deterministic_streamer = True
             auto_minimize = False
+            infinite_boost_odds = 0.1
 
     match = Match(
         game_speed=game_speed,
@@ -66,7 +68,7 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      stack_size=Constants_selector.STACK_SIZE,
-                                     action_parser=parser, infinite_boost_odds=0.02),
+                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
