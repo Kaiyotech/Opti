@@ -66,7 +66,7 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      stack_size=Constants_selector.STACK_SIZE,
-                                     action_parser=parser),
+                                     action_parser=parser, infinite_boost_odds=0.02),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
@@ -95,20 +95,24 @@ if __name__ == "__main__":
                   db=Constants_selector.DB_NUM,
                   )
 
-    RedisRolloutWorker(r, name, match,
-                       past_version_prob=past_version_prob,
-                       sigma_target=2,
-                       evaluation_prob=evaluation_prob,
-                       force_paging=False,
-                       dynamic_gm=dynamic_game,
-                       send_obs=True,
-                       auto_minimize=auto_minimize,
-                       send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
-                       streamer_mode=streamer_mode,
-                       deterministic_streamer=deterministic_streamer,
-                       force_old_deterministic=force_old_deterministic,
-                       # testing
-                       batch_mode=False,
-                       step_size=Constants_selector.STEP_SIZE,
-                       ).run()
+    worker = RedisRolloutWorker(r, name, match,
+                                past_version_prob=past_version_prob,
+                                sigma_target=2,
+                                evaluation_prob=evaluation_prob,
+                                force_paging=False,
+                                dynamic_gm=dynamic_game,
+                                send_obs=True,
+                                auto_minimize=auto_minimize,
+                                send_gamestates=send_gamestate,
+                                gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
+                                streamer_mode=streamer_mode,
+                                deterministic_streamer=deterministic_streamer,
+                                force_old_deterministic=force_old_deterministic,
+                                # testing
+                                batch_mode=False,
+                                step_size=Constants_selector.STEP_SIZE,
+                                )
+
+    worker.env._match._obs_builder.env = worker.env
+
+    worker.run()
