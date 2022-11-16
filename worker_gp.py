@@ -48,6 +48,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
+    infinite_boost_odds = 0.02
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -66,6 +67,7 @@ if __name__ == "__main__":
             game_speed = 1
             deterministic_streamer = True
             auto_minimize = False
+            infinite_boost_odds = 0.1
 
     match = Match(
         game_speed=game_speed,
@@ -73,7 +75,8 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=CoyoteSetter(mode="normal"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True),
+                                     extra_boost_info=True, embed_players=True,
+                                     infinite_boost_odds=infinite_boost_odds),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
@@ -102,20 +105,24 @@ if __name__ == "__main__":
                   db=Constants_gp.DB_NUM,
                   )
 
-    RedisRolloutWorker(r, name, match,
-                       past_version_prob=past_version_prob,
-                       sigma_target=2,
-                       evaluation_prob=evaluation_prob,
-                       force_paging=False,
-                       dynamic_gm=dynamic_game,
-                       send_obs=True,
-                       auto_minimize=auto_minimize,
-                       send_gamestates=True,  # send_gamestate,
-                       gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
-                       streamer_mode=streamer_mode,
-                       deterministic_streamer=deterministic_streamer,
-                       force_old_deterministic=force_old_deterministic,
-                       # testing
-                       batch_mode=True,
-                       step_size=Constants_gp.STEP_SIZE,
-                       ).run()
+    worker = RedisRolloutWorker(r, name, match,
+                                past_version_prob=past_version_prob,
+                                sigma_target=2,
+                                evaluation_prob=evaluation_prob,
+                                force_paging=False,
+                                dynamic_gm=dynamic_game,
+                                send_obs=True,
+                                auto_minimize=auto_minimize,
+                                send_gamestates=True,  # send_gamestate,
+                                gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
+                                streamer_mode=streamer_mode,
+                                deterministic_streamer=deterministic_streamer,
+                                force_old_deterministic=force_old_deterministic,
+                                # testing
+                                batch_mode=True,
+                                step_size=Constants_gp.STEP_SIZE,
+                                )
+
+    worker.env._match._obs_builder.env = worker.env
+
+    worker.run()
