@@ -55,7 +55,7 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = False
+            deterministic_streamer = True
             auto_minimize = False
 
     match = Match(
@@ -109,6 +109,6 @@ if __name__ == "__main__":
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
                        # testing
-                       batch_mode=True,
+                       batch_mode=False,
                        step_size=Constants_selector.STEP_SIZE,
                        ).run()
