@@ -110,10 +110,6 @@ class SelectorParser(ActionParser):
         return Discrete(len(self._lookup_table))
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
-        # TODO: test all this shit
-        # if len(actions) != len(self.prev_model):
-        #     self.prev_action = np.asarray([[None] * 8] * len(actions))
-        #     self.prev_model = [None] * len(actions)
 
         for models in self.models:
             models[1].pre_step(state)

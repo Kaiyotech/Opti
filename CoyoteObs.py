@@ -6,6 +6,7 @@ from typing import Any, List
 
 from gym import Space
 from gym.spaces import Tuple, Box
+from rlgym.gym import Gym
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
@@ -14,7 +15,7 @@ from collections.abc import Iterable
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
-                 embed_players=False, stack_size=0, action_parser=None,
+                 embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0
                  ):
         super().__init__()
         self.expanding = expanding
@@ -46,6 +47,9 @@ class CoyoteObsBuilder(ObsBuilder):
         self.action_stacks = {}
         self.action_size = self.default_action.shape[0]
         self.action_parser = action_parser
+        self.env = env
+        self.infinite_boost_odds = infinite_boost_odds
+        self.infinite_boost_episode = False
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -63,6 +67,14 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.action_parser is not None:
             self.action_parser.reset(initial_state)
 
+        if self.env is not None:
+            if random.random() < self.infinite_boost_odds:
+                self.env.update_settings(boost_consumption=0)
+                self.infinite_boost_episode = True
+            else:
+                self.env.update_settings(boost_consumption=1)
+                self.infinite_boost_episode = False
+
     def pre_step(self, state: GameState):
         self.state = state
         # create player/team agnostic items (do these even exist?)
@@ -70,6 +82,14 @@ class CoyoteObsBuilder(ObsBuilder):
         # create team specific things
         self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
         self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
+
+        if self.env is not None:
+            if self.infinite_boost_episode:
+                for player in state.players:
+                    player.boost_amount = float("inf")
+            else:
+                for player in state.players:
+                    player.boost_amount /= 1
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
