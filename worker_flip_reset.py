@@ -20,9 +20,9 @@ set_num_threads(1)
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
                         flip_reset_w=10,
-                        punish_ceiling_pinch_w=-5,
-                        velocity_bg_w=0.4,
-                        velocity_pb_w=0.25,
+                        punish_ceiling_pinch_w=-10,
+                        velocity_bg_w=0.025,
+                        velocity_pb_w=0.1,
                         jump_touch_w=0.25,
                         wall_touch_w=0.5,
                         )
@@ -71,7 +71,7 @@ if __name__ == "__main__":
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flip_reset.FRAME_SKIP,
                                                       time_after_ground_sec=0,
-                                                      min_height=250),
+                                                      min_height=200),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,

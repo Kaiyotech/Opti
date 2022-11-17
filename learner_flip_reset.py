@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run2"
+    run_id = "flip_reset_run3"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_2",
+                        name="Flip_reset_3",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -78,9 +78,9 @@ if __name__ == "__main__":
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
                                                               flip_reset_w=10,
-                                                              punish_ceiling_pinch_w=-5,
-                                                              velocity_bg_w=0.4,
-                                                              velocity_pb_w=0.25,
+                                                              punish_ceiling_pinch_w=-10,
+                                                              velocity_bg_w=0.025,
+                                                              velocity_pb_w=0.1,
                                                               jump_touch_w=0.25,
                                                               wall_touch_w=0.5,
                                                               ),
