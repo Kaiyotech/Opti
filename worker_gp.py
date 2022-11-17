@@ -46,6 +46,7 @@ if __name__ == "__main__":
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
+    batch_mode = True
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0.02
@@ -54,6 +55,7 @@ if __name__ == "__main__":
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
             local = False
+            batch_mode = False
     if len(sys.argv) > 2:
         name = sys.argv[2]
     # if len(sys.argv) > 3 and not dynamic_game:
@@ -113,13 +115,13 @@ if __name__ == "__main__":
                                 dynamic_gm=dynamic_game,
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
-                                send_gamestates=True,  # send_gamestate,
+                                send_gamestates=send_gamestate,
                                 gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
                                 # testing
-                                batch_mode=True,
+                                batch_mode=batch_mode,
                                 step_size=Constants_gp.STEP_SIZE,
                                 )
 
