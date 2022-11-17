@@ -100,9 +100,9 @@ if __name__ == "__main__":
 
     actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
                        Linear(128, 128), LeakyReLU(),
-                       Linear(128, 31))
+                       Linear(128, 15))
 
-    actor = DiscretePolicy(actor, (31,))
+    actor = DiscretePolicy(actor, (15,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},

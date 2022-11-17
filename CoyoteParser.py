@@ -56,7 +56,7 @@ class CoyoteAction(ActionParser):
                     for roll in (-1, 0, 1):
                         for jump in (0, 1):
                             for boost in (0, 1):
-                                if jump == 1 and yaw != 0 or roll != 0:  # no flips necessary here
+                                if jump == 1 and yaw != 0 or roll != 0 or pitch != 0:  # no flips necessary here
                                     continue
                                 if pitch == roll == jump == 0:  # Duplicate with ground
                                     continue
