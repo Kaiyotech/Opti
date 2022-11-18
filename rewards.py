@@ -66,6 +66,7 @@ class ZeroSumReward(RewardFunction):
         aerial_goal_w=0,
         flip_reset_w=0,
         flip_reset_goal_w=0,
+        flip_reset_help_w=0,
         punish_low_touch_w=0,
         punish_ceiling_pinch_w=0,
         ball_opp_half_w=0,
@@ -105,6 +106,7 @@ class ZeroSumReward(RewardFunction):
         self.aerial_goal_w = aerial_goal_w
         self.flip_reset_w = flip_reset_w
         self.flip_reset_goal_w = flip_reset_goal_w
+        self.flip_reset_help_w = flip_reset_help_w
         self.punish_low_touch_w = punish_low_touch_w
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
         self.ball_opp_half_w = ball_opp_half_w
@@ -280,6 +282,14 @@ class ZeroSumReward(RewardFunction):
             player_rewards[i] += self.velocity_pb_w * speed_rew
             if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                 player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
+
+            # flip reset helper
+            if self.flip_reset_help_w != 0:
+                upness = -player.car_data.up()  # closest to 1 is best after the negation
+                pos_diff = state.ball.position - player.car_data.position
+                norm_pos_diff = np.linalg.norm(pos_diff)
+                flip_rew = np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
+                player_self_rewards[i] += self.flip_reset_help_w * flip_rew
 
             # kickoff reward
             if state.ball.position[0] == 0 and state.ball.position[1] == 0 and \
