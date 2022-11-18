@@ -21,9 +21,6 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
                         flip_reset_w=10,
                         punish_ceiling_pinch_w=-10,
-                        velocity_bg_w=0.025,
-                        velocity_pb_w=0.1,
-                        jump_touch_w=0.25,
                         wall_touch_w=0.5,
                         )
     frame_skip = Constants_flip_reset.FRAME_SKIP

@@ -63,7 +63,7 @@ class CoyoteAction(ActionParser):
                                 # Enable handbrake for potential wavedashes
                                 actions.append([boost, yaw, pitch, yaw, roll, jump, boost, 0])
             # append stall
-            actions.append([0, 1, 0, 0, -1, 1, 0, 0])
+            # actions.append([0, 1, 0, 0, -1, 1, 0, 0])
             actions = np.array(actions)
 
         return actions

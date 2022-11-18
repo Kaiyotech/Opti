@@ -127,10 +127,10 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1)),
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i])),
                             AugmentSetter(WallDribble(), True, False, False),
                         ),
-                        (0.3, 0.7)
+                        (0.5, 0.5)
                     )
                 )
 

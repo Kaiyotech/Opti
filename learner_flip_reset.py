@@ -79,9 +79,6 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
                                                               flip_reset_w=10,
                                                               punish_ceiling_pinch_w=-10,
-                                                              velocity_bg_w=0.025,
-                                                              velocity_pb_w=0.1,
-                                                              jump_touch_w=0.25,
                                                               wall_touch_w=0.5,
                                                               ),
                                         lambda: CoyoteAction("flip_reset"),
@@ -100,9 +97,9 @@ if __name__ == "__main__":
 
     actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
                        Linear(128, 128), LeakyReLU(),
-                       Linear(128, 15))
+                       Linear(128, 14))
 
-    actor = DiscretePolicy(actor, (15,))
+    actor = DiscretePolicy(actor, (14,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
