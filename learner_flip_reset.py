@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run3"
+    run_id = "flip_reset_run4"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_3",
+                        name="Flip_reset_4",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,

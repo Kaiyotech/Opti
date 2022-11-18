@@ -3,6 +3,7 @@ from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BAC
 import numpy as np
 from rlgym.utils.gamestates import PlayerData, GameState
 from rlgym.utils.reward_functions import RewardFunction
+from rlgym.utils.math import cosine_similarity
 from Constants_kickoff import FRAME_SKIP
 
 from numpy.linalg import norm
@@ -285,7 +286,7 @@ class ZeroSumReward(RewardFunction):
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
-                upness = -player.car_data.up()  # closest to 1 is best after the negation
+                upness = cosine_similarity(state.ball.position - player.car_data.position, -player.car_data.up())   # bottom of car points to ball, closest to 1 is best after the negation
                 pos_diff = state.ball.position - player.car_data.position
                 norm_pos_diff = np.linalg.norm(pos_diff)
                 flip_rew = np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
