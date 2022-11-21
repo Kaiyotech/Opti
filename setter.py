@@ -117,8 +117,6 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                             AugmentSetter(ReplaySetter(ground_dribble_replays[i],
                                                        random_boost=True,
-                                                       vel_div_weight=0.25,
-                                                       vel_div_range=(2, 5),
                                                        )
                                           )
                 )

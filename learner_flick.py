@@ -43,7 +43,7 @@ if __name__ == "__main__":
         critic_lr=1e-4,
         n_steps=Constants_flick.STEP_SIZE,
         batch_size=100_000,
-        minibatch_size=100_000,
+        # minibatch_size=100_000,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flick_run4RB"
+    run_id = "flick_run5"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flick_Run4RB",
+                        name="Flick_Run5",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -78,7 +78,6 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
-                                                              velocity_pb_w=0.025,
                                                               velocity_bg_w=0.05,
                                                               acel_ball_w=1,
                                                               team_spirit=0,
@@ -127,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flick_saves/Opti_1666410256.2516196/Opti_120/checkpoint.pt")
+    # alg.load("flick_saves/Opti_1666410256.2516196/Opti_120/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

@@ -43,7 +43,7 @@ if __name__ == "__main__":
         critic_lr=1e-4,
         n_steps=Constants_flip_reset.STEP_SIZE,
         batch_size=100_000,
-        minibatch_size=100_000,
+        # minibatch_size=100_000,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run4"
+    run_id = "flip_reset_run5"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_4",
+                        name="Flip_reset_5",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
