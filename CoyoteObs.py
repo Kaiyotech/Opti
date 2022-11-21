@@ -86,7 +86,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.env is not None:
             if self.infinite_boost_episode:
                 for player in state.players:
-                    player.boost_amount = 1
+                    player.boost_amount = 2
             else:
                 for player in state.players:
                     player.boost_amount /= 1

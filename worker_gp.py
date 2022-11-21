@@ -49,7 +49,7 @@ if __name__ == "__main__":
     batch_mode = True
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.02
+    infinite_boost_odds = 0.1
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
