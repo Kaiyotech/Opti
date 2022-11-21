@@ -286,10 +286,18 @@ class ZeroSumReward(RewardFunction):
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
-                upness = cosine_similarity(state.ball.position - player.car_data.position, -player.car_data.up())   # bottom of car points to ball, closest to 1 is best after the negation
+                upness = cosine_similarity(
+                    np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up())   # bottom of car points to ceiling
+                from_wall_ratio = min(1, abs(state.ball.position[0]) / 1300)
+                height_ratio = min(1, state.ball.position[2] / 1700)
+                if player.team_num == BLUE_TEAM:
+                    objective = np.array(ORANGE_GOAL_BACK)
+                else:
+                    objective = np.array(BLUE_GOAL_BACK)
+                align_ratio = cosine_similarity(objective - player.car_data.position, player.car_data.forward())
                 pos_diff = state.ball.position - player.car_data.position
                 norm_pos_diff = np.linalg.norm(pos_diff)
-                flip_rew = np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
+                flip_rew = from_wall_ratio * height_ratio * align_ratio * np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
                 player_self_rewards[i] += self.flip_reset_help_w * flip_rew
 
             # kickoff reward
@@ -301,7 +309,8 @@ class ZeroSumReward(RewardFunction):
             # flip reset
             if not last.has_jump and player.has_jump and player.car_data.position[2] > 500 and not player.on_ground:
                 self.got_reset[i] = True
-                player_rewards[i] += self.flip_reset_w
+                player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
+                    np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
             if player.on_ground:
                 self.got_reset[i] = False
 
