@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run5"
+    run_id = "flip_reset_run6"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_5",
+                        name="Flip_reset_6",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -79,8 +79,9 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
                                                               flip_reset_w=10,
                                                               punish_ceiling_pinch_w=-10,
-                                                              wall_touch_w=0.5,
+                                                              wall_touch_w=1,
                                                               flip_reset_help_w=1,
+                                                              punish_car_ceiling_w=-1,
                                                               ),
                                         lambda: CoyoteAction("flip_reset"),
                                         save_every=logger.config.save_every * 3,
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flip_reset_saves/Opti_1669096051.8572574/Opti_1320/checkpoint.pt")
+    # alg.load("flip_reset_saves/Opti_1669096051.8572574/Opti_1320/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

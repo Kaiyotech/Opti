@@ -163,3 +163,4 @@ class BallTouchCeilingCondition(TerminalCondition):
         """
 
         return current_state.ball.position[2] > (CEILING_Z - 120)
+

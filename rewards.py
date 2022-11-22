@@ -75,6 +75,7 @@ class ZeroSumReward(RewardFunction):
             kickoff_final_boost_w=0,
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
+            punish_car_ceiling_w=0,
             punish_action_change_w=0,
             goal_speed_exp=1,  # fix this eventually
             touch_height_exp=1,
@@ -115,6 +116,7 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_final_boost_w = kickoff_final_boost_w
         self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
         self.dribble_w = dribble_w
+        self.punish_car_ceiling_w = punish_car_ceiling_w
         self.punish_action_change_w = punish_action_change_w
         self.previous_action = None
         self.goal_speed_exp = goal_speed_exp
@@ -267,6 +269,10 @@ class ZeroSumReward(RewardFunction):
                 player_self_rewards[i] += self.touch_grass_w
                 if self.closest_reset_blue == i or self.closest_reset_orange == i:
                     player_self_rewards[i] += self.kickoff_special_touch_ground_w
+
+            # touch ceiling
+            if player.on_ground and player.car_data.position[2] > CEILING_Z - 20:
+                player_self_rewards[i] += self.punish_car_ceiling_w
 
             # demo
             if player.is_demoed and not last.is_demoed:
