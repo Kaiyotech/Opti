@@ -47,40 +47,40 @@ class ZeroSumReward(RewardFunction):
     # framework for zerosum comes from Nexto code (Rolv and Soren)
     # (https://github.com/Rolv-Arild/Necto/blob/master/training/reward.py)
     def __init__(
-        self,
-        goal_w=0,  # go to 10 after working
-        concede_w=0,
-        velocity_pb_w=0,  # 0.01,
-        velocity_bg_w=0,  # 0.05,
-        touch_grass_w=0,  # -0.005,
-        acel_ball_w=0,  # 1.5,
-        boost_gain_w=0,  # 1.5,
-        boost_spend_w=1.5,  # 1.5 is default
-        punish_boost=False,  # punish once they start wasting and understand the game a bit
-        jump_touch_w=0,  # 3,
-        cons_air_touches_w=0,  # 6,
-        wall_touch_w=0,  # 0.25,
-        demo_w=0,  # 3,  # 6,
-        got_demoed_w=0,  # -3,  # -6,
-        kickoff_w=0,  # 0.1,
-        double_tap_w=0,
-        aerial_goal_w=0,
-        flip_reset_w=0,
-        flip_reset_goal_w=0,
-        flip_reset_help_w=0,
-        punish_low_touch_w=0,
-        punish_ceiling_pinch_w=0,
-        ball_opp_half_w=0,
-        kickoff_special_touch_ground_w=0,
-        kickoff_final_boost_w=0,
-        kickoff_vpb_after_0_w=0,
-        dribble_w=0,
-        punish_action_change_w=0,
-        goal_speed_exp=1,  # fix this eventually
-        touch_height_exp=1,
-        tick_skip=FRAME_SKIP,
-        team_spirit=0,  # increase as they learn
-        zero_sum=True,
+            self,
+            goal_w=0,  # go to 10 after working
+            concede_w=0,
+            velocity_pb_w=0,  # 0.01,
+            velocity_bg_w=0,  # 0.05,
+            touch_grass_w=0,  # -0.005,
+            acel_ball_w=0,  # 1.5,
+            boost_gain_w=0,  # 1.5,
+            boost_spend_w=1.5,  # 1.5 is default
+            punish_boost=False,  # punish once they start wasting and understand the game a bit
+            jump_touch_w=0,  # 3,
+            cons_air_touches_w=0,  # 6,
+            wall_touch_w=0,  # 0.25,
+            demo_w=0,  # 3,  # 6,
+            got_demoed_w=0,  # -3,  # -6,
+            kickoff_w=0,  # 0.1,
+            double_tap_w=0,
+            aerial_goal_w=0,
+            flip_reset_w=0,
+            flip_reset_goal_w=0,
+            flip_reset_help_w=0,
+            punish_low_touch_w=0,
+            punish_ceiling_pinch_w=0,
+            ball_opp_half_w=0,
+            kickoff_special_touch_ground_w=0,
+            kickoff_final_boost_w=0,
+            kickoff_vpb_after_0_w=0,
+            dribble_w=0,
+            punish_action_change_w=0,
+            goal_speed_exp=1,  # fix this eventually
+            touch_height_exp=1,
+            tick_skip=FRAME_SKIP,
+            team_spirit=0,  # increase as they learn
+            zero_sum=True,
     ):
         self.goal_w = goal_w
         self.concede_w = concede_w
@@ -200,7 +200,8 @@ class ZeroSumReward(RewardFunction):
                 max_height = CEILING_Z - BALL_RADIUS
                 rnge = max_height - min_height
                 if not player.on_ground and state.ball.position[2] > min_height:
-                    player_rewards[i] += self.jump_touch_w * ((state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
+                    player_rewards[i] += self.jump_touch_w * (
+                            (state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
 
                 # wall touch
                 min_height = 350
@@ -244,7 +245,6 @@ class ZeroSumReward(RewardFunction):
                 vel_bg_reward = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.velocity_bg_w * vel_bg_reward
 
-
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall
             if player.team_num == BLUE_TEAM:
@@ -287,17 +287,22 @@ class ZeroSumReward(RewardFunction):
             # flip reset helper
             if self.flip_reset_help_w != 0:
                 upness = cosine_similarity(
-                    np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up())   # bottom of car points to ceiling
+                    np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]),
+                    -player.car_data.up())  # bottom of car points to ceiling
                 from_wall_ratio = min(1, abs(state.ball.position[0]) / 1300)
                 height_ratio = min(1, state.ball.position[2] / 1700)
+                bottom_ball_ratio = 2 * cosine_similarity(
+                    state.ball.position - player.car_data.position, -player.car_data.up())
                 if player.team_num == BLUE_TEAM:
                     objective = np.array(ORANGE_GOAL_BACK)
                 else:
                     objective = np.array(BLUE_GOAL_BACK)
                 align_ratio = cosine_similarity(objective - player.car_data.position, player.car_data.forward())
                 pos_diff = state.ball.position - player.car_data.position
+                pos_diff[2] *= 2  # make the z axis twice as important
                 norm_pos_diff = np.linalg.norm(pos_diff)
-                flip_rew = from_wall_ratio * height_ratio * align_ratio * np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
+                flip_rew = bottom_ball_ratio * from_wall_ratio * height_ratio * align_ratio * \
+                           np.clip(-1, 1, 40 * upness / (norm_pos_diff + 1))
                 player_self_rewards[i] += self.flip_reset_help_w * flip_rew
 
             # kickoff reward
@@ -338,7 +343,6 @@ class ZeroSumReward(RewardFunction):
 
                 if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
                     player_rewards[mid:] += self.concede_w
-
 
             if d_orange > 0:
                 goal_speed = norm(self.last_state.ball.linear_velocity) ** self.goal_speed_exp
