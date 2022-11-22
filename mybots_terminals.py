@@ -1,6 +1,6 @@
 from rlgym.utils.terminal_conditions import TerminalCondition
 from rlgym.utils.gamestates import GameState
-from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y
+from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z
 
 
 class BallTouchGroundCondition(TerminalCondition):
@@ -144,3 +144,22 @@ class PlayerTwoTouch(TerminalCondition):
             elif current_state.players[self.toucher].ball_touched:
                 self.no_touch_steps = 10_000_000
         return False
+
+
+class BallTouchCeilingCondition(TerminalCondition):
+    """
+    A condition that will terminate an episode after ball touches ceiling
+    """
+
+    def __init__(self, ):
+        super().__init__()
+
+    def reset(self, initial_state: GameState):
+        pass
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        """
+        return True if ball is close to ceiling
+        """
+
+        return current_state.ball.position[2] > (CEILING_Z - 120)

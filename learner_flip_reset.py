@@ -43,7 +43,7 @@ if __name__ == "__main__":
         critic_lr=1e-4,
         n_steps=Constants_flip_reset.STEP_SIZE,
         batch_size=100_000,
-        # minibatch_size=100_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
