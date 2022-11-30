@@ -65,7 +65,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="flip_reset"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_flip_reset.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False),
-        action_parser=CoyoteAction("flip_reset"),
+        action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flip_reset.FRAME_SKIP,

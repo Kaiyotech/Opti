@@ -9,6 +9,7 @@ from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from CoyoteObs import CoyoteObsBuilder
+from agent import Opti
 
 from CoyoteParser import CoyoteAction
 import numpy as np
@@ -74,14 +75,12 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Flick",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False),
+                                                                 team_size=3, extra_boost_info=False, embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
-                                                              velocity_bg_w=0.05,
-                                                              acel_ball_w=1,
+                                                              acel_ball_w=2,
                                                               team_spirit=0,
-                                                              dribble_w=0.01,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -93,15 +92,32 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 1))
+    # critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                     Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                     Linear(256, 1))
+    #
+    # actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                    Linear(256, 256), LeakyReLU(),
+    #                    Linear(256, 373))
+    #
+    # actor = DiscretePolicy(actor, (373,))
 
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                       Linear(256, 256), LeakyReLU(),
-                       Linear(256, 373))
+    critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 1))
 
-    actor = DiscretePolicy(actor, (373,))
+    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+                       LeakyReLU(),
+                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
+
+    critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
+
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
+
+    actor = DiscretePolicy(actor, shape=(373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -126,7 +142,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("flick_saves/Opti_1666410256.2516196/Opti_120/checkpoint.pt")
+    alg.load("GP_saves/Opti_1669785603.1074533/Opti_12510/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

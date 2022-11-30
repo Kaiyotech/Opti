@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run6"
+    run_id = "flip_reset_run7_pinch"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_6",
+                        name="Flip_reset_7_pinch",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                                                               flip_reset_help_w=1,
                                                               punish_car_ceiling_w=-1,
                                                               ),
-                                        lambda: CoyoteAction("flip_reset"),
+                                        lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
                                         model_every=logger.config.model_every,
                                         logger=logger,
@@ -93,15 +93,24 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 256), LeakyReLU(),
-                        Linear(256, 1))
+    # critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                     Linear(256, 256), LeakyReLU(),
+    #                     Linear(256, 1))
+    #
+    # actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
+    #                    Linear(128, 128), LeakyReLU(),
+    #                    Linear(128, 14))
+    #
+    # actor = DiscretePolicy(actor, (14,))
 
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
-                       Linear(128, 128), LeakyReLU(),
-                       Linear(128, 14))
+    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 1))
 
-    actor = DiscretePolicy(actor, (14,))
+    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
+
+    actor = DiscretePolicy(actor, (373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -126,7 +135,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("flip_reset_saves/Opti_1669096051.8572574/Opti_1320/checkpoint.pt")
+    alg.load("pinch_saves/Opti_1666202934.5988934/Opti_7980/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

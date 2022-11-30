@@ -21,6 +21,8 @@ number = ""
 if len(splits) > 2:
     number = splits[1]
 
+print(f"model type is \"{model_type}\"")
+
 # actor for pinch
 if model_type == "pinch":
     actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
@@ -44,6 +46,18 @@ if model_type == "gp":
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
     actor = DiscretePolicy(actor, shape=(373,))
+
+# actor for gp
+if model_type == "selector":
+    stack_size = 20
+    input_size = 426 + (stack_size * 8)
+    actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
+                       LeakyReLU(),
+                       Linear(128, 9))
+
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
+
+    actor = DiscretePolicy(actor, shape=(9,))
 
 # actor for flip reset
 if model_type == "flipreset":
@@ -83,6 +97,9 @@ actor.eval()
 new_name = filename.split("_checkpoint")[0] + "_jit.pt"
 if model_type == "gp":
     test_input_embed = (torch.Tensor(1, 251), torch.Tensor(1, 5, 35))
+    torch.jit.save(torch.jit.trace(actor, example_inputs=(test_input_embed,)), new_name)
+elif model_type == "selector":
+    test_input_embed = (torch.Tensor(1, 411), torch.Tensor(1, 5, 35))
     torch.jit.save(torch.jit.trace(actor, example_inputs=(test_input_embed,)), new_name)
 else:
     test_input_norm = torch.Tensor(actor.net._modules['0'].in_features)

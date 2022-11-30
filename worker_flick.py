@@ -21,10 +21,8 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                         goal_w=5,
                         concede_w=-5,
-                        velocity_bg_w=0.05,
-                        acel_ball_w=1,
+                        acel_ball_w=2,
                         team_spirit=0,
-                        dribble_w=0.01,
                         )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
@@ -65,12 +63,12 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=CoyoteSetter(mode="flick"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=False),
+                                     extra_boost_info=False, embed_players=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flick.FRAME_SKIP,
-                                                      time_after_ground_sec=1,
+                                                      time_after_ground_sec=0.5,
                                                       min_height=94),
                              PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
@@ -107,7 +105,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.8, '2v2': 0.1, '3v3': 0.1},  # default 1/3
+                       gamemode_weights={'1v1': 0.9, '2v2': 0.05, '3v3': 0.05},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

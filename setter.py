@@ -24,6 +24,7 @@ class CoyoteSetter(DynamicGMSetter):
         double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy"]
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                "replays/ground_dribble_3v3.npy"]
+        demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
 
         if mode is None or mode == "normal":
             for i in range(3):
@@ -130,6 +131,12 @@ class CoyoteSetter(DynamicGMSetter):
                         ),
                         (0.5, 0.5)
                     )
+                )
+
+        elif mode == "demo":
+            for i in range(3):
+                self.setters.append(
+                    AugmentSetter(ReplaySetter(demo_replays[i]))
                 )
 
     def reset(self, state_wrapper: StateWrapper):
