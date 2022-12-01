@@ -32,7 +32,7 @@ class BallTouchGroundCondition(TerminalCondition):
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
-            return current_state.ball.position[2] < self.min_height
+            return True
         else:
             return False
 
