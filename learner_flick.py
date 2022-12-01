@@ -75,7 +75,7 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Flick",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False, embed_players=True),
+                                                                 team_size=3, extra_boost_info=True, embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
