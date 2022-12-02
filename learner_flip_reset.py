@@ -80,9 +80,15 @@ if __name__ == "__main__":
                                                               flip_reset_w=10,
                                                               punish_ceiling_pinch_w=-10,
                                                               wall_touch_w=1,
-                                                              flip_reset_help_w=1,
+                                                              flip_reset_help_w=.05,
                                                               punish_car_ceiling_w=-1,
-                                                              https: // clips.twitch.tv / AuspiciousJoyousPeafowlJKanStyle - pfm3CG3XO7PCBnhV
+                                                              double_tap_w=10,
+                                                              flip_reset_goal_w=20,
+                                                              concede_w=-10,
+                                                              velocity_bg_w=0.1,
+                                                              acel_ball_w=1,
+                                                              cons_air_touches_w=0.05,
+                                                              jump_touch_w=0.1,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -136,7 +142,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("pinch_saves/Opti_1666202934.5988934/Opti_7980/checkpoint.pt")
+    alg.load("flip_reset_saves/Opti_1669952461.68517/Opti_8450/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

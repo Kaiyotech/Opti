@@ -22,8 +22,15 @@ if __name__ == "__main__":
                         flip_reset_w=10,
                         punish_ceiling_pinch_w=-10,
                         wall_touch_w=1,
-                        flip_reset_help_w=1,
+                        flip_reset_help_w=.05,
                         punish_car_ceiling_w=-1,
+                        double_tap_w=10,
+                        flip_reset_goal_w=20,
+                        concede_w=-10,
+                        velocity_bg_w=0.1,
+                        acel_ball_w=1,
+                        cons_air_touches_w=0.05,
+                        jump_touch_w=0.1,
                         )
     frame_skip = Constants_flip_reset.FRAME_SKIP
     fps = 120 // frame_skip
