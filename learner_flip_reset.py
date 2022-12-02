@@ -43,7 +43,7 @@ if __name__ == "__main__":
         critic_lr=1e-4,
         n_steps=Constants_flip_reset.STEP_SIZE,
         batch_size=100_000,
-        minibatch_size=None,
+        minibatch_size=50_000,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -82,6 +82,7 @@ if __name__ == "__main__":
                                                               wall_touch_w=1,
                                                               flip_reset_help_w=1,
                                                               punish_car_ceiling_w=-1,
+                                                              https: // clips.twitch.tv / AuspiciousJoyousPeafowlJKanStyle - pfm3CG3XO7PCBnhV
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
