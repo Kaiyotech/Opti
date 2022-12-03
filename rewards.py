@@ -76,6 +76,7 @@ class ZeroSumReward(RewardFunction):
             kickoff_final_boost_w=0,
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
+            exit_velocity_w=0,
             punish_car_ceiling_w=0,
             punish_action_change_w=0,
             goal_speed_exp=1,  # fix this eventually
@@ -121,6 +122,7 @@ class ZeroSumReward(RewardFunction):
         self.kickoff_final_boost_w = kickoff_final_boost_w
         self.kickoff_vpb_after_0_w = kickoff_vpb_after_0_w
         self.dribble_w = dribble_w
+        self.exit_velocity_w = exit_velocity_w
         self.punish_car_ceiling_w = punish_car_ceiling_w
         self.punish_action_change_w = punish_action_change_w
         self.previous_action = None
@@ -153,6 +155,9 @@ class ZeroSumReward(RewardFunction):
         self.last_touched_frame = [-1] * 6
         self.reset_timer = -1000
         self.flip_reset_delay_steps = 0.25 * (120 // tick_skip)
+        self.last_touch_time = -1000
+        self.exit_vel_arm_time_steps = 0.1 * (120 // tick_skip)
+        self.exit_rewarded = False
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -178,11 +183,14 @@ class ZeroSumReward(RewardFunction):
         # Calculate rewards
         player_rewards = np.zeros(len(state.players))
         player_self_rewards = np.zeros(len(state.players))
-
+        normed_last_ball_vel = norm(self.last_state.ball.linear_velocity)
+        norm_ball_vel = norm(state.ball.linear_velocity)
         for i, player in enumerate(state.players):
             last = self.last_state.players[i]
 
             if player.ball_touched:
+                self.last_touch_time = self.kickoff_timer
+                self.exit_rewarded = False
                 if player.team_num == BLUE_TEAM:
                     # new blue toucher for aerial touches (or kickoff touch)
                     if self.blue_toucher != i or self.orange_touch_timer <= self.blue_touch_timer:
@@ -236,6 +244,12 @@ class ZeroSumReward(RewardFunction):
                 # dribble
                 if state.ball.position[2] > 120 and player.on_ground:
                     player_rewards[i] += self.dribble_w
+
+            # not touched
+            else:
+                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded:
+                    # rewards 1 for a 110 kph flick (3055 uu/s)
+                    player_rewards[i] += self.exit_velocity_w * (norm_ball_vel / 3055)
 
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
@@ -349,7 +363,7 @@ class ZeroSumReward(RewardFunction):
             d_blue = state.blue_score - self.last_state.blue_score
             d_orange = state.orange_score - self.last_state.orange_score
             if d_blue > 0:
-                goal_speed = norm(self.last_state.ball.linear_velocity) ** self.goal_speed_exp
+                goal_speed = normed_last_ball_vel ** self.goal_speed_exp
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
@@ -367,7 +381,7 @@ class ZeroSumReward(RewardFunction):
                     player_rewards[mid:] += self.concede_w
 
             if d_orange > 0:
-                goal_speed = norm(self.last_state.ball.linear_velocity) ** self.goal_speed_exp
+                goal_speed = normed_last_ball_vel ** self.goal_speed_exp
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward
@@ -416,6 +430,8 @@ class ZeroSumReward(RewardFunction):
         self.blue_touch_height = -1
         self.orange_touch_height = -1
         self.reset_timer = -1000
+        self.last_touch_time = -1000
+        self.exit_rewarded = False
         # self.previous_action = np.asarray([[-1] * 8] * len(initial_state.players))
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:

@@ -21,8 +21,9 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                         goal_w=5,
                         concede_w=-5,
-                        acel_ball_w=2,
+                        acel_ball_w=1,
                         team_spirit=0,
+                        exit_velocity_w=2,
                         )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
@@ -68,8 +69,9 @@ if __name__ == "__main__":
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flick.FRAME_SKIP,
-                                                      time_after_ground_sec=0.5,
-                                                      min_height=94),
+                                                      time_after_ground_sec=0.25,
+                                                      min_height=120,
+                                                      neg_y_check=True),
                              PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
                              ],
