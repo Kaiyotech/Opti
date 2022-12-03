@@ -83,6 +83,7 @@ class ZeroSumReward(RewardFunction):
             tick_skip=FRAME_SKIP,
             team_spirit=0,  # increase as they learn
             zero_sum=True,
+            prevent_chain_reset=False,
     ):
         self.cons_resets = 0
         self.goal_w = goal_w
@@ -112,6 +113,7 @@ class ZeroSumReward(RewardFunction):
         self.inc_flip_reset_w = inc_flip_reset_w
         self.flip_reset_goal_w = flip_reset_goal_w
         self.flip_reset_help_w = flip_reset_help_w
+        self.prevent_chain_reset = prevent_chain_reset
         self.punish_low_touch_w = punish_low_touch_w
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
         self.ball_opp_half_w = ball_opp_half_w
@@ -149,6 +151,8 @@ class ZeroSumReward(RewardFunction):
         self.blue_touch_height = -1
         self.orange_touch_height = -1
         self.last_touched_frame = [-1] * 6
+        self.reset_timer = -1000
+        self.flip_reset_delay_steps = 0.25 * (120 // tick_skip)
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -325,13 +329,17 @@ class ZeroSumReward(RewardFunction):
                 self.got_reset[i] = True
                 # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
-                player_rewards[i] += self.flip_reset_w
-                self.cons_resets += 1
-                if self.cons_resets > 1:
-                    player_rewards[i] += self.inc_flip_reset_w * min((1.4 ** self.cons_resets), 6) / 6
+                if self.kickoff_timer - self.reset_timer > self.flip_reset_delay_steps:
+                    player_rewards[i] += self.flip_reset_w
+                    self.cons_resets += 1
+                    if self.cons_resets > 1:
+                        player_rewards[i] += self.inc_flip_reset_w * min((1.4 ** self.cons_resets), 6) / 6
+                if self.prevent_chain_reset:
+                    self.reset_timer = self.kickoff_timer
             if player.on_ground:
                 self.got_reset[i] = False
                 self.cons_resets = 0
+                self.reset_timer = -1000
 
         mid = len(player_rewards) // 2
 
@@ -407,6 +415,7 @@ class ZeroSumReward(RewardFunction):
         self.num_touches = [0] * len(initial_state.players)
         self.blue_touch_height = -1
         self.orange_touch_height = -1
+        self.reset_timer = -1000
         # self.previous_action = np.asarray([[-1] * 8] * len(initial_state.players))
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
