@@ -17,9 +17,11 @@ class BallTouchGroundCondition(TerminalCondition):
     def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS,
                  neg_z_check=False,
                  check_towards_goal=False,
+                 time_to_arm_sec=0,
                  ):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
+        self.time_to_arm_steps = time_to_arm_sec * (120 // tick_skip)
         self.steps = 0
         self.steps_after_ground = time_after_ground_sec * (120 // tick_skip)
         self.touch_time = 0
@@ -40,20 +42,10 @@ class BallTouchGroundCondition(TerminalCondition):
         of seconds since the ball first touched the ground.
         """
         self.steps += 1
-        if not self.touched and current_state.ball.position[2] < self.min_height:
+        if not self.touched and current_state.ball.position[2] < self.min_height and self.steps > self.time_to_arm_steps:
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
-            # if not self.neg_z_check:
-            #     if self.check_towards_goal:
-            #         return not ball_towards_goal(current_state.ball)
-            #     else:
-            #         return True
-            # else:
-            #     if current_state.ball.linear_velocity[2] < -1:
-            #         return not ball_towards_goal(current_state.ball)
-            #     else:
-            #         return False
             if not self.neg_z_check and not self.check_towards_goal:
                 return True
             elif self.neg_z_check:

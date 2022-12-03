@@ -73,6 +73,7 @@ if __name__ == "__main__":
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
+                                                      time_to_arm_sec=2,  # allow it to roll from ground or pop
                                                       tick_skip=Constants_flip_reset.FRAME_SKIP,
                                                       time_after_ground_sec=1,
                                                       min_height=110,
