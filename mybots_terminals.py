@@ -3,12 +3,21 @@ from rlgym.utils.gamestates import GameState
 from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z
 
 
+def ball_towards_goal(ball):
+    x, y, z = ball.position
+    vx, vy, vz = ball.linear_velocity
+    return y * vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > 4000
+
+
 class BallTouchGroundCondition(TerminalCondition):
     """
     A condition that will terminate an episode after ball touches ground
     """
 
-    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS, neg_y_check=False):
+    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS,
+                 neg_z_check=False,
+                 check_towards_goal=False,
+                 ):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.steps = 0
@@ -16,8 +25,9 @@ class BallTouchGroundCondition(TerminalCondition):
         self.touch_time = 0
         self.touched = False
         self.min_height = min_height
-        self.neg_y_check = neg_y_check
-
+        self.neg_z_check = neg_z_check
+        self.check_towards_goal = check_towards_goal
+        assert neg_z_check and check_towards_goal
 
     def reset(self, initial_state: GameState):
         self.steps = 0
@@ -34,13 +44,22 @@ class BallTouchGroundCondition(TerminalCondition):
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
-            if not self.neg_y_check:
+            # if not self.neg_z_check:
+            #     if self.check_towards_goal:
+            #         return not ball_towards_goal(current_state.ball)
+            #     else:
+            #         return True
+            # else:
+            #     if current_state.ball.linear_velocity[2] < -1:
+            #         return not ball_towards_goal(current_state.ball)
+            #     else:
+            #         return False
+            if not self.neg_z_check and not self.check_towards_goal:
                 return True
-            else:
-                if current_state.ball.linear_velocity[1] < -1:
-                    return True
-                else:
-                    return False
+            elif self.neg_z_check:
+                return current_state.ball.linear_velocity[2] < -1
+            elif self.check_towards_goal:
+                return not ball_towards_goal(current_state.ball)
         else:
             return False
 

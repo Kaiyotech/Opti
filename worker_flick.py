@@ -71,7 +71,7 @@ if __name__ == "__main__":
                                                       tick_skip=Constants_flick.FRAME_SKIP,
                                                       time_after_ground_sec=0.25,
                                                       min_height=120,
-                                                      neg_y_check=True),
+                                                      neg_z_check=True),
                              PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
                              ],
