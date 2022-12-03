@@ -61,9 +61,13 @@ if model_type == "selector":
 
 # actor for flip reset
 if model_type == "flipreset":
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                       Linear(256, 256), LeakyReLU(),
-                       Linear(256, 373))
+    # actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                    Linear(256, 256), LeakyReLU(),
+    #                    Linear(256, 373))
+    #
+    # actor = DiscretePolicy(actor, (373,))
+    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
 
     actor = DiscretePolicy(actor, (373,))
 

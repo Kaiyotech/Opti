@@ -339,7 +339,7 @@ class ZeroSumReward(RewardFunction):
                 player_self_rewards[i] += self.kickoff_w * -1
 
             # flip reset
-            if not last.has_jump and player.has_jump and player.car_data.position[2] > 500 and not player.on_ground:
+            if not last.has_jump and player.has_jump and player.car_data.position[2] > 200 and not player.on_ground:
                 self.got_reset[i] = True
                 # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
