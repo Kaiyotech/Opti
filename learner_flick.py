@@ -75,12 +75,14 @@ if __name__ == "__main__":
     rollout_gen = RedisRolloutGenerator("Flick",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=True, embed_players=True),
+                                                                 team_size=3, extra_boost_info=True,
+                                                                 embed_players=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
                                                               goal_w=5,
                                                               concede_w=-5,
-                                                              acel_ball_w=2,
+                                                              acel_ball_w=0.25,
                                                               team_spirit=0,
+                                                              exit_velocity_w=2,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -142,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1669785603.1074533/Opti_12510/checkpoint.pt")
+    alg.load("flick_saves/Opti_1669866264.4765978/Opti_13960/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

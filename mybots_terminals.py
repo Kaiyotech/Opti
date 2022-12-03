@@ -8,7 +8,7 @@ class BallTouchGroundCondition(TerminalCondition):
     A condition that will terminate an episode after ball touches ground
     """
 
-    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS):
+    def __init__(self, min_time_sec=3, tick_skip=8, time_after_ground_sec=0, min_height=2 * BALL_RADIUS, neg_y_check=False):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.steps = 0
@@ -16,6 +16,8 @@ class BallTouchGroundCondition(TerminalCondition):
         self.touch_time = 0
         self.touched = False
         self.min_height = min_height
+        self.neg_y_check = neg_y_check
+
 
     def reset(self, initial_state: GameState):
         self.steps = 0
@@ -32,7 +34,13 @@ class BallTouchGroundCondition(TerminalCondition):
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
-            return True
+            if not self.neg_y_check:
+                return True
+            else:
+                if current_state.ball.linear_velocity[1] < -1:
+                    return True
+                else:
+                    return False
         else:
             return False
 
@@ -117,12 +125,14 @@ class PlayerTwoTouch(TerminalCondition):
         self.toucher = -1
         self.touched = False
         self.no_touch_steps = 0
+        self.armed = False
 
     def reset(self, initial_state: GameState):
         self.steps = 0
         self.toucher = -1
         self.touched = False
         self.no_touch_steps = 10_000_000
+        self.armed = False
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
@@ -136,8 +146,9 @@ class PlayerTwoTouch(TerminalCondition):
                     self.touched = True
                     return False
         else:
-            if not current_state.players[self.toucher].ball_touched:
+            if not current_state.players[self.toucher].ball_touched and not self.armed:
                 self.no_touch_steps = self.steps
+                self.armed = True
             elif (self.steps > self.no_touch_steps + self.time_to_arm_steps) and \
                     current_state.players[self.toucher].ball_touched:
                 return True
