@@ -154,7 +154,7 @@ class ZeroSumReward(RewardFunction):
         self.orange_touch_height = -1
         self.last_touched_frame = [-1] * 6
         self.reset_timer = -1000
-        self.flip_reset_delay_steps = 0.25 * (120 // tick_skip)
+        self.flip_reset_delay_steps = 0.15 * (120 // tick_skip)
         self.last_touch_time = -1000
         self.exit_vel_arm_time_steps = 0.1 * (120 // tick_skip)
         self.exit_rewarded = False
