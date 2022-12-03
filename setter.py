@@ -19,6 +19,8 @@ class CoyoteSetter(DynamicGMSetter):
                               "replays/wall_flip_reset_3v3.npy"]
         ground_flip_reset_replays = ["replays/ground_flip_reset_1v1.npy", "replays/ground_flip_reset_2v2.npy",
                                    "replays/ground_flip_reset_3v3.npy"]
+        low_flip_reset_replays = ["replays/low_flip_reset_1v1.npy", "replays/low_flip_reset_2v2.npy",
+                                     "replays/low_flip_reset_3v3.npy"]
         kickoff_replays = ["replays/kickoff_1v1.npy", "replays/kickoff_2v2.npy", "replays/kickoff_3v3.npy"]
         ceiling_replays = ["replays/ceiling_1v1.npy", "replays/ceiling_2v2.npy", "replays/ceiling_3v3.npy"]
         air_dribble_replays = ["replays/air_dribble_1v1.npy", "replays/air_dribble_2v2.npy",
@@ -137,9 +139,10 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(WallDribble(speed_min=1700, speed_max=1900, max_rand_z=300), True, False,
                                           False),
                             AugmentSetter(ReplaySetter(ground_flip_reset_replays[i])),
+                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i])),
                         ),
                         # (0, 0, 0, 0.5, 0, 0.5)
-                        (0.05, 0.1, 0.2, 0.6, 0.05, 0)
+                        (0.05, 0.05, 0.2, 0.6, 0.05, 0, 0.05)
                     )
                 )
 
