@@ -27,7 +27,7 @@ class BallTouchGroundCondition(TerminalCondition):
         self.min_height = min_height
         self.neg_z_check = neg_z_check
         self.check_towards_goal = check_towards_goal
-        assert neg_z_check and check_towards_goal
+        assert not (neg_z_check and check_towards_goal)
 
     def reset(self, initial_state: GameState):
         self.steps = 0

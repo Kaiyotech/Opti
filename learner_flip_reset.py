@@ -65,11 +65,11 @@ if __name__ == "__main__":
                   db=Constants_flip_reset.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
-    # stat_trackers = [
-    #     Speed(normalize=True), Demos(), TimeoutRate(), Touch(), EpisodeLength(), Boost(), BehindBall(), TouchHeight(),
-    #     DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
-    #     GoalSpeed(), MaxGoalSpeed(),
-    # ]
+    stat_trackers = [
+        Speed(normalize=True), Demos(), TimeoutRate(), Touch(), EpisodeLength(), Boost(), BehindBall(), TouchHeight(),
+        DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
+        GoalSpeed(), MaxGoalSpeed(),
+    ]
 
     rollout_gen = RedisRolloutGenerator("Flip_reset",
                                         redis,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                                         model_every=logger.config.model_every,
                                         logger=logger,
                                         clear=False,
-                                        # stat_trackers=stat_trackers,
+                                        stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flip_reset_saves/Opti_1670037531.2876506/Opti_10340/checkpoint.pt")
+    alg.load("flip_reset_saves/Opti_1670085638.3153794/Opti_10440/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
