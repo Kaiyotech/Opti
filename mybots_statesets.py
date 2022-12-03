@@ -94,8 +94,12 @@ class WallDribble(StateSetter):
     def __init__(
             self,
             max_rand_z=500,
+            speed_min=1375,
+            speed_max=1425,
     ):
         self.rand_z_max = max_rand_z
+        self.speed_min = speed_min
+        self.speed_max = speed_max
 
     def reset(self, state_wrapper: StateWrapper):
         rng = np.random.default_rng()
@@ -131,7 +135,7 @@ class WallDribble(StateSetter):
         car_attack.set_rot(*desired_rotation)
         car_attack.boost = rand.uniform(0.3, 1.0)
 
-        car_attack.set_lin_vel(0, orange_fix * 200 * x_choice, rng.uniform(1375, 1425))
+        car_attack.set_lin_vel(0, orange_fix * 200 * x_choice, rng.uniform(self.speed_min, self.speed_max))
         car_attack.set_ang_vel(0, 0, 0)
 
         # Now we will spawn the ball in front of the car_0 with slightly less speed
@@ -143,7 +147,7 @@ class WallDribble(StateSetter):
             ball_x = rand_x + 17 - BALL_RADIUS
         state_wrapper.ball.set_pos(x=ball_x, y=rand_y + orange_fix * rng.uniform(20, 60),
                                    z=rand_z + rng.uniform(150, 200))
-        state_wrapper.ball.set_lin_vel(0, orange_fix * 200, rng.uniform(1200, 1300))
+        state_wrapper.ball.set_lin_vel(0, orange_fix * 200, rng.uniform(self.speed_min - 175, self.speed_max - 125))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
 
         # Loop over every car in the game, skipping 1 since we already did it

@@ -128,8 +128,9 @@ class CoyoteSetter(DynamicGMSetter):
                         (
                             AugmentSetter(ReplaySetter(flip_reset_replays[i])),
                             AugmentSetter(WallDribble(), True, False, False),
+                            AugmentSetter(WallDribble(speed_min=1700, speed_max=2200, max_rand_z=300), True, False, False),
                         ),
-                        (0.5, 0.5)
+                        (0.3, 0.2, 0.5)
                     )
                 )
 

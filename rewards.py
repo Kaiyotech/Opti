@@ -66,6 +66,7 @@ class ZeroSumReward(RewardFunction):
             double_tap_w=0,
             aerial_goal_w=0,
             flip_reset_w=0,
+            inc_flip_reset_w=0,
             flip_reset_goal_w=0,
             flip_reset_help_w=0,
             punish_low_touch_w=0,
@@ -83,6 +84,7 @@ class ZeroSumReward(RewardFunction):
             team_spirit=0,  # increase as they learn
             zero_sum=True,
     ):
+        self.cons_resets = 0
         self.goal_w = goal_w
         self.concede_w = concede_w
         if zero_sum:
@@ -107,6 +109,7 @@ class ZeroSumReward(RewardFunction):
         self.double_tap_w = double_tap_w
         self.aerial_goal_w = aerial_goal_w
         self.flip_reset_w = flip_reset_w
+        self.inc_flip_reset_w = inc_flip_reset_w
         self.flip_reset_goal_w = flip_reset_goal_w
         self.flip_reset_help_w = flip_reset_help_w
         self.punish_low_touch_w = punish_low_touch_w
@@ -320,10 +323,15 @@ class ZeroSumReward(RewardFunction):
             # flip reset
             if not last.has_jump and player.has_jump and player.car_data.position[2] > 500 and not player.on_ground:
                 self.got_reset[i] = True
-                player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
-                    np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
+                # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
+                #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
+                player_rewards[i] += self.flip_reset_w
+                self.cons_resets += 1
+                if self.cons_resets > 1:
+                    player_rewards[i] += self.inc_flip_reset_w * min((1.4 ** self.cons_resets), 6) / 6
             if player.on_ground:
                 self.got_reset[i] = False
+                self.cons_resets = 0
 
         mid = len(player_rewards) // 2
 
@@ -390,6 +398,7 @@ class ZeroSumReward(RewardFunction):
         self.blue_touch_timer = self.touch_timeout + 1
         self.orange_touch_timer = self.touch_timeout + 1
         self.cons_touches = 0
+        self.cons_resets = 0
         self.kickoff_timer = 0
         self.closest_reset_blue, self.closest_reset_orange = _closest_to_ball(initial_state)
         self.backboard_bounce = False
