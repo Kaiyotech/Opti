@@ -142,7 +142,8 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(low_flip_reset_replays[i])),
                         ),
                         # (0, 0, 0, 0.5, 0, 0.5)
-                        (0.1, 0.1, 0.1, 0.6, 0.1, 0, 0)
+                        # (0, 0, 0, 1, 0, 0, 0)
+                        (0.25, 0.1, 0.1, 0.4, 0.1, 0, 0.05)
                     )
                 )
 
