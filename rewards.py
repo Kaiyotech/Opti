@@ -78,6 +78,7 @@ class ZeroSumReward(RewardFunction):
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
             exit_velocity_w=0,
+            req_reset_exit_vel=False,
             punish_car_ceiling_w=0,
             punish_action_change_w=0,
             goal_speed_exp=1,  # fix this eventually
@@ -87,6 +88,7 @@ class ZeroSumReward(RewardFunction):
             zero_sum=True,
             prevent_chain_reset=False,
     ):
+        self.req_reset_exit_vel = req_reset_exit_vel
         self.cons_resets = 0
         self.goal_w = goal_w
         self.concede_w = concede_w
@@ -250,8 +252,15 @@ class ZeroSumReward(RewardFunction):
             # not touched
             else:
                 if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded:
-                    # rewards 1 for a 110 kph flick (3055 uu/s)
-                    player_rewards[i] += self.exit_velocity_w * (norm_ball_vel / 3055)
+                    # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
+                    req_reset = 1
+                    if self.req_reset_exit_vel:
+                        if self.got_reset[i]:
+                            req_reset = 1
+                        else:
+                            req_reset = 0
+                    vel_mult = 0.5 * ((norm_ball_vel ** 5) / (3332 ** 5) + ((norm_ball_vel ** 2) / (3332 ** 2)))
+                    player_rewards[i] += self.exit_velocity_w * vel_mult * req_reset
 
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
