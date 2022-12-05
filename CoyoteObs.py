@@ -10,15 +10,19 @@ from rlgym.gym import Gym
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
+from rocket_learn.utils.scoreboard import Scoreboard
 from collections.abc import Iterable
+
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
-                 embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0
+                 embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0,
+                 only_closest_opp=False,
                  ):
         super().__init__()
         self.expanding = expanding
+        self.only_closest_opp = only_closest_opp
         self.extra_boost_info = extra_boost_info
         self.POS_STD = 2300
         self.VEL_STD = 2300
@@ -221,6 +225,11 @@ class CoyoteObsBuilder(ObsBuilder):
         o_count = 0
         allies = []
         opponents = []
+        closest = 0
+        if self.only_closest_opp:
+            tmp_oppo = [p for p in state.players if p.team_num != player.team_num]
+            tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
+            closest = tmp_oppo[0].car_id
 
         for p in state.players:
             if p.car_id == player.car_id:
@@ -233,13 +242,15 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 continue
 
-            if p.team_num == player.team_num:
+            if p.team_num == player.team_num and not self.only_closest_opp:
                 allies.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                               p.inverted_car_data if inverted else p.car_data, p, ball, p.team_num == player.team_num))
-            else:
+            elif not self.only_closest_opp or closest == p.car_id:
                 opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                         p.inverted_car_data if inverted else p.car_data, p, ball,
                                                         p.team_num == player.team_num))
+            else:
+                continue
 
         for _ in range(a_max - a_count):
             allies.append(self.dummy_player)
