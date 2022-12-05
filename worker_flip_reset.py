@@ -19,15 +19,15 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
-                        flip_reset_w=1.5,
+                        flip_reset_w=2.5,
                         wall_touch_w=.2,
                         flip_reset_help_w=0,
                         double_tap_w=10,
                         flip_reset_goal_w=10,
                         concede_w=-10,
                         velocity_bg_w=0,
-                        has_flip_reset_vbg_w=0.035,
-                        velocity_pb_w=0.005,
+                        has_flip_reset_vbg_w=0.07,
+                        velocity_pb_w=0.01,
                         jump_touch_w=0,
                         inc_flip_reset_w=0,
                         prevent_chain_reset=True,
