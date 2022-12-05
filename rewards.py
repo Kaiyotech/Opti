@@ -69,6 +69,7 @@ class ZeroSumReward(RewardFunction):
             inc_flip_reset_w=0,
             flip_reset_goal_w=0,
             flip_reset_help_w=0,
+            has_flip_reset_vbg_w=0,
             punish_low_touch_w=0,
             punish_ceiling_pinch_w=0,
             ball_opp_half_w=0,
@@ -114,6 +115,7 @@ class ZeroSumReward(RewardFunction):
         self.inc_flip_reset_w = inc_flip_reset_w
         self.flip_reset_goal_w = flip_reset_goal_w
         self.flip_reset_help_w = flip_reset_help_w
+        self.has_flip_reset_vbg_w = has_flip_reset_vbg_w
         self.prevent_chain_reset = prevent_chain_reset
         self.punish_low_touch_w = punish_low_touch_w
         self.punish_ceiling_pinch_w = punish_ceiling_pinch_w
@@ -267,6 +269,8 @@ class ZeroSumReward(RewardFunction):
                 norm_vel = vel / BALL_MAX_SPEED
                 vel_bg_reward = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.velocity_bg_w * vel_bg_reward
+                if self.got_reset[i] and player.has_jump and not player.on_ground:
+                    player_rewards[i] += self.has_flip_reset_vbg_w * vel_bg_reward
 
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall
@@ -368,7 +372,7 @@ class ZeroSumReward(RewardFunction):
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
                     if self.got_reset[self.blue_toucher]:
-                        player_rewards[self.blue_toucher] += self.flip_reset_goal_w
+                        player_rewards[self.blue_toucher] += self.flip_reset_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.blue_toucher] += self.double_tap_w
                     if self.blue_touch_height > GOAL_HEIGHT:
@@ -386,7 +390,7 @@ class ZeroSumReward(RewardFunction):
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward
                     if self.got_reset[self.orange_toucher]:
-                        player_rewards[self.orange_toucher] += self.flip_reset_goal_w
+                        player_rewards[self.orange_toucher] += self.flip_reset_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.orange_toucher] += self.double_tap_w
                     if self.orange_touch_height > GOAL_HEIGHT:
