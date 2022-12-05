@@ -376,5 +376,6 @@ class ZeroSumReward(RewardFunction):
         if self.previous_action[self.n] == -1 and self.previous_action[self.n] != previous_model_action:
             rew += self.punish_action_change_w
 
+        self.previous_action[self.n] = previous_model_action
         self.n += 1
         return float(rew)

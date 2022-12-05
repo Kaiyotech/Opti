@@ -82,13 +82,15 @@ if __name__ == "__main__":
                                                                  team_size=3, extra_boost_info=True,
                                                                  embed_players=True,
                                                                  stack_size=Constants_selector.STACK_SIZE,
-                                                                 action_parser=parser),
+                                                                 action_parser=parser,
+                                                                 selector=True,
+                                                                 ),
 
                                         lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                                                               goal_w=10,
                                                               concede_w=-10,
                                                               team_spirit=1,
-                                                              # swap_action_w=-.05  # TODO implement
+                                                              punish_action_change_w=-.05  # TODO implement
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -99,7 +101,7 @@ if __name__ == "__main__":
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
-    input_size = 426 + (Constants_selector.STACK_SIZE * 8)
+    input_size = 426 + Constants_selector.STACK_SIZE
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
@@ -137,7 +139,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("Selector_saves/Opti_1668535114.9344256/Opti_780/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1668535114.9344256/Opti_780/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

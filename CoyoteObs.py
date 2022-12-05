@@ -12,10 +12,12 @@ from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
 from collections.abc import Iterable
 
+
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
-                 embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0
+                 embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0,
+                 selector=False,
                  ):
         super().__init__()
         self.expanding = expanding
@@ -42,11 +44,15 @@ class CoyoteObsBuilder(ObsBuilder):
         self.blue_obs = None
         self.orange_obs = None
         self.embed_players = embed_players
+        self.selector = selector
         self.default_action = np.zeros(8)
         self.stack_size = stack_size
         self.action_stacks = {}
+        self.model_action_stacks = {}
         self.action_size = self.default_action.shape[0]
         self.action_parser = action_parser
+        if self.action_parser is not None:
+            self.model_action_size = action_parser.get_action_space().n
         self.env = env
         self.infinite_boost_odds = infinite_boost_odds
         self.infinite_boost_episode = False
@@ -60,9 +66,13 @@ class CoyoteObsBuilder(ObsBuilder):
         self.orange_obs = []
 
         self.action_stacks = {}
-        if self.stack_size != 0:
+        if self.stack_size != 0 and not self.selector:
             for p in initial_state.players:
                 self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+        self.model_action_stacks = {}
+        if self.stack_size != 0 and self.selector:
+            for p in initial_state.players:
+                self.model_action_stacks[p.car_id] = [-1] * self.stack_size
 
         if self.action_parser is not None:
             self.action_parser.reset(initial_state)
@@ -157,9 +167,13 @@ class CoyoteObsBuilder(ObsBuilder):
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
         ]
         if self.stack_size != 0:
-            self.add_action_to_stack(prev_act, player.car_id)
-            p.extend(list(self.action_stacks[player.car_id]))
-        p.extend
+            if self.selector:
+                self.model_add_action_to_stack(prev_model_act, player.car_id)
+                p.extend(list(self.model_action_stacks[player.car_id]))
+
+            else:
+                self.add_action_to_stack(prev_act, player.car_id)
+                p.extend(list(self.action_stacks[player.car_id]))
 
         return p
 
@@ -212,10 +226,10 @@ class CoyoteObsBuilder(ObsBuilder):
             obs.extend(self.create_boost_packet(player_car, i, inverted))
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
-                           prev_act: np.ndarray, inverted: bool):
+                           prev_act: np.ndarray, inverted: bool, previous_model_action):
 
         player_data = self.create_player_packet(player, player.inverted_car_data
-                                                if inverted else player.car_data, ball, prev_act)
+                                                if inverted else player.car_data, ball, prev_act, previous_model_action)
         a_max = 2
         o_max = 3
         a_count = 0
@@ -262,7 +276,12 @@ class CoyoteObsBuilder(ObsBuilder):
         stack[self.action_size:] = stack[:-self.action_size]
         stack[:self.action_size] = new_action
 
-    def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: float) -> Any:
+    def model_add_action_to_stack(self, new_action: float, car_id: int):
+        stack = self.model_action_stacks[car_id]
+        stack[1:] = stack[:-1]
+        stack[:1] = [new_action / self.model_action_size]
+
+    def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: float = None) -> Any:
 
         if player.team_num == 1:
             inverted = True
