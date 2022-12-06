@@ -132,18 +132,18 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(flip_reset_replays[i], defender_front_goal_weight=0.25)),
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(WallDribble(speed_min=1450, speed_max=1700, max_rand_z=300), True, False, False),
-                            AugmentSetter(ReplaySetter(wall_flip_reset_replays[i], defender_front_goal_weight=0.25)),
+                            AugmentSetter(ReplaySetter(wall_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
                             AugmentSetter(WallDribble(speed_min=1700, speed_max=1900, max_rand_z=300), True, False,
                                           False),
-                            AugmentSetter(ReplaySetter(ground_flip_reset_replays[i], defender_front_goal_weight=0.25)),
-                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i], defender_front_goal_weight=0.25)),
+                            AugmentSetter(ReplaySetter(ground_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
+                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
                         ),
                         # (0, 0, 0, 0.5, 0, 0.5)
                         # (0, 0, 0, 1, 0, 0, 0)
-                        (0.2, 0.1, 0.1, 0.45, 0.1, 0, 0.05)
+                        (0.35, 0.05, 0.05, 0.35, 0.1, 0, 0.05)
                     )
                 )
 
