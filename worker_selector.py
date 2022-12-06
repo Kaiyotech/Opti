@@ -22,7 +22,7 @@ if __name__ == "__main__":
                         goal_w=10,
                         concede_w=-10,
                         team_spirit=1,
-                        # swap_action_w=-.05  # TODO implement
+                        punish_action_change_w=-.05  # TODO implement
                         )
     parser = SelectorParser()
     frame_skip = Constants_selector.FRAME_SKIP
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      stack_size=Constants_selector.STACK_SIZE,
-                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds),
+                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 15),
@@ -76,6 +76,7 @@ if __name__ == "__main__":
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
+        model_prev_actions=True,
     )
 
     # local Redis

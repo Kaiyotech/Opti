@@ -452,13 +452,14 @@ class ZeroSumReward(RewardFunction):
         self.reset_timer = -100000
         self.last_touch_time = -1000
         self.exit_rewarded = False
-        # self.previous_action = np.asarray([[-1] * 8] * len(initial_state.players))
+        self.previous_action = np.asarray([-1] * len(initial_state.players))
 
-    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> float:
+    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]
-        #
-        # if self.previous_action[self.n][0] == -1 and not np.array_equal(self.previous_action[self.n], previous_action):
-        #     rew += self.punish_action_change_w
 
+        if self.previous_action[self.n] == -1 and self.previous_action[self.n] != previous_model_action:
+            rew += self.punish_action_change_w
+
+        self.previous_action[self.n] = previous_model_action
         self.n += 1
         return float(rew)
