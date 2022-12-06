@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run7.12"
+    run_id = "flip_reset_run7.14_fast_shot"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_7.12",
+                        name="Flip_reset_7.14_fast_shot",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -77,20 +77,21 @@ if __name__ == "__main__":
                                                                  tick_skip=Constants_flip_reset.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
-                                                              flip_reset_w=2,
+                                                              flip_reset_w=1,
                                                               wall_touch_w=.2,
                                                               flip_reset_help_w=0,
-                                                              double_tap_w=10,
+                                                              double_tap_w=0,
                                                               flip_reset_goal_w=10,
                                                               concede_w=-10,
                                                               velocity_bg_w=0,
-                                                              has_flip_reset_vbg_w=0.2,
+                                                              has_flip_reset_vbg_w=0,
                                                               velocity_pb_w=0.01,
                                                               jump_touch_w=0,
                                                               inc_flip_reset_w=0,
-                                                              prevent_chain_reset=True,
-                                                              quick_flip_reset_w=4,
-                                                              quick_flip_reset_norm_sec=1.5,
+                                                              prevent_chain_reset=False,
+                                                              quick_flip_reset_w=0,
+                                                              quick_flip_reset_norm_sec=0,
+                                                              exit_velocity_w=2,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -144,7 +145,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flip_reset_saves/Opti_1670338972.1363978/Opti_9000/checkpoint.pt")
+    alg.load("flip_reset_saves/Opti_1670123638.7511785/Opti_12350/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
