@@ -39,7 +39,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
+        actor_lr=0,  # 1e-4,
         critic_lr=1e-4,
         n_steps=Constants_flip_reset.STEP_SIZE,
         batch_size=100_000,
@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "flip_reset_run7.11"
+    run_id = "flip_reset_run7.12"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flip_reset_7.11",
+                        name="Flip_reset_7.12",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -89,7 +89,7 @@ if __name__ == "__main__":
                                                               jump_touch_w=0,
                                                               inc_flip_reset_w=0,
                                                               prevent_chain_reset=True,
-                                                              quick_flip_reset_w=6,
+                                                              quick_flip_reset_w=4,
                                                               quick_flip_reset_norm_sec=1.5,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flip_reset_saves/Opti_1670252190.984324/Opti_14940/checkpoint.pt")
+    alg.load("flip_reset_saves/Opti_1669991451.7386978/Opti_8650/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

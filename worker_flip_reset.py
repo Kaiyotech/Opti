@@ -31,7 +31,7 @@ if __name__ == "__main__":
                         jump_touch_w=0,
                         inc_flip_reset_w=0,
                         prevent_chain_reset=True,
-                        quick_flip_reset_w=10,
+                        quick_flip_reset_w=4,
                         quick_flip_reset_norm_sec=1.5,
                         )
     frame_skip = Constants_flip_reset.FRAME_SKIP
@@ -117,7 +117,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.9, '2v2': 0.05, '3v3': 0.05},  # default 1/3
+                       gamemode_weights={'1v1': 1, '2v2': 0, '3v3': 0},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
