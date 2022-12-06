@@ -71,7 +71,7 @@ class CoyoteObsBuilder(ObsBuilder):
             for p in initial_state.players:
                 self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
 
-        elf.model_action_stacks = {}
+        self.model_action_stacks = {}
         if self.stack_size != 0 and self.selector:
             for p in initial_state.players:
                 self.model_action_stacks[p.car_id] = [0.] * self.stack_size

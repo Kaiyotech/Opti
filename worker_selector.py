@@ -76,7 +76,6 @@ if __name__ == "__main__":
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
-        model_prev_actions=True,
     )
 
     # local Redis

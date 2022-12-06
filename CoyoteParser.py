@@ -71,6 +71,13 @@ class CoyoteAction(ActionParser):
     def get_action_space(self) -> gym.spaces.Space:
         return Discrete(len(self._lookup_table))
 
+    @staticmethod
+    def get_model_action_space() -> int:
+        return 1
+
+    def get_model_action_size(self) -> int:
+        return len(self._lookup_table)
+
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
         # hacky pass through to allow multiple types of agent actions while still parsing nectos
 

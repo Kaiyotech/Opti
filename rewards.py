@@ -457,9 +457,9 @@ class ZeroSumReward(RewardFunction):
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]
 
-        if self.previous_action[self.n] == -1 and self.previous_action[self.n] != previous_model_action:
+        if self.previous_action[self.n] != -1 and self.previous_action[self.n] != previous_model_action[0]:
             rew += self.punish_action_change_w
 
-        self.previous_action[self.n] = previous_model_action
+        self.previous_action[self.n] = previous_model_action[0]
         self.n += 1
         return float(rew)
