@@ -77,18 +77,20 @@ if __name__ == "__main__":
                                                                  tick_skip=Constants_flip_reset.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
-                                                              flip_reset_w=2.5,
+                                                              flip_reset_w=2,
                                                               wall_touch_w=.2,
                                                               flip_reset_help_w=0,
                                                               double_tap_w=10,
                                                               flip_reset_goal_w=10,
                                                               concede_w=-10,
                                                               velocity_bg_w=0,
-                                                              has_flip_reset_vbg_w=0.07,
+                                                              has_flip_reset_vbg_w=0.2,
                                                               velocity_pb_w=0.01,
                                                               jump_touch_w=0,
                                                               inc_flip_reset_w=0,
                                                               prevent_chain_reset=True,
+                                                              quick_flip_reset_w=6,
+                                                              quick_flip_reset_norm_sec=1.5,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -142,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flip_reset_saves/Opti_1670213666.7901573/Opti_13900/checkpoint.pt")
+    alg.load("flip_reset_saves/Opti_1670252190.984324/Opti_14940/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

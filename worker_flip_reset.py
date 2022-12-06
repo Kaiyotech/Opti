@@ -5,7 +5,7 @@ from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition
+from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition
 from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch, BallTouchCeilingCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
@@ -19,18 +19,20 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flip_reset.ZERO_SUM,
-                        flip_reset_w=2.5,
+                        flip_reset_w=2,
                         wall_touch_w=.2,
                         flip_reset_help_w=0,
                         double_tap_w=10,
                         flip_reset_goal_w=10,
                         concede_w=-10,
                         velocity_bg_w=0,
-                        has_flip_reset_vbg_w=0.07,
+                        has_flip_reset_vbg_w=0.2,
                         velocity_pb_w=0.01,
                         jump_touch_w=0,
                         inc_flip_reset_w=0,
                         prevent_chain_reset=True,
+                        quick_flip_reset_w=10,
+                        quick_flip_reset_norm_sec=1.5,
                         )
     frame_skip = Constants_flip_reset.FRAME_SKIP
     fps = 120 // frame_skip
@@ -81,6 +83,7 @@ if __name__ == "__main__":
                                                       min_height=110,
                                                       check_towards_goal=True),
                              # BallTouchCeilingCondition(),
+                             TimeoutCondition(fps * 100),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,

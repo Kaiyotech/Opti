@@ -70,6 +70,8 @@ class ZeroSumReward(RewardFunction):
             flip_reset_goal_w=0,
             flip_reset_help_w=0,
             has_flip_reset_vbg_w=0,
+            quick_flip_reset_w=0,
+            quick_flip_reset_norm_sec=1,
             punish_low_touch_w=0,
             punish_ceiling_pinch_w=0,
             ball_opp_half_w=0,
@@ -88,6 +90,7 @@ class ZeroSumReward(RewardFunction):
             zero_sum=True,
             prevent_chain_reset=False,
     ):
+        self.quick_flip_reset_w = quick_flip_reset_w
         self.req_reset_exit_vel = req_reset_exit_vel
         self.cons_resets = 0
         self.goal_w = goal_w
@@ -137,6 +140,7 @@ class ZeroSumReward(RewardFunction):
         self.last_state = None
         self.touch_timeout = 8 * 120 // tick_skip  # 120 ticks at 8 tick skip is 8 seconds
         self.kickoff_timeout = 5 * 120 // tick_skip
+        self.quick_flip_reset_norm_steps = quick_flip_reset_norm_sec * 120 // tick_skip
         self.kickoff_timer = 0
         self.closest_reset_blue = -1
         self.closest_reset_orange = -1
@@ -157,7 +161,7 @@ class ZeroSumReward(RewardFunction):
         self.blue_touch_height = -1
         self.orange_touch_height = -1
         self.last_touched_frame = [-1] * 6
-        self.reset_timer = -1000
+        self.reset_timer = -100000
         self.flip_reset_delay_steps = 0.15 * (120 // tick_skip)
         self.last_touch_time = -1000
         self.exit_vel_arm_time_steps = 0.1 * (120 // tick_skip)
@@ -353,6 +357,9 @@ class ZeroSumReward(RewardFunction):
 
             # flip reset
             if not last.has_jump and player.has_jump and player.car_data.position[2] > 200 and not player.on_ground:
+                if not self.got_reset[i]:  # first reset of episode
+                    #  1 reward for
+                    player_rewards[i] += self.quick_flip_reset_w * self.quick_flip_reset_norm_steps / self.kickoff_timer
                 self.got_reset[i] = True
                 # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
@@ -364,9 +371,9 @@ class ZeroSumReward(RewardFunction):
                 if self.prevent_chain_reset:
                     self.reset_timer = self.kickoff_timer
             if player.on_ground:
-                self.got_reset[i] = False
+                #  self.got_reset[i] = False
                 self.cons_resets = 0
-                self.reset_timer = -1000
+                self.reset_timer = -100000
 
         mid = len(player_rewards) // 2
 
@@ -442,7 +449,7 @@ class ZeroSumReward(RewardFunction):
         self.num_touches = [0] * len(initial_state.players)
         self.blue_touch_height = -1
         self.orange_touch_height = -1
-        self.reset_timer = -1000
+        self.reset_timer = -100000
         self.last_touch_time = -1000
         self.exit_rewarded = False
         # self.previous_action = np.asarray([[-1] * 8] * len(initial_state.players))
