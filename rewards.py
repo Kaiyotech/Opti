@@ -370,7 +370,7 @@ class ZeroSumReward(RewardFunction):
         self.orange_touch_height = -1
         self.previous_action = np.asarray([-1] * len(initial_state.players))
 
-    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: float) -> float:
+    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]
 
         if self.previous_action[self.n] == -1 and self.previous_action[self.n] != previous_model_action:
