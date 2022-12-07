@@ -97,12 +97,12 @@ if __name__ == "__main__":
                                         )
 
     critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 1))
+                        Linear(256, 128), LeakyReLU(),
+                        Linear(128, 1))
 
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                       Linear(256, 256), LeakyReLU(),
-                       Linear(256, 373))
+    actor = Sequential(Linear(222, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
