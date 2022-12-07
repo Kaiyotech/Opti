@@ -24,6 +24,8 @@ if __name__ == "__main__":
                         acel_ball_w=0.25,
                         team_spirit=0,
                         exit_velocity_w=2,
+                        dribble_w=0.01,
+                        velocity_bg_w=0.005,
                         )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
@@ -71,7 +73,7 @@ if __name__ == "__main__":
                                                       tick_skip=Constants_flick.FRAME_SKIP,
                                                       time_after_ground_sec=0.25,
                                                       min_height=120,
-                                                      neg_z_check=True),
+                                                      check_towards_goal=True),
                              PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
                              ],
@@ -107,7 +109,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.9, '2v2': 0.05, '3v3': 0.05},  # default 1/3
+                       gamemode_weights={'1v1': 1., '2v2': 0., '3v3': 0.},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
