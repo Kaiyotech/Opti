@@ -19,14 +19,13 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_flick.ZERO_SUM,
-                        goal_w=0,
+                        goal_w=5,
                         concede_w=-5,
-                        acel_ball_w=0,
+                        acel_ball_w=0.5,
                         team_spirit=0,
-                        exit_velocity_w=0,
-                        dribble_w=1,
+                        exit_velocity_w=1.5,
+                        dribble_w=0,
                         velocity_bg_w=0.01,
-                        velocity_pb_w=0.005,
                         )
     frame_skip = Constants_flick.FRAME_SKIP
     fps = 120 // frame_skip
@@ -67,14 +66,14 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=CoyoteSetter(mode="flick"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_flick.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=False, embed_players=False),
+                                     extra_boost_info=True, embed_players=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=0,
                                                       tick_skip=Constants_flick.FRAME_SKIP,
                                                       time_after_ground_sec=0.25,
                                                       min_height=120,
-                                                      check_towards_goal=True),
+                                                      neg_z_check=True),
                              PlayerTwoTouch(time_to_arm=0.25, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
                              ],
