@@ -24,7 +24,7 @@ if __name__ == "__main__":
                         acel_ball_w=0,
                         team_spirit=0,
                         exit_velocity_w=0,
-                        dribble_w=0.01,
+                        dribble_w=1,
                         velocity_bg_w=0.01,
                         velocity_pb_w=0.005,
                         )
