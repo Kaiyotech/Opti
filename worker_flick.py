@@ -74,7 +74,7 @@ if __name__ == "__main__":
                                                       time_after_ground_sec=0.25,
                                                       min_height=100,
                                                       neg_z_check=True),
-                             PlayerTwoTouch(time_to_arm=0.75, tick_skip=Constants_flick.FRAME_SKIP),
+                             PlayerTwoTouch(time_to_arm=1, tick_skip=Constants_flick.FRAME_SKIP),
                              TimeoutCondition(fps * 100)
                              ],
         reward_function=rew,
