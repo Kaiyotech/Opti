@@ -23,6 +23,7 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
+from my_stattrackers import GoalSpeedTop5perc
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         gamma=gamma,
         save_every=10,
         model_every=100,
-        ent_coef=0.01,
+        ent_coef=0.02,
     )
 
     run_id = "flick_run8"
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     stat_trackers = [
         Speed(normalize=True), Demos(), TimeoutRate(), Touch(), EpisodeLength(), Boost(), BehindBall(), TouchHeight(),
         DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
-        GoalSpeed(), MaxGoalSpeed(),
+        GoalSpeed(), MaxGoalSpeed(), GoalSpeedTop5perc(),
     ]
 
     rollout_gen = RedisRolloutGenerator("Flick",
@@ -146,7 +147,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1669785603.1074533/Opti_12560/checkpoint.pt")
+    alg.load("flick_saves/Opti_1670432055.178327/Opti_12900/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
