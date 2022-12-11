@@ -53,10 +53,10 @@ if __name__ == "__main__":
         ent_coef=0.02,
     )
 
-    run_id = "flick_run8"
+    run_id = "flick_run8.02"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Flick_Run8",
+                        name="Flick_Run8.02",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flick_saves/Opti_1670432055.178327/Opti_12900/checkpoint.pt")
+    alg.load("flick_saves/Opti_1670514675.8349676/Opti_13200/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

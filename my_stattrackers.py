@@ -4,28 +4,30 @@ from rocket_learn.utils.gamestate_encoding import StateConstants
 from rocket_learn.utils.stat_trackers.stat_tracker import StatTracker
 
 
-class ExitVelocity(StatTracker):
-    def __init__(self):
-        super().__init__("average_ball_speed")
-        self.count = 0
-        self.total_speed = 0.0
-
-    def reset(self):
-        return NotImplemented
-        self.count = 0
-        self.total_speed = 0.0
-
-    def update(self, gamestates: np.ndarray, mask: np.ndarray):
-        ball_speeds = gamestates[:, StateConstants.BALL_LINEAR_VELOCITY]
-        xs = ball_speeds[:, 0]
-        ys = ball_speeds[:, 1]
-        zs = ball_speeds[:, 2]
-        speeds = np.sqrt(xs ** 2 + ys ** 2 + zs ** 2)
-        self.total_speed += np.sum(speeds)
-        self.count += speeds.size
-
-    def get_stat(self):
-        return self.total_speed / (self.count or 1)
+# class ExitVelocity(StatTracker):
+#     def __init__(self):
+#         super().__init__("avg_exit_vel_top_20_perc")
+#         self.count = 0
+#         self.total_speed = 0.0
+#         self.exit_vels = None
+#
+#     def reset(self):
+#         self.count = 0
+#         self.total_speed = 0.0
+#         self.exit_vels = []
+#
+#     def update(self, gamestates: np.ndarray, mask: np.ndarray):
+#         ball_speeds = gamestates[:, StateConstants.BALL_LINEAR_VELOCITY]
+#         touched = gamestates[:, StateConstants.BALL_TOUCHED]
+#         xs = ball_speeds[:, 0]
+#         ys = ball_speeds[:, 1]
+#         zs = ball_speeds[:, 2]
+#         speeds = np.sqrt(xs ** 2 + ys ** 2 + zs ** 2)
+#         self.total_speed += np.sum(speeds)
+#         self.count += speeds.size
+#
+#     def get_stat(self):
+#         return self.total_speed / (self.count or 1)
 
 
 class GoalSpeedTop5perc(StatTracker):
@@ -49,7 +51,7 @@ class GoalSpeedTop5perc(StatTracker):
 
     def get_stat(self):
         self.goal_speeds.sort()
-        top_5 = int(-1 * self.count / 20)
+        top_5 = int(-1 * self.count / 20) or -1
         self.goal_speeds = self.goal_speeds[top_5:]
         total_speed = sum(self.goal_speeds)
-        return total_speed / (top_5 or 1)
+        return total_speed / ((-1 * top_5) or 1)
