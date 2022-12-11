@@ -186,3 +186,46 @@ class BallTouchCeilingCondition(TerminalCondition):
 
         return current_state.ball.position[2] > (CEILING_Z - 120)
 
+
+class AttackerTouchCloseGoal(TerminalCondition):
+    """
+    A condition that triggers after ball touches ground after min_time_sec after first touch
+    """
+    def __init__(self, distance=1000):
+        super().__init__()
+        self.toucher = -1
+        self.touched = None
+        self.y_limit = None
+        self.distance = distance
+        self.touch_team = None
+
+    def reset(self, initial_state: GameState):
+        self.toucher = -1
+        self.touched = False
+        self.y_limit = None
+        self.touch_team = None
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        """
+        return True if first player to touch the ball stops touching it for time_to_arm seconds and then touches again
+        """
+        if not self.touched:
+            for i, player in enumerate(current_state.players):
+                if player.ball_touched:
+                    self.toucher = i
+                    self.touched = True
+                    mid = len(current_state.players) // 2
+                    if i < mid:
+                        self.y_limit = 5120 - self.distance
+                        self.touch_team = 0
+                    else:
+                        self.y_limit = -5120 + self.distance
+                        self.touch_team = 1
+                    return False
+        elif current_state.players[self.toucher].ball_touched:
+            if current_state.ball.position[1] > self.y_limit and self.touch_team == 0:
+                return True
+            elif current_state.ball.position[1] < self.y_limit and self.touch_team == 1:
+                return True
+        return False
+

@@ -80,16 +80,20 @@ class ZeroSumReward(RewardFunction):
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
             exit_velocity_w=0,
+            exit_vel_angle_w=0,
             req_reset_exit_vel=False,
             punish_car_ceiling_w=0,
             punish_action_change_w=0,
             goal_speed_exp=1,  # fix this eventually
+            min_goal_speed_rewarded_kph=0,
             touch_height_exp=1,
             tick_skip=FRAME_SKIP,
             team_spirit=0,  # increase as they learn
             zero_sum=True,
             prevent_chain_reset=False,
     ):
+        self.min_goal_speed_rewarded = min_goal_speed_rewarded_kph * 27.78  # to uu
+        self.exit_vel_angle_w = exit_vel_angle_w
         self.quick_flip_reset_w = quick_flip_reset_w
         self.req_reset_exit_vel = req_reset_exit_vel
         self.cons_resets = 0
@@ -193,6 +197,7 @@ class ZeroSumReward(RewardFunction):
         player_self_rewards = np.zeros(len(state.players))
         normed_last_ball_vel = norm(self.last_state.ball.linear_velocity)
         norm_ball_vel = norm(state.ball.linear_velocity)
+        xy_norm_ball_vel = norm(state.ball.linear_velocity[:-1])
         for i, player in enumerate(state.players):
             last = self.last_state.players[i]
 
@@ -256,6 +261,7 @@ class ZeroSumReward(RewardFunction):
             # not touched
             else:
                 if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded:
+                    self.exit_rewarded = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
                     req_reset = 1
                     if self.req_reset_exit_vel:
@@ -263,8 +269,16 @@ class ZeroSumReward(RewardFunction):
                             req_reset = 1
                         else:
                             req_reset = 0
-                    vel_mult = 0.5 * ((norm_ball_vel ** 5) / (3332 ** 5) + ((norm_ball_vel ** 2) / (3332 ** 2)))
-                    player_rewards[i] += self.exit_velocity_w * vel_mult * req_reset
+                    ang_mult = 1
+                    if self.exit_vel_angle_w != 0:
+                        # 0.785 is 45
+                        unit_vector_1 = player.car_data.forward()[:-1] / np.linalg.norm(player.car_data.forward()[:-1])
+                        unit_vector_2 = state.ball.position[:-1] / np.linalg.norm(state.ball.position[:-1])
+                        dot_product = np.dot(unit_vector_1, unit_vector_2)
+                        angle = min(abs(np.arccos(dot_product)), 0.785) / 0.785
+                        ang_mult = self.exit_velocity_w * angle + 0.1  #  0.1 is a small mult to still reward 0 angle
+                    vel_mult = self.exit_velocity_w * 0.5 * ((xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
+                    player_rewards[i] += vel_mult * req_reset * ang_mult
 
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
@@ -384,6 +398,8 @@ class ZeroSumReward(RewardFunction):
             d_orange = state.orange_score - self.last_state.orange_score
             if d_blue > 0:
                 goal_speed = normed_last_ball_vel ** self.goal_speed_exp
+                if goal_speed < self.min_goal_speed_rewarded:
+                    goal_speed = 0
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
@@ -402,6 +418,8 @@ class ZeroSumReward(RewardFunction):
 
             if d_orange > 0:
                 goal_speed = normed_last_ball_vel ** self.goal_speed_exp
+                if goal_speed < self.min_goal_speed_rewarded:
+                    goal_speed = 0
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward

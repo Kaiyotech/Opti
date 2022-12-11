@@ -86,6 +86,8 @@ if __name__ == "__main__":
                                                               exit_velocity_w=1.5,
                                                               dribble_w=0,
                                                               velocity_bg_w=0.01,
+                                                              exit_vel_angle_w=1,
+                                                              min_goal_speed_rewarded_kph=80,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -147,7 +149,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("flick_saves/Opti_1670514675.8349676/Opti_13200/checkpoint.pt")
+    alg.load("flick_saves/Opti_1670519784.3881123/Opti_14910/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
