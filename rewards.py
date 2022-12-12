@@ -170,7 +170,7 @@ class ZeroSumReward(RewardFunction):
         self.last_touch_time = -1000
         self.exit_vel_arm_time_steps = 0.15 * (120 // tick_skip)
         self.exit_rewarded = [False] * 6
-        self.exit_armed = [False] * 6
+        self.last_touch_car = None
         self.launch_angle_car = [None] * 6
 
     def pre_step(self, state: GameState):
@@ -206,7 +206,7 @@ class ZeroSumReward(RewardFunction):
             if player.ball_touched:
                 self.last_touch_time = self.kickoff_timer
                 self.exit_rewarded[i] = False
-                self.exit_armed[i] = True
+                self.last_touch_car = i
                 if player.team_num == BLUE_TEAM:
                     # new blue toucher for aerial touches (or kickoff touch)
                     if self.blue_toucher != i or self.orange_touch_timer <= self.blue_touch_timer:
@@ -265,7 +265,7 @@ class ZeroSumReward(RewardFunction):
             else:
                 if last.ball_touched:
                     self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1])
-                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.exit_armed[i]:
+                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.last_touch_car == i:
                     self.exit_rewarded[i] = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
                     req_reset = 1
@@ -474,7 +474,7 @@ class ZeroSumReward(RewardFunction):
         self.reset_timer = -100000
         self.last_touch_time = -1000
         self.exit_rewarded = [False] * 6
-        self.exit_armed = [False] * 6
+        self.last_touch_car = None
         self.launch_angle_car = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
 
