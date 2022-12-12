@@ -172,6 +172,7 @@ class ZeroSumReward(RewardFunction):
         self.exit_rewarded = [False] * 6
         self.last_touch_car = None
         self.launch_angle_car = [None] * 6
+        self.exit_vel_save = [None] * 6
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -265,6 +266,7 @@ class ZeroSumReward(RewardFunction):
             else:
                 if last.ball_touched:
                     self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1])
+                    self.exit_vel_save[i] = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1])
                 if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.last_touch_car == i:
                     self.exit_rewarded[i] = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
@@ -277,9 +279,11 @@ class ZeroSumReward(RewardFunction):
                     ang_mult = 1
                     if self.exit_vel_angle_w != 0:
                         # 0.785 is 45
-                        unit_vector_2 = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1])
-                        dot_product = np.dot(self.launch_angle_car[i], unit_vector_2)
+
+                        dot_product = np.dot(self.launch_angle_car[i], self.exit_vel_save[i])
                         angle = min(np.arccos(dot_product), 0.785) / 0.785
+                        if np.isnan(angle):  # rare enough to just avoid in the data
+                            angle = 0
                         ang_mult = self.exit_velocity_w * max(angle, 0.1)  #  0.1 is a small mult to still reward 0 angle
                     vel_mult = self.exit_velocity_w * 0.5 * ((xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
                     player_rewards[i] += vel_mult * req_reset * ang_mult
@@ -476,6 +480,7 @@ class ZeroSumReward(RewardFunction):
         self.exit_rewarded = [False] * 6
         self.last_touch_car = None
         self.launch_angle_car = [None] * 6
+        self.exit_vel_save = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
