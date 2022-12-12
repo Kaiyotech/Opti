@@ -167,7 +167,7 @@ class ZeroSumReward(RewardFunction):
         self.last_touched_frame = [-1] * 6
         self.reset_timer = -100000
         self.flip_reset_delay_steps = 0.25 * (120 // tick_skip)
-        self.last_touch_time = -1000
+        self.last_touch_time = -100_000
         self.exit_vel_arm_time_steps = 0.15 * (120 // tick_skip)
         self.exit_rewarded = [False] * 6
         self.last_touch_car = None
@@ -402,7 +402,7 @@ class ZeroSumReward(RewardFunction):
             d_orange = state.orange_score - self.last_state.orange_score
             if d_blue > 0:
                 goal_speed = normed_last_ball_vel ** self.goal_speed_exp
-                if goal_speed < self.min_goal_speed_rewarded:
+                if normed_last_ball_vel < self.min_goal_speed_rewarded:
                     goal_speed = 0
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.blue_touch_timer < self.touch_timeout:
@@ -422,7 +422,7 @@ class ZeroSumReward(RewardFunction):
 
             if d_orange > 0:
                 goal_speed = normed_last_ball_vel ** self.goal_speed_exp
-                if goal_speed < self.min_goal_speed_rewarded:
+                if normed_last_ball_vel < self.min_goal_speed_rewarded:
                     goal_speed = 0
                 goal_reward = self.goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                 if self.orange_touch_timer < self.touch_timeout:
@@ -472,7 +472,7 @@ class ZeroSumReward(RewardFunction):
         self.blue_touch_height = -1
         self.orange_touch_height = -1
         self.reset_timer = -100000
-        self.last_touch_time = -1000
+        self.last_touch_time = -100_000
         self.exit_rewarded = [False] * 6
         self.last_touch_car = None
         self.launch_angle_car = [None] * 6
