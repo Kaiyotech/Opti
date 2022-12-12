@@ -169,8 +169,9 @@ class ZeroSumReward(RewardFunction):
         self.flip_reset_delay_steps = 0.25 * (120 // tick_skip)
         self.last_touch_time = -1000
         self.exit_vel_arm_time_steps = 0.15 * (120 // tick_skip)
-        self.exit_rewarded = False
-        self.launch_angle_car = None
+        self.exit_rewarded = [False] * 6
+        self.exit_armed = [False] * 6
+        self.launch_angle_car = [None] * 6
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -204,7 +205,8 @@ class ZeroSumReward(RewardFunction):
 
             if player.ball_touched:
                 self.last_touch_time = self.kickoff_timer
-                self.exit_rewarded = False
+                self.exit_rewarded[i] = False
+                self.exit_armed[i] = True
                 if player.team_num == BLUE_TEAM:
                     # new blue toucher for aerial touches (or kickoff touch)
                     if self.blue_toucher != i or self.orange_touch_timer <= self.blue_touch_timer:
@@ -262,9 +264,9 @@ class ZeroSumReward(RewardFunction):
             # not touched
             else:
                 if last.ball_touched:
-                    self.launch_angle_car = player.car_data.forward()[:-1] / np.linalg.norm(player.car_data.forward()[:-1])
-                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded:
-                    self.exit_rewarded = True
+                    self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1])
+                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.exit_armed[i]:
+                    self.exit_rewarded[i] = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
                     req_reset = 1
                     if self.req_reset_exit_vel:
@@ -276,7 +278,7 @@ class ZeroSumReward(RewardFunction):
                     if self.exit_vel_angle_w != 0:
                         # 0.785 is 45
                         unit_vector_2 = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1])
-                        dot_product = np.dot(self.launch_angle_car, unit_vector_2)
+                        dot_product = np.dot(self.launch_angle_car[i], unit_vector_2)
                         angle = min(np.arccos(dot_product), 0.785) / 0.785
                         ang_mult = self.exit_velocity_w * max(angle, 0.1)  #  0.1 is a small mult to still reward 0 angle
                     vel_mult = self.exit_velocity_w * 0.5 * ((xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
@@ -471,7 +473,9 @@ class ZeroSumReward(RewardFunction):
         self.orange_touch_height = -1
         self.reset_timer = -100000
         self.last_touch_time = -1000
-        self.exit_rewarded = False
+        self.exit_rewarded = [False] * 6
+        self.exit_armed = [False] * 6
+        self.launch_angle_car = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
