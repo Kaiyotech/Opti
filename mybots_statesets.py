@@ -301,3 +301,19 @@ class FlickSetter(StateSetter):
                 car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
+
+
+class RecoverySetter(StateSetter):
+    def reset(self, state_wrapper: StateWrapper):
+        rng = np.random.default_rng()
+
+        for car in state_wrapper.cars:
+            car.set_pos(rng.uniform(-4096 + 1152, 4096 - 1152), rng.uniform(-5120 + 1152, 5120 - 1152), rng.uniform(0, 2020))
+            car.set_rot(rng.uniform(-np.pi/2, np.pi/2), rng.uniform(-np.pi, np.pi), rng.uniform(-np.pi, np.pi))
+            car.set_lin_vel(rng.uniform(-2000, 2000), rng.uniform(-2000, 2000), rng.uniform(-2000, 2000))
+            car.set_ang_vel(rng.uniform(-4, 4), rng.uniform(-4, 4), rng.uniform(-4, 4))
+
+        state_wrapper.ball.set_pos(rng.uniform(-4096 + 1152, 4096 - 1152), rng.uniform(-5120 + 1152, 5120 - 1152), rng.uniform(0, 2020))
+        state_wrapper.ball.set_lin_vel(rng.uniform(-200, 200), rng.uniform(-200, 200), rng.uniform(-200, 200))
+        state_wrapper.ball.set_ang_vel(rng.uniform(-4, 4), rng.uniform(-4, 4), rng.uniform(-4, 4))
+

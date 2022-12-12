@@ -1,6 +1,7 @@
 from rlgym.utils.terminal_conditions import TerminalCondition
 from rlgym.utils.gamestates import GameState
-from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z
+from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z, BOOST_LOCATIONS
+import numpy as np
 
 
 def ball_towards_goal(ball):
@@ -230,3 +231,33 @@ class AttackerTouchCloseGoal(TerminalCondition):
                 return True
         return False
 
+
+class ReachObject(TerminalCondition):
+    """
+    A condition that triggers after ball touches ground after min_time_sec after first touch
+    """
+    def __init__(self):
+        super().__init__()
+        self.end_object_tracker = 0
+        self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
+        self.big_boost = np.asarray(self.big_boosts)
+        self.big_boost[:, -1] = 18  # fix the boost height
+
+    def reset(self, initial_state: GameState):
+        self.end_object_tracker += 1
+        if self.end_object_tracker == 7:
+            self.end_object_tracker = 0
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        """
+        return True if a player reaches the objective
+        """
+        for i, player in enumerate(current_state.players):
+            if self.end_object_tracker == 0:
+                if player.ball_touched:
+                    return True
+            else:
+                end_objective = self.big_boosts[self.end_object_tracker - 1]
+                pos_diff = end_objective - player.car_data.position
+                if np.linalg.norm(pos_diff) < 15:  # reached the big boost
+                    return True

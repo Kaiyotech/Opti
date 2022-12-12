@@ -9,7 +9,7 @@ from Constants_kickoff import FRAME_SKIP
 from numpy.linalg import norm
 
 from typing import Tuple, List
-
+from rlgym.utils.common_values import BOOST_LOCATIONS
 
 def _closest_to_ball(state: GameState) -> Tuple[int, int]:
     # returns [blue_closest, orange_closest]
@@ -91,7 +91,12 @@ class ZeroSumReward(RewardFunction):
             team_spirit=0,  # increase as they learn
             zero_sum=True,
             prevent_chain_reset=False,
+            velocity_to_object_w=0,
+            reach_object_w=0,
     ):
+        self.reach_object_w = reach_object_w
+        self.velocity_to_object_w = velocity_to_object_w
+        self.end_object_tracker = 0
         self.min_goal_speed_rewarded = min_goal_speed_rewarded_kph * 27.78  # to uu
         self.exit_vel_angle_w = exit_vel_angle_w
         self.quick_flip_reset_w = quick_flip_reset_w
@@ -173,6 +178,9 @@ class ZeroSumReward(RewardFunction):
         self.last_touch_car = None
         self.launch_angle_car = [None] * 6
         self.exit_vel_save = [None] * 6
+        self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
+        self.big_boost = np.asarray(self.big_boosts)
+        self.big_boost[:, -1] = 18  # fix the boost height
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -349,6 +357,23 @@ class ZeroSumReward(RewardFunction):
             player_rewards[i] += self.velocity_pb_w * speed_rew
             if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                 player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
+            # vel player to object - needs above unchanged
+            if self.end_object_tracker == 0:
+                player_rewards[i] += self.velocity_to_object_w * speed_rew  # uses the velpb calc above
+            else:
+                end_objective = self.big_boosts[self.end_object_tracker - 1]
+                pos_diff = end_objective - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = float(np.dot(norm_pos_diff, norm_vel))
+                player_rewards[i] += self.velocity_to_object_w * speed_rew
+            # reach object - needs above unchanged, uses some pos_diff
+            if self.end_object_tracker == 0:
+                if player.ball_touched:
+                    player_rewards[i] += self.reach_object_w
+            else:
+                if np.linalg.norm(pos_diff) < 15:  # reached the big boost
+                    player_rewards[i] += self.reach_object_w
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
@@ -482,6 +507,9 @@ class ZeroSumReward(RewardFunction):
         self.launch_angle_car = [None] * 6
         self.exit_vel_save = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
+        self.end_object_tracker += 1
+        if self.end_object_tracker == 7:
+            self.end_object_tracker = 0
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]

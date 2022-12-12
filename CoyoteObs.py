@@ -18,6 +18,7 @@ class CoyoteObsBuilder(ObsBuilder):
                  embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0,
                  only_closest_opp=False,
                  selector=False,
+                 end_object_choice=None,
                  ):
         super().__init__()
         self.expanding = expanding
@@ -57,6 +58,11 @@ class CoyoteObsBuilder(ObsBuilder):
         self.env = env
         self.infinite_boost_odds = infinite_boost_odds
         self.infinite_boost_episode = False
+        self.end_object_tracker = end_object_choice
+        if end_object_choice is not None and end_object_choice == "random":
+            self.end_object_tracker = 0
+        elif end_object_choice is not None:
+            self.end_object_tracker = int(self.end_object_tracker)
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -86,6 +92,12 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 self.env.update_settings(boost_consumption=1)
                 self.infinite_boost_episode = False
+
+        if self.end_object_tracker is not None and self.end_object_tracker == "random":
+            self.end_object_tracker += 1
+            if self.end_object_tracker == 7:
+                self.end_object_tracker = 0
+
 
     def pre_step(self, state: GameState):
         self.state = state
@@ -167,6 +179,7 @@ class CoyoteObsBuilder(ObsBuilder):
             int(player.has_jump),
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
+            self.end_object_tracker / 7,
         ]
         if self.stack_size != 0:
             if self.selector:
