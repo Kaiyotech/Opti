@@ -164,6 +164,7 @@ class PlayerTwoTouch(TerminalCondition):
                     current_state.players[self.toucher].ball_touched:
                 return True
             elif current_state.players[self.toucher].ball_touched:
+                self.armed = False
                 self.no_touch_steps = 10_000_000
         return False
 

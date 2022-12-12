@@ -170,6 +170,7 @@ class ZeroSumReward(RewardFunction):
         self.last_touch_time = -1000
         self.exit_vel_arm_time_steps = 0.15 * (120 // tick_skip)
         self.exit_rewarded = False
+        self.launch_angle_car = None
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -260,6 +261,8 @@ class ZeroSumReward(RewardFunction):
 
             # not touched
             else:
+                if last.ball_touched:
+                    self.launch_angle_car = player.car_data.forward()[:-1] / np.linalg.norm(player.car_data.forward()[:-1])
                 if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded:
                     self.exit_rewarded = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
@@ -272,11 +275,10 @@ class ZeroSumReward(RewardFunction):
                     ang_mult = 1
                     if self.exit_vel_angle_w != 0:
                         # 0.785 is 45
-                        unit_vector_1 = player.car_data.forward()[:-1] / np.linalg.norm(player.car_data.forward()[:-1])
-                        unit_vector_2 = state.ball.position[:-1] / np.linalg.norm(state.ball.position[:-1])
-                        dot_product = np.dot(unit_vector_1, unit_vector_2)
-                        angle = min(abs(np.arccos(dot_product)), 0.785) / 0.785
-                        ang_mult = self.exit_velocity_w * angle + 0.1  #  0.1 is a small mult to still reward 0 angle
+                        unit_vector_2 = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1])
+                        dot_product = np.dot(self.launch_angle_car, unit_vector_2)
+                        angle = min(np.arccos(dot_product), 0.785) / 0.785
+                        ang_mult = self.exit_velocity_w * max(angle, 0.1)  #  0.1 is a small mult to still reward 0 angle
                     vel_mult = self.exit_velocity_w * 0.5 * ((xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
                     player_rewards[i] += vel_mult * req_reset * ang_mult
 
