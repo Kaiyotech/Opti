@@ -91,11 +91,9 @@ class ZeroSumReward(RewardFunction):
             team_spirit=0,  # increase as they learn
             zero_sum=True,
             prevent_chain_reset=False,
-            velocity_to_object_w=0,
-            reach_object_w=0,
+            touch_ball_w=0,
     ):
-        self.reach_object_w = reach_object_w
-        self.velocity_to_object_w = velocity_to_object_w
+        self.touch_ball_w = touch_ball_w
         self.end_object_tracker = 0
         self.min_goal_speed_rewarded = min_goal_speed_rewarded_kph * 27.78  # to uu
         self.exit_vel_angle_w = exit_vel_angle_w
@@ -213,6 +211,7 @@ class ZeroSumReward(RewardFunction):
             last = self.last_state.players[i]
 
             if player.ball_touched:
+                player_rewards[i] += self.touch_ball_w
                 self.last_touch_time = self.kickoff_timer
                 self.exit_rewarded[i] = False
                 self.last_touch_car = i
@@ -357,23 +356,6 @@ class ZeroSumReward(RewardFunction):
             player_rewards[i] += self.velocity_pb_w * speed_rew
             if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                 player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
-            # vel player to object - needs above unchanged
-            if self.end_object_tracker == 0:
-                player_rewards[i] += self.velocity_to_object_w * speed_rew  # uses the velpb calc above
-            else:
-                end_objective = self.big_boosts[self.end_object_tracker - 1]
-                pos_diff = end_objective - player.car_data.position
-                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
-                norm_vel = vel / CAR_MAX_SPEED
-                speed_rew = float(np.dot(norm_pos_diff, norm_vel))
-                player_rewards[i] += self.velocity_to_object_w * speed_rew
-            # reach object - needs above unchanged, uses some pos_diff
-            if self.end_object_tracker == 0:
-                if player.ball_touched:
-                    player_rewards[i] += self.reach_object_w
-            else:
-                if np.linalg.norm(pos_diff) < 15:  # reached the big boost
-                    player_rewards[i] += self.reach_object_w
 
             # flip reset helper
             if self.flip_reset_help_w != 0:

@@ -5,7 +5,8 @@ from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition
+from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+    BallTouchedCondition
 from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch, AttackerTouchCloseGoal, ReachObject
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
@@ -19,8 +20,8 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_to_object_w=0.01,
-                        reach_object_w=5,
+                        velocity_pb_w=0.01,
+                        touch_ball_w=5,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     past_version_prob = 0
     deterministic_streamer = True
     force_old_deterministic = False
+    gamemode_weights={'1v1': 0, '2v2': 1, '3v3': 0}
     team_size = 3
     dynamic_game = True
     host = "127.0.0.1"
@@ -54,6 +56,7 @@ if __name__ == "__main__":
             game_speed = 1
             deterministic_streamer = True
             auto_minimize = False
+            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
 
     match = Match(
         game_speed=game_speed,
@@ -62,11 +65,11 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="recovery"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=True,
-                                     embed_players=False, end_object_choice="random",),
+                                     embed_players=False, end_object_choice="random", remove_other_cars=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),
-                             ReachObject(),
+                             BallTouchedCondition(),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -100,7 +103,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.1, '2v2': 0.1, '3v3': 0.8},  # default 1/3
+                       gamemode_weights=gamemode_weights,  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

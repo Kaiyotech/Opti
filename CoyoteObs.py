@@ -19,8 +19,10 @@ class CoyoteObsBuilder(ObsBuilder):
                  only_closest_opp=False,
                  selector=False,
                  end_object_choice=None,
+                 remove_other_cars=False,
                  ):
         super().__init__()
+        self.remove_other_cars = remove_other_cars
         self.expanding = expanding
         self.only_closest_opp = only_closest_opp
         self.extra_boost_info = extra_boost_info
@@ -63,6 +65,9 @@ class CoyoteObsBuilder(ObsBuilder):
             self.end_object_tracker = 0
         elif end_object_choice is not None:
             self.end_object_tracker = int(self.end_object_tracker)
+        self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
+        self.big_boosts = np.asarray(self.big_boosts)
+        self.big_boosts[:, -1] = 18
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -179,7 +184,6 @@ class CoyoteObsBuilder(ObsBuilder):
             int(player.has_jump),
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
-            self.end_object_tracker / 7,
         ]
         if self.stack_size != 0:
             if self.selector:
@@ -241,7 +245,7 @@ class CoyoteObsBuilder(ObsBuilder):
             obs.extend(self.create_boost_packet(player_car, i, inverted))
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
-                           prev_act: np.ndarray, inverted: bool, previous_model_action):
+                           prev_act: np.ndarray, inverted: bool, previous_model_action, remove_other_players: bool):
 
         player_data = self.create_player_packet(player, player.inverted_car_data
                                                 if inverted else player.car_data, ball, prev_act, previous_model_action)
@@ -258,7 +262,7 @@ class CoyoteObsBuilder(ObsBuilder):
             closest = tmp_oppo[0].car_id
 
         for p in state.players:
-            if p.car_id == player.car_id:
+            if p.car_id == player.car_id or remove_other_players:
                 continue
 
             if p.team_num == player.team_num and a_count < a_max:
@@ -312,9 +316,15 @@ class CoyoteObsBuilder(ObsBuilder):
             inverted = False
             ball = state.ball
 
+        if self.end_object_tracker is not None and self.end_object_tracker != 0:
+            ball.position = self.big_boosts[self.end_object_tracker - 1]
+            ball.linear_velocity = np.asarray([0, 0, 0])
+            ball.angular_velocity = np.asarray([0, 0, 0])
+
         obs = []
         players_data = []
-        player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted, previous_model_action)
+        player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted,
+                                             previous_model_action, self.remove_other_cars)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
         if not self.embed_players:

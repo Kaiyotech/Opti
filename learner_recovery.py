@@ -76,12 +76,14 @@ if __name__ == "__main__":
     state = random.getstate()
     rollout_gen = RedisRolloutGenerator("Recovery",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=True,
-                                                                 embed_players=False, end_object_choice="random",),
+                                        lambda: CoyoteObsBuilder(expanding=True,
+                                                                 tick_skip=Constants_recovery.FRAME_SKIP,
+                                                                 team_size=3, extra_boost_info=False,
+                                                                 embed_players=False, end_object_choice="random",
+                                                                 remove_other_cars=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_to_object_w=0.01,
-                                                              reach_object_w=5,
+                                                              velocity_pb_w=0.01,
+                                                              touch_ball_w=5,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -93,13 +95,12 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(427, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 128), LeakyReLU(),
-                        Linear(128, 1))
+    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 1))
 
-    actor = Sequential(Linear(427, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
-                       Linear(128, 128), LeakyReLU(),
-                       Linear(128, 373))
+    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -126,8 +127,8 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("pinch_saves/Opti_1666202934.5988934/Opti_7980/checkpoint.pt")
+    alg.load("pinch_saves/Opti_1666202934.5988934/Opti_7980/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="flick_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_saves")

@@ -240,8 +240,8 @@ class ReachObject(TerminalCondition):
         super().__init__()
         self.end_object_tracker = 0
         self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
-        self.big_boost = np.asarray(self.big_boosts)
-        self.big_boost[:, -1] = 18  # fix the boost height
+        self.big_boosts = np.asarray(self.big_boosts)
+        self.big_boosts[:, -1] = 18  # fix the boost height
 
     def reset(self, initial_state: GameState):
         self.end_object_tracker += 1
