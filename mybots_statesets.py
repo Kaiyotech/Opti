@@ -1,7 +1,7 @@
 from rlgym.utils.state_setters import StateSetter
 from rlgym.utils.state_setters import StateWrapper
-from rlgym.utils.common_values import BLUE_TEAM, ORANGE_TEAM, CEILING_Z, GOAL_HEIGHT,\
-    SIDE_WALL_X, BACK_WALL_Y, CAR_MAX_SPEED, CAR_MAX_ANG_VEL, BALL_RADIUS
+from rlgym.utils.common_values import BLUE_TEAM, ORANGE_TEAM, CEILING_Z, GOAL_HEIGHT, \
+    SIDE_WALL_X, BACK_WALL_Y, CAR_MAX_SPEED, CAR_MAX_ANG_VEL, BALL_RADIUS, BOOST_LOCATIONS
 import numpy as np
 from numpy import random as rand
 
@@ -20,7 +20,6 @@ class BallFrontGoalState(StateSetter):
 
         # Loop over every car in the game, skipping 1 since we already did it
         for car in state_wrapper.cars:
-
             # all cars random
             car.set_pos(rng.uniform(-3500, 3500), rng.uniform(-4400, 4400), 17)
             car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
@@ -304,16 +303,30 @@ class FlickSetter(StateSetter):
 
 
 class RecoverySetter(StateSetter):
+    def __init__(self, end_object_tracker):
+        self.rng = np.random.default_rng()
+        self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
+        self.big_boosts = np.asarray(self.big_boosts)
+        self.big_boosts[:, -1] = 18
+        self.end_object_tracker = end_object_tracker
+
     def reset(self, state_wrapper: StateWrapper):
-        rng = np.random.default_rng()
 
         for car in state_wrapper.cars:
-            car.set_pos(rng.uniform(-4096 + 1152, 4096 - 1152), rng.uniform(-5120 + 1152, 5120 - 1152), rng.uniform(0, 2020))
-            car.set_rot(rng.uniform(-np.pi/2, np.pi/2), rng.uniform(-np.pi, np.pi), rng.uniform(-np.pi, np.pi))
-            car.set_lin_vel(rng.uniform(-2000, 2000), rng.uniform(-2000, 2000), rng.uniform(-2000, 2000))
-            car.set_ang_vel(rng.uniform(-4, 4), rng.uniform(-4, 4), rng.uniform(-4, 4))
+            car.set_pos(self.rng.uniform(-4096 + 1152, 4096 - 1152), self.rng.uniform(-5120 + 1152, 5120 - 1152),
+                        self.rng.uniform(0, 2020))
+            car.set_rot(self.rng.uniform(-np.pi / 2, np.pi / 2), self.rng.uniform(-np.pi, np.pi),
+                        self.rng.uniform(-np.pi, np.pi))
+            car.set_lin_vel(self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000))
+            car.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))
 
-        state_wrapper.ball.set_pos(rng.uniform(-4096 + 1152, 4096 - 1152), rng.uniform(-5120 + 1152, 5120 - 1152), rng.uniform(0, 2020))
-        state_wrapper.ball.set_lin_vel(rng.uniform(-200, 200), rng.uniform(-200, 200), rng.uniform(-200, 200))
-        state_wrapper.ball.set_ang_vel(rng.uniform(-4, 4), rng.uniform(-4, 4), rng.uniform(-4, 4))
-
+        if self.end_object_tracker is not None and self.end_object_tracker[0] != 0:
+            state_wrapper.ball.set_pos(*self.big_boosts[self.end_object_tracker[0] - 1])
+            state_wrapper.ball.set_lin_vel(0, 0, 0)
+            state_wrapper.ball.set_ang_vel(0, 0, 0)
+        else:
+            state_wrapper.ball.set_pos(self.rng.uniform(-4096 + 1152, 4096 - 1152),
+                                       self.rng.uniform(-5120 + 1152, 5120 - 1152), self.rng.uniform(0, 2020))
+            state_wrapper.ball.set_lin_vel(self.rng.uniform(-200, 200), self.rng.uniform(-200, 200),
+                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))

@@ -60,11 +60,12 @@ class CoyoteObsBuilder(ObsBuilder):
         self.env = env
         self.infinite_boost_odds = infinite_boost_odds
         self.infinite_boost_episode = False
-        self.end_object_tracker = end_object_choice
+        self.end_object_choice = end_object_choice
+        self.end_object_tracker = 0
         if end_object_choice is not None and end_object_choice == "random":
             self.end_object_tracker = 0
         elif end_object_choice is not None:
-            self.end_object_tracker = int(self.end_object_tracker)
+            self.end_object_tracker = int(self.end_object_choice)
         self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
         self.big_boosts = np.asarray(self.big_boosts)
         self.big_boosts[:, -1] = 18
@@ -98,7 +99,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.env.update_settings(boost_consumption=1)
                 self.infinite_boost_episode = False
 
-        if self.end_object_tracker is not None and self.end_object_tracker == "random":
+        if self.end_object_choice is not None and self.end_object_choice == "random":
             self.end_object_tracker += 1
             if self.end_object_tracker == 7:
                 self.end_object_tracker = 0
@@ -316,7 +317,7 @@ class CoyoteObsBuilder(ObsBuilder):
             inverted = False
             ball = state.ball
 
-        if self.end_object_tracker is not None and self.end_object_tracker != 0:
+        if self.end_object_choice is not None and self.end_object_tracker != 0:
             ball.position = self.big_boosts[self.end_object_tracker - 1]
             ball.linear_velocity = np.asarray([0, 0, 0])
             ball.angular_velocity = np.asarray([0, 0, 0])

@@ -9,7 +9,7 @@ from mybots_statesets import GroundAirDribble, WallDribble, FlickSetter, Recover
 
 
 class CoyoteSetter(DynamicGMSetter):
-    def __init__(self, mode):
+    def __init__(self, mode, end_object_choice=None):
         self.setters = []  # [1v1, 2v2, 3v3]
         replays = ["replays/ssl_1v1.npy", "replays/ssl_2v2.npy", "replays/ssl_3v3.npy"]
         aerial_replays = ["replays/aerial_1v1.npy", "replays/aerial_2v2.npy", "replays/aerial_3v3.npy"]
@@ -31,6 +31,12 @@ class CoyoteSetter(DynamicGMSetter):
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                "replays/ground_dribble_3v3.npy"]
         demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
+        self.end_object_choice = end_object_choice
+        self.end_object_tracker = [0]
+        if end_object_choice is not None and end_object_choice == "random":
+            self.end_object_tracker = [0]
+        elif end_object_choice is not None:
+            self.end_object_tracker = [int(self.end_object_choice)]
 
         if mode is None or mode == "normal":
             for i in range(3):
@@ -159,12 +165,16 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
-                            AugmentSetter(RecoverySetter())
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True, end_object_tracker=self.end_object_tracker)),
+                            AugmentSetter(RecoverySetter(self.end_object_tracker))
                         ),
                         (0.2, 0.8)
                     )
                 )
 
     def reset(self, state_wrapper: StateWrapper):
+        if self.end_object_choice is not None and self.end_object_choice == "random":
+            self.end_object_tracker[0] += 1
+            if self.end_object_tracker[0] == 7:
+                self.end_object_tracker[0] = 0
         self.setters[(len(state_wrapper.cars) // 2) - 1].reset(state_wrapper)
