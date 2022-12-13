@@ -329,6 +329,10 @@ class RecoverySetter(StateSetter):
                         self.rng.uniform(-np.pi, np.pi))
             car.set_lin_vel(self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000))
             car.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))
+            if self.rng.uniform() > 0.1:
+                car.boost = self.rng.uniform(0, 100)
+            else:
+                car.boost = 0
 
         # if self.end_object_tracker is not None and self.end_object_tracker[0] != 0:
         loc = random_valid_loc()
