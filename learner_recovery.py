@@ -79,7 +79,7 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True,
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
-                                                                 embed_players=False, end_object_choice="random",
+                                                                 embed_players=False,
                                                                  remove_other_cars=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,

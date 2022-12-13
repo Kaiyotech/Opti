@@ -65,7 +65,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="recovery", end_object_choice="random"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
-                                     embed_players=False, end_object_choice="random", remove_other_cars=True),
+                                     embed_players=False, remove_other_cars=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),

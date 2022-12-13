@@ -8,6 +8,17 @@ from numpy import random as rand
 DEG_TO_RAD = 3.14159265 / 180
 
 
+def random_valid_loc() -> np.ndarray:
+    rng = np.random.default_rng()
+    rand_x = rng.uniform(-4000, 4000)
+    if abs(rand_x) > (4096 - 1152):
+        rand_y = rng.uniform(-5120 + 1152, 5120 - 1152)
+    else:
+        rand_y = rng.uniform(-5020, 5020)
+    rand_z = rng.uniform(20, 2000)
+    return np.asarray([rand_x, rand_y, rand_z])
+
+
 class BallFrontGoalState(StateSetter):
     def reset(self, state_wrapper: StateWrapper):
         rng = np.random.default_rng()
@@ -303,30 +314,24 @@ class FlickSetter(StateSetter):
 
 
 class RecoverySetter(StateSetter):
-    def __init__(self, end_object_tracker):
+    def __init__(self):
         self.rng = np.random.default_rng()
         self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
         self.big_boosts = np.asarray(self.big_boosts)
         self.big_boosts[:, -1] = 18
-        self.end_object_tracker = end_object_tracker
+        # self.end_object_tracker = end_object_tracker
 
     def reset(self, state_wrapper: StateWrapper):
 
         for car in state_wrapper.cars:
-            car.set_pos(self.rng.uniform(-4096 + 1152, 4096 - 1152), self.rng.uniform(-5120 + 1152, 5120 - 1152),
-                        self.rng.uniform(0, 2020))
+            car.set_pos(*random_valid_loc())
             car.set_rot(self.rng.uniform(-np.pi / 2, np.pi / 2), self.rng.uniform(-np.pi, np.pi),
                         self.rng.uniform(-np.pi, np.pi))
             car.set_lin_vel(self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000))
             car.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))
 
-        if self.end_object_tracker is not None and self.end_object_tracker[0] != 0:
-            state_wrapper.ball.set_pos(*self.big_boosts[self.end_object_tracker[0] - 1])
-            state_wrapper.ball.set_lin_vel(0, 0, 0)
-            state_wrapper.ball.set_ang_vel(0, 0, 0)
-        else:
-            state_wrapper.ball.set_pos(self.rng.uniform(-4096 + 1152, 4096 - 1152),
-                                       self.rng.uniform(-5120 + 1152, 5120 - 1152), self.rng.uniform(0, 2020))
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-200, 200), self.rng.uniform(-200, 200),
-                                           self.rng.uniform(-200, 200))
-            state_wrapper.ball.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))
+        # if self.end_object_tracker is not None and self.end_object_tracker[0] != 0:
+        loc = random_valid_loc()
+        state_wrapper.ball.set_pos(x=loc[0], y=loc[1], z=94)
+        state_wrapper.ball.set_lin_vel(0, 0, 0)
+        state_wrapper.ball.set_ang_vel(0, 0, 0)
