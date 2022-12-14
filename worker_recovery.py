@@ -20,9 +20,10 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_pb_w=0.02,
+                        velocity_pb_w=0.01,
                         touch_ball_w=5,
                         boost_remain_touch_w=2,
+                        touch_grass_w=-0.01,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip
