@@ -22,6 +22,7 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                         velocity_pb_w=0.01,
                         touch_ball_w=5,
+                        boost_remain_touch_w=2,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip

@@ -92,7 +92,9 @@ class ZeroSumReward(RewardFunction):
             zero_sum=True,
             prevent_chain_reset=False,
             touch_ball_w=0,
+            boost_remain_touch_w=0,
     ):
+        self.boost_remain_touch_w = boost_remain_touch_w
         self.touch_ball_w = touch_ball_w
         self.end_object_tracker = 0
         self.min_goal_speed_rewarded = min_goal_speed_rewarded_kph * 27.78  # to uu
@@ -212,6 +214,7 @@ class ZeroSumReward(RewardFunction):
 
             if player.ball_touched:
                 player_rewards[i] += self.touch_ball_w
+                player_rewards[i] += player.boost_amount * self.boost_remain_touch_w
                 self.last_touch_time = self.kickoff_timer
                 self.exit_rewarded[i] = False
                 self.last_touch_car = i

@@ -84,6 +84,7 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,
                                                               touch_ball_w=5,
+                                                              boost_remain_touch_w=2,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
