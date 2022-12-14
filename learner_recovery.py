@@ -9,12 +9,12 @@ from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from CoyoteObs import CoyoteObsBuilder
-from agent import Opti
 
 from CoyoteParser import CoyoteAction
 import numpy as np
 from rewards import ZeroSumReward
 import Constants_recovery
+from agent import MaskIndices
 
 from utils.misc import count_parameters
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
                                                                  embed_players=False,
-                                                                 remove_other_cars=True),
+                                                                 remove_other_cars=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,
                                                               touch_ball_w=5,
@@ -100,7 +100,9 @@ if __name__ == "__main__":
                         Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                         Linear(512, 1))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    mask_array = torch.zeros(222, dtype=torch.bool)
+    mask_array[47:222] = True
+    actor = Sequential(MaskIndices(mask_array), Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
                        Linear(512, 373))
 
     actor = DiscretePolicy(actor, (373,))

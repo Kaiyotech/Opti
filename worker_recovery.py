@@ -34,7 +34,7 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0
     past_version_prob = 0
-    deterministic_streamer = True
+    deterministic_streamer = False
     force_old_deterministic = False
     gamemode_weights={'1v1': 0, '2v2': 1, '3v3': 0}
     team_size = 3
@@ -55,7 +55,6 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = True
             auto_minimize = False
             gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
 
@@ -66,7 +65,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="recovery", end_object_choice="random"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
-                                     embed_players=False, remove_other_cars=True),
+                                     embed_players=False, remove_other_cars=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),

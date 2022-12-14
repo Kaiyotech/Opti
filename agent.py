@@ -21,3 +21,12 @@ class Opti(nn.Module):  # takes an embedder and a network and runs the embedder 
         out = th.max(self.embedder(cars), -2)[0]
         result = self.net(th.cat((main, out), dim=1))
         return result
+
+
+class MaskIndices(nn.Module):
+    def __init__(self, indices):
+        super().__init__()
+        self.indices = indices
+
+    def forward(self, x):
+        return x[..., ~self.indices]
