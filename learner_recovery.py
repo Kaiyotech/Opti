@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.04,
     )
 
-    run_id = "recovery_run2"
+    run_id = "recovery_run3.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run2",
+                        name="Recovery_Run3.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -82,7 +82,7 @@ if __name__ == "__main__":
                                                                  embed_players=False,
                                                                  remove_other_cars=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_pb_w=0.01,
+                                                              velocity_pb_w=0.02,
                                                               touch_ball_w=5,
                                                               boost_remain_touch_w=2,
                                                               ),
@@ -96,14 +96,14 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
+    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                        Linear(128, 1))
 
     mask_array = torch.zeros(222, dtype=torch.bool)
     mask_array[47:222] = True
-    actor = Sequential(MaskIndices(mask_array), Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
+    actor = Sequential(MaskIndices(mask_array), Linear(222, 256), LeakyReLU(), Linear(128, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1670966953.258057/Opti_8840/checkpoint.pt")
+    # alg.load("recovery_saves/Opti_1670992240.9337451/Opti_9450/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
