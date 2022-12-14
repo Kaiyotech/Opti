@@ -50,15 +50,15 @@ if __name__ == "__main__":
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=20,
+        save_every=10,
         model_every=1000,
-        ent_coef=0.02,
+        ent_coef=0.04,
     )
 
-    run_id = "recovery_run1"
+    run_id = "recovery_run2"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run1",
+                        name="Recovery_Run2",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -127,7 +127,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("pinch_saves/Opti_1666202934.5988934/Opti_7980/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1670966953.258057/Opti_8840/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

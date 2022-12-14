@@ -330,7 +330,7 @@ class RecoverySetter(StateSetter):
             car.set_lin_vel(self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000), self.rng.uniform(-2000, 2000))
             car.set_ang_vel(self.rng.uniform(-4, 4), self.rng.uniform(-4, 4), self.rng.uniform(-4, 4))
             if self.rng.uniform() > 0.1:
-                car.boost = self.rng.uniform(0, 100)
+                car.boost = self.rng.uniform(0, 1)
             else:
                 car.boost = 0
 
