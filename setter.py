@@ -26,7 +26,8 @@ class CoyoteSetter(DynamicGMSetter):
         air_dribble_replays = ["replays/air_dribble_1v1.npy", "replays/air_dribble_2v2.npy",
                                "replays/air_dribble_3v3.npy"]
         team_pinch_replays = ["replays/pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
-        pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
+        full_pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
+        pinch_replays = ["replays/full_pinch_1v1.npy", "replays/full_pinch_2v2.npy", "replays/full_pinch_3v3.npy"]
         double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy"]
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                "replays/ground_dribble_3v3.npy"]
@@ -114,10 +115,11 @@ class CoyoteSetter(DynamicGMSetter):
                     WeightedSampleSetter(
                         (
                             AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(full_pinch_replays[i], random_boost=True)),
                             AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True)),
                             AugmentSetter(WallDribble(), True, False, False),
                         ),
-                        (0.85, 0.15, 0)
+                        (0.5, 0.15, 0.35, 0)
                     )
                 )
         # elif mode == "flick":

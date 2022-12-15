@@ -5,7 +5,7 @@ from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import TimeoutCondition,\
+from rlgym.utils.terminal_conditions.common_conditions import TimeoutCondition, \
     NoTouchTimeoutCondition, GoalScoredCondition
 from mybots_terminals import KickoffTrainer, BallTouchGroundCondition, BallStopped
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
@@ -15,23 +15,23 @@ from rewards import ZeroSumReward
 from torch import set_num_threads
 import Constants_pinch
 import os
-set_num_threads(1)
 
+set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_pinch.ZERO_SUM,
-                          goal_w=10,
+                        goal_w=10,
                         aerial_goal_w=5,
                         double_tap_w=20,
-                          concede_w=-10,
-                          velocity_pb_w=0.025,
-                          velocity_bg_w=1,
-                          acel_ball_w=2.5,
-                          punish_low_touch_w=-0.5,  # increase later
-                          team_spirit=1,
-                          cons_air_touches_w=0.75,
-                          jump_touch_w=1,
-                          wall_touch_w=1)
+                        concede_w=-10,
+                        velocity_pb_w=0.025,
+                        velocity_bg_w=1,
+                        acel_ball_w=2.5,
+                        punish_low_touch_w=-0.5,  # increase later
+                        team_spirit=1,
+                        cons_air_touches_w=0.75,
+                        jump_touch_w=1,
+                        wall_touch_w=1)
     frame_skip = Constants_pinch.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -62,7 +62,6 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = True
             auto_minimize = False
 
     match = Match(
@@ -77,7 +76,11 @@ if __name__ == "__main__":
                              BallStopped(min_time_sec=1, tick_skip=Constants_pinch.FRAME_SKIP, max_time_sec=900),
                              BallTouchGroundCondition(min_time_sec=5,
                                                       tick_skip=Constants_pinch.FRAME_SKIP,
-                                                      time_after_ground_sec=3),
+                                                      time_after_ground_sec=5,
+                                                      check_towards_goal=True,
+                                                      y_distance_goal=2000,
+                                                      on_ground_again=True,
+                                                      allow_pinch_cont=True),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -111,7 +114,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.2, '2v2': 0.4, '3v3': 0.4},  # default 1/3
+                       gamemode_weights={'1v1': 0.3, '2v2': 0.35, '3v3': 0.35},  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

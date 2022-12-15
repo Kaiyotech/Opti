@@ -50,15 +50,15 @@ if __name__ == "__main__":
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=10,
+        save_every=20,
         model_every=1000,
-        ent_coef=0.04,
+        ent_coef=0.02,
     )
 
-    run_id = "recovery_run3.02"
+    run_id = "recovery_run4"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run3.02",
+                        name="Recovery_Run4",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     redis.delete("worker-ids")
 
     stat_trackers = [
-        Speed(normalize=True), TimeoutRate(), Touch(), EpisodeLength(), Boost(),
+        Speed(normalize=True), Touch(), EpisodeLength(), Boost(),
         DistToBall(), CarOnGround(),
     ]
     state = random.getstate()
@@ -80,12 +80,12 @@ if __name__ == "__main__":
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
                                                                  embed_players=False,
-                                                                 remove_other_cars=False),
+                                                                 remove_other_cars=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,
                                                               touch_ball_w=5,
                                                               boost_remain_touch_w=2,
-                                                              touch_grass_w=-0.01,
+                                                              touch_grass_w=0,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -97,14 +97,17 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    critic = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
                         Linear(128, 1))
 
-    mask_array = torch.zeros(222, dtype=torch.bool)
-    mask_array[47:222] = True
-    actor = Sequential(MaskIndices(mask_array), Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
-                       Linear(128, 373))
+    # mask_array = torch.zeros(222, dtype=torch.bool)
+    # mask_array[47:222] = True
+    # actor = Sequential(MaskIndices(mask_array), Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
+    #                    Linear(128, 373))
+
+    actor = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                       Linear(256, 128), LeakyReLU(), Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -131,7 +134,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1671048007.5732455/Opti_380/checkpoint.pt")
+    # alg.load("recovery_saves/Opti_1671053141.5763962/Opti_430/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

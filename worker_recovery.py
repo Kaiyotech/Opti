@@ -23,7 +23,7 @@ if __name__ == "__main__":
                         velocity_pb_w=0.01,
                         touch_ball_w=5,
                         boost_remain_touch_w=2,
-                        touch_grass_w=-0.01,
+                        touch_grass_w=0,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip
@@ -37,9 +37,9 @@ if __name__ == "__main__":
     past_version_prob = 0
     deterministic_streamer = False
     force_old_deterministic = False
-    gamemode_weights={'1v1': 0, '2v2': 1, '3v3': 0}
-    team_size = 3
-    dynamic_game = True
+    gamemode_weights = {'1v0': 1, '1v1': 0, '2v2': 0, '3v3': 0}
+    team_size = 1
+    dynamic_game = False
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -57,16 +57,16 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
-            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
+            gamemode_weights = {'1v0': 1, '1v1': 0, '2v2': 0, '3v3': 0}
 
     match = Match(
         game_speed=game_speed,
-        spawn_opponents=True,
+        spawn_opponents=False,
         team_size=team_size,
         state_setter=CoyoteSetter(mode="recovery", end_object_choice="random"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
-                                     embed_players=False, remove_other_cars=False),
+                                     embed_players=False, remove_other_cars=True),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights=gamemode_weights,  # default 1/3
+                       # gamemode_weights=gamemode_weights,  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,

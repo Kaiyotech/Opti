@@ -4,10 +4,17 @@ from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z, BOOST
 import numpy as np
 
 
-def ball_towards_goal(ball):
+def ball_towards_goal(ball, y_distance_check, allow_pinch_cont):
     x, y, z = ball.position
     vx, vy, vz = ball.linear_velocity
-    return y * vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > 4000
+    y_distance = BACK_WALL_Y - y_distance_check
+    normal_check = y * vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > y_distance
+    if not allow_pinch_cont:
+        return normal_check
+    else:
+        pinch_check = (abs(x) > 3500 and x * vx > 0) or (abs(x) < 3800 and abs(y) > 4600 and y * vy > 0)
+        return normal_check or pinch_check
+
 
 
 class BallTouchGroundCondition(TerminalCondition):
@@ -19,8 +26,14 @@ class BallTouchGroundCondition(TerminalCondition):
                  neg_z_check=False,
                  check_towards_goal=False,
                  time_to_arm_sec=0,
+                 y_distance_goal=1120,
+                 on_ground_again=False,
+                 allow_pinch_cont=False,
                  ):
         super().__init__()
+        self.allow_pinch_cont = allow_pinch_cont
+        self.on_ground_again = on_ground_again
+        self.y_distance_goal = y_distance_goal
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.time_to_arm_steps = time_to_arm_sec * (120 // tick_skip)
         self.steps = 0
@@ -47,12 +60,14 @@ class BallTouchGroundCondition(TerminalCondition):
             self.touch_time = self.steps
             self.touched = True
         if self.touched and self.steps > self.min_steps and self.steps > self.touch_time + self.steps_after_ground:
+            if self.on_ground_again and not current_state.ball.position[2] < self.min_height:
+                return False
             if not self.neg_z_check and not self.check_towards_goal:
                 return True
             elif self.neg_z_check:
                 return current_state.ball.linear_velocity[2] < -1
             elif self.check_towards_goal:
-                return not ball_towards_goal(current_state.ball)
+                return not ball_towards_goal(current_state.ball, self.y_distance_goal, self.allow_pinch_cont)
         else:
             return False
 
