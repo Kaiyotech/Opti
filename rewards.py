@@ -93,7 +93,9 @@ class ZeroSumReward(RewardFunction):
             prevent_chain_reset=False,
             touch_ball_w=0,
             boost_remain_touch_w=0,
+            supersonic_bonus_vpb_w=0,
     ):
+        self.supersonic_bonus_vpb_w = supersonic_bonus_vpb_w
         self.boost_remain_touch_w = boost_remain_touch_w
         self.touch_ball_w = touch_ball_w
         self.end_object_tracker = 0
@@ -355,8 +357,12 @@ class ZeroSumReward(RewardFunction):
             pos_diff = state.ball.position - player.car_data.position
             norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
             norm_vel = vel / CAR_MAX_SPEED
+            supersonic = False
+            if self.supersonic_bonus_vpb_w != 0 and np.linalg.norm(vel) >= 2190:
+                supersonic = True
             speed_rew = float(np.dot(norm_pos_diff, norm_vel))
             player_rewards[i] += self.velocity_pb_w * speed_rew
+            player_rewards[i] += supersonic * self.supersonic_bonus_vpb_w * speed_rew
             if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                 player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
 

@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.02,
     )
 
-    run_id = "recovery_run4"
+    run_id = "recovery_run4.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run4",
+                        name="Recovery_Run4.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -80,12 +80,14 @@ if __name__ == "__main__":
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
                                                                  embed_players=False,
-                                                                 remove_other_cars=True),
+                                                                 remove_other_cars=True, zero_other_cars=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_pb_w=0.01,
-                                                              touch_ball_w=5,
-                                                              boost_remain_touch_w=2,
+                                                              velocity_pb_w=0.2,
+                                                              boost_gain_w=1,
+                                                              # touch_ball_w=5,
+                                                              # boost_remain_touch_w=2,
                                                               touch_grass_w=0,
+                                                              supersonic_bonus_vpb_w=0.2,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,

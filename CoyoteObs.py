@@ -20,8 +20,10 @@ class CoyoteObsBuilder(ObsBuilder):
                  selector=False,
                  end_object_choice=None,
                  remove_other_cars=False,
+                 zero_other_cars=False,
                  ):
         super().__init__()
+        self.zero_other_cars = zero_other_cars
         self.remove_other_cars = remove_other_cars
         self.expanding = expanding
         self.only_closest_opp = only_closest_opp
@@ -246,7 +248,7 @@ class CoyoteObsBuilder(ObsBuilder):
             obs.extend(self.create_boost_packet(player_car, i, inverted))
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
-                           prev_act: np.ndarray, inverted: bool, previous_model_action, remove_other_players: bool):
+                           prev_act: np.ndarray, inverted: bool, previous_model_action, zero_other_players: bool):
 
         player_data = self.create_player_packet(player, player.inverted_car_data
                                                 if inverted else player.car_data, ball, prev_act, previous_model_action)
@@ -263,7 +265,7 @@ class CoyoteObsBuilder(ObsBuilder):
             closest = tmp_oppo[0].car_id
 
         for p in state.players:
-            if p.car_id == player.car_id or remove_other_players:
+            if p.car_id == player.car_id or zero_other_players:
                 continue
 
             if p.team_num == player.team_num and a_count < a_max:
@@ -325,10 +327,10 @@ class CoyoteObsBuilder(ObsBuilder):
         obs = []
         players_data = []
         player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted,
-                                             previous_model_action, self.remove_other_cars)
+                                             previous_model_action, self.zero_other_cars)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
-        if not self.embed_players:
+        if not self.embed_players and not self.remove_other_cars:
             for p in players_data:
                 obs.extend(p)
         # this adds boost timers and direction/distance to all boosts
