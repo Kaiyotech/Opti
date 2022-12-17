@@ -20,7 +20,7 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_pb_w=0.02,
+                        velocity_pb_w=0.005,
                         boost_gain_w=0.25,
                         touch_ball_w=1,
                         boost_remain_touch_w=0.5,
@@ -37,9 +37,9 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0
     past_version_prob = 0
-    deterministic_streamer = False
+    deterministic_streamer = True
     force_old_deterministic = False
-    gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
+    gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     team_size = 3
     dynamic_game = True
     host = "127.0.0.1"

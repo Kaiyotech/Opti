@@ -82,12 +82,12 @@ if __name__ == "__main__":
                                                                  embed_players=False,
                                                                  remove_other_cars=True, zero_other_cars=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_pb_w=0.2,
-                                                              boost_gain_w=1,
+                                                              velocity_pb_w=0.005,
+                                                              boost_gain_w=0.25,
                                                               touch_ball_w=1,
                                                               boost_remain_touch_w=0.5,
                                                               touch_grass_w=0,
-                                                              supersonic_bonus_vpb_w=0.2,
+                                                              supersonic_bonus_vpb_w=0.02,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1671122960.2981184/Opti_520/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1671162470.1456532/Opti_2120/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
