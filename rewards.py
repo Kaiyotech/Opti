@@ -432,7 +432,7 @@ class ZeroSumReward(RewardFunction):
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.blue_toucher] += self.double_tap_w
                     if self.blue_touch_height > GOAL_HEIGHT:
-                        player_rewards[self.blue_toucher] += self.aerial_goal_w
+                        player_rewards[self.blue_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[:mid] += self.team_spirit * goal_reward
                 elif self.orange_touch_timer < self.touch_timeout and self.zero_sum:
                     player_rewards[mid:] -= goal_reward
@@ -452,7 +452,7 @@ class ZeroSumReward(RewardFunction):
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.orange_toucher] += self.double_tap_w
                     if self.orange_touch_height > GOAL_HEIGHT:
-                        player_rewards[self.orange_toucher] += self.aerial_goal_w
+                        player_rewards[self.orange_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[mid:] += self.team_spirit * goal_reward
 
                 elif self.blue_touch_timer < self.touch_timeout and self.zero_sum:
