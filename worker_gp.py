@@ -67,7 +67,6 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = True
             auto_minimize = False
             infinite_boost_odds = 0.1
 
