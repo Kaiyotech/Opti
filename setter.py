@@ -32,6 +32,10 @@ class CoyoteSetter(DynamicGMSetter):
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                "replays/ground_dribble_3v3.npy"]
         demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
+        low_recovery_replays = ["replays/low_recovery_1v1.npy", "replays/low_recovery_1v1.npy",
+                                "replays/low_recovery_1v1.npy"]
+        high_recovery_replays = ["replays/high_recovery_1v1.npy", "replays/high_recovery_1v1.npy",
+                                "replays/high_recovery_1v1.npy"]
         self.end_object_choice = end_object_choice
         self.end_object_tracker = [0]
         if end_object_choice is not None and end_object_choice == "random":
@@ -167,10 +171,10 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
-                            AugmentSetter(RecoverySetter(), True, False, False)
+                            AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False, zero_ball_weight=0.8), True, False, False),
+                            AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False, zero_ball_weight=0.8), True, False, False),
                         ),
-                        (0.2, 0.8)
+                        (0.8, 0.2)
                     )
                 )
 

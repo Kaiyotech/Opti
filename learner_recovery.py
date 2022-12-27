@@ -46,7 +46,7 @@ if __name__ == "__main__":
         actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=Constants_recovery.STEP_SIZE,
-        batch_size=200_000,
+        batch_size=100_000,
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run4.08"
+    run_id = "recovery_run5"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run4.08",
+                        name="Recovery_Run5",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -79,15 +79,14 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True,
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
-                                                                 embed_players=False,
-                                                                 remove_other_cars=True, zero_other_cars=True),
+                                                                 embed_players=False,),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_pb_w=0,
+                                                              velocity_pb_w=0.01,
                                                               boost_gain_w=0.25,
-                                                              touch_ball_w=1,
-                                                              boost_remain_touch_w=0.5,
+                                                              touch_ball_w=2,
+                                                              boost_remain_touch_w=1,
                                                               touch_grass_w=0,
-                                                              supersonic_bonus_vpb_w=0,
+                                                              supersonic_bonus_vpb_w=0.005,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -99,17 +98,26 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                        Linear(256, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
-                        Linear(128, 1))
+    # critic = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                     Linear(256, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+    #                     Linear(128, 1))
+    #
+    # # mask_array = torch.zeros(222, dtype=torch.bool)
+    # # mask_array[47:222] = True
+    # # actor = Sequential(MaskIndices(mask_array), Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
+    # #                    Linear(128, 373))
+    #
+    # actor = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    #                    Linear(256, 128), LeakyReLU(), Linear(128, 373))
+    #
+    # actor = DiscretePolicy(actor, (373,))
 
-    # mask_array = torch.zeros(222, dtype=torch.bool)
-    # mask_array[47:222] = True
-    # actor = Sequential(MaskIndices(mask_array), Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
-    #                    Linear(128, 373))
+    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                        Linear(512, 1))
 
-    actor = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                       Linear(256, 128), LeakyReLU(), Linear(128, 373))
+    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
 
     actor = DiscretePolicy(actor, (373,))
 

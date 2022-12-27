@@ -20,12 +20,12 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_pb_w=0,
+                        velocity_pb_w=0.01,
                         boost_gain_w=0.25,
-                        touch_ball_w=1,
-                        boost_remain_touch_w=0.5,
+                        touch_ball_w=2,
+                        boost_remain_touch_w=1,
                         touch_grass_w=0,
-                        supersonic_bonus_vpb_w=0,
+                        supersonic_bonus_vpb_w=0.005,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         state_setter=CoyoteSetter(mode="recovery", end_object_choice="random"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
-                                     embed_players=False, remove_other_cars=True, zero_other_cars=True),
+                                     embed_players=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),
