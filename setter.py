@@ -45,12 +45,12 @@ class CoyoteSetter(DynamicGMSetter):
                     WeightedSampleSetter(
                         (
                             DefaultState(),
-                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(GroundAirDribble(), True, False, False),
                             AugmentSetter(WallDribble(), True, False, False),
-                            AugmentSetter(RandomState(cars_on_ground=True)),
-                            AugmentSetter(RandomState(cars_on_ground=False)),
+                            AugmentSetter(RandomState(cars_on_ground=True), True, False, False),
+                            AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
                         (0.1, 0.7, 0.10, 0.025, 0.025, 0.025, 0.025)
@@ -62,21 +62,21 @@ class CoyoteSetter(DynamicGMSetter):
                     WeightedSampleSetter(
                         (
                             DefaultState(),
-                            AugmentSetter(ReplaySetter(kickoff_replays[i])),
-                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(kickoff_replays[i]), True, False, False),
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(GroundAirDribble(), True, False, False),
                             AugmentSetter(WallDribble(), True, False, False),
-                            AugmentSetter(RandomState(cars_on_ground=True)),
-                            AugmentSetter(RandomState(cars_on_ground=False)),
+                            AugmentSetter(RandomState(cars_on_ground=True), True, False, False),
+                            AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
                             AugmentSetter(
-                                ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1)),
-                            AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True)),
+                                ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1), True, False, False),
+                            AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(
-                                ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1)),
-                            AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True)),
+                                ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1), True, False, False),
+                            AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True), True, False, False),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
                         (0.1, 0.05, 0.22, 0.05, 0.01, 0.02, 0.01, 0.01, 0.1, 0.1, 0.1, 0.09, 0.09, 0.05)
@@ -87,7 +87,7 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(kickoff_replays[i])),
+                            AugmentSetter(ReplaySetter(kickoff_replays[i]), True, False, False),
                             DefaultState(),
                         ),
                         (0.3, 0.7)
@@ -98,13 +98,13 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True, remove_defender_weight=0.25)),
-                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.25)),
-                            AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True, remove_defender_weight=0.25)),
-                            AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True, remove_defender_weight=0.25)),
+                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True, remove_defender_weight=0.25), True, False, False),
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.25), True, False, False),
+                            AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True, remove_defender_weight=0.25), True, False, False),
+                            AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True, remove_defender_weight=0.25), True, False, False),
                             AugmentSetter(WallDribble(), True, False, False),
-                            AugmentSetter(RandomState(cars_on_ground=False)),
-                            AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.25)),
+                            AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
+                            AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.25), True, False, False),
                         ),
                         (0.05, 0.30, 0.20, 0.20, 0.10, 0.01, 0.14)
                     )
@@ -114,9 +114,9 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(full_pinch_replays[i], random_boost=True)),
-                            AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(full_pinch_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(WallDribble(), True, False, False),
                         ),
                         (0.5, 0.15, 0.35, 0)
@@ -133,7 +133,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(ground_dribble_replays[i],
                                                        random_boost=True,
                                                        remove_defender_weight=0.25,
-                                                       )
+                                                       ), True, False, False
                                           )
                 )
         elif mode == "flip_reset":
@@ -141,14 +141,14 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
+                            AugmentSetter(ReplaySetter(flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True), True, False, False),
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(WallDribble(speed_min=1450, speed_max=1700, max_rand_z=300), True, False, False),
-                            AugmentSetter(ReplaySetter(wall_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
+                            AugmentSetter(ReplaySetter(wall_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True), True, False, False),
                             AugmentSetter(WallDribble(speed_min=1700, speed_max=1900, max_rand_z=300), True, False,
                                           False),
-                            AugmentSetter(ReplaySetter(ground_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
-                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True)),
+                            AugmentSetter(ReplaySetter(ground_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True), True, False, False),
                         ),
                         # (0, 0, 0, 0.5, 0, 0.5)
                         # (0, 0, 0, 1, 0, 0, 0)
@@ -159,7 +159,7 @@ class CoyoteSetter(DynamicGMSetter):
         elif mode == "demo":
             for i in range(3):
                 self.setters.append(
-                    AugmentSetter(ReplaySetter(demo_replays[i]))
+                    AugmentSetter(ReplaySetter(demo_replays[i]), True, False, False)
                 )
 
         elif mode == "recovery":
@@ -167,8 +167,8 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
-                            AugmentSetter(RecoverySetter())
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(RecoverySetter(), True, False, False)
                         ),
                         (0.2, 0.8)
                     )
