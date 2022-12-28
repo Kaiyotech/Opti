@@ -347,7 +347,7 @@ class HalfFlip(StateSetter):
         mult = -1
         for car in state_wrapper.cars:
             car.set_pos(0, mult * 2500)
-            car.set_rot(0, -mult * np.pi * 0.5, 0)
+            car.set_rot(0, mult * np.pi * 0.5, 0)
             car.set_lin_vel(0, 0, 0)
             car.set_ang_vel(0, 0, 0)
             mult = 1
