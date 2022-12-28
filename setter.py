@@ -5,7 +5,7 @@ from rlgym_tools.extra_state_setters.replay_setter import ReplaySetter
 from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampleSetter
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 from rlgym.utils.state_setters.random_state import RandomState
-from mybots_statesets import GroundAirDribble, WallDribble, FlickSetter, RecoverySetter
+from mybots_statesets import GroundAirDribble, WallDribble, FlickSetter, RecoverySetter, HalfFlip
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -171,10 +171,17 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (
-                            AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False, zero_ball_weight=0.8), True, False, False),
-                            AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False, zero_ball_weight=0.8), True, False, False),
+                            AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False,
+                                                       zero_ball_weight=0.8,
+                                                       zero_car_weight=0.2,
+                                                       rotate_car_weight=0.2), False, True, False),
+                            AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False,
+                                                       zero_ball_weight=0.8,
+                                                       zero_car_weight=0.2,
+                                                       rotate_car_weight=0.2), False, True, False),
+                            HalfFlip(),
                         ),
-                        (0.8, 0.2)
+                        (0.75, 0.15, 0.1)
                     )
                 )
 

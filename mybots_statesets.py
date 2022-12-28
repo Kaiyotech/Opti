@@ -339,3 +339,19 @@ class RecoverySetter(StateSetter):
         state_wrapper.ball.set_pos(x=loc[0], y=loc[1], z=94)
         state_wrapper.ball.set_lin_vel(0, 0, 0)
         state_wrapper.ball.set_ang_vel(0, 0, 0)
+
+
+class HalfFlip(StateSetter):
+    def reset(self, state_wrapper: StateWrapper):
+        assert len(state_wrapper.cars) < 3
+        mult = -1
+        for car in state_wrapper.cars:
+            car.set_pos(0, mult * 2500)
+            car.set_rot(0, -mult * np.pi * 0.5, 0)
+            car.set_lin_vel(0, 0, 0)
+            car.set_ang_vel(0, 0, 0)
+            mult = 1
+
+        state_wrapper.ball.set_pos(0, 0, 94)
+        state_wrapper.ball.set_lin_vel(0, 0, 0)
+        state_wrapper.ball.set_ang_vel(0, 0, 0)

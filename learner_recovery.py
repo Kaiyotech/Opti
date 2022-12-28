@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run5"
+    run_id = "recovery_run6"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run5",
+                        name="Recovery_Run6",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -83,8 +83,9 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,
                                                               boost_gain_w=0.25,
-                                                              touch_ball_w=2,
-                                                              boost_remain_touch_w=1,
+                                                              punish_boost=True,
+                                                              touch_ball_w=3,
+                                                              boost_remain_touch_w=1.5,
                                                               touch_grass_w=0,
                                                               supersonic_bonus_vpb_w=0.005,
                                                               ),
@@ -112,12 +113,22 @@ if __name__ == "__main__":
     #
     # actor = DiscretePolicy(actor, (373,))
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
+    # critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                     Linear(512, 1))
+    #
+    # actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+    #                    Linear(512, 373))
+    #
+    # actor = DiscretePolicy(actor, (373,))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
+    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 128), LeakyReLU(),
+                        Linear(128, 1))
+
+    actor = Sequential(Linear(222, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -144,7 +155,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1671444731.3342474/Opti_3500/checkpoint.pt")
+    # alg.load("pinch_saves/Opti_1671163551.271756/Opti_9000/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

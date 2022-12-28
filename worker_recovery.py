@@ -22,8 +22,9 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                         velocity_pb_w=0.01,
                         boost_gain_w=0.25,
-                        touch_ball_w=2,
-                        boost_remain_touch_w=1,
+                        punish_boost=True,
+                        touch_ball_w=3,
+                        boost_remain_touch_w=1.5,
                         touch_grass_w=0,
                         supersonic_bonus_vpb_w=0.005,
                         )
