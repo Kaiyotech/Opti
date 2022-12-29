@@ -23,9 +23,9 @@ if __name__ == "__main__":
                         velocity_pb_w=0.01,
                         boost_gain_w=0.25,
                         punish_boost=True,
-                        touch_ball_w=2,
+                        touch_ball_w=3,
                         boost_remain_touch_w=.75,
-                        touch_grass_w=-0.04,
+                        touch_grass_w=-0.03,
                         supersonic_bonus_vpb_w=0.02,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0
-    past_version_prob = 0
+    past_version_prob = 0.2
     deterministic_streamer = True
     force_old_deterministic = False
     gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}

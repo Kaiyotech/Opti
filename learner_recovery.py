@@ -52,13 +52,13 @@ if __name__ == "__main__":
         gamma=gamma,
         save_every=10,
         model_every=1000,
-        ent_coef=0.025,
+        ent_coef=0.015,
     )
 
-    run_id = "recovery_run6.02"
+    run_id = "recovery_run6.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run6.02",
+                        name="Recovery_Run6.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -84,9 +84,9 @@ if __name__ == "__main__":
                                                               velocity_pb_w=0.01,
                                                               boost_gain_w=0.25,
                                                               punish_boost=True,
-                                                              touch_ball_w=2,
+                                                              touch_ball_w=3,
                                                               boost_remain_touch_w=.75,
-                                                              touch_grass_w=-0.04,
+                                                              touch_grass_w=-0.03,
                                                               supersonic_bonus_vpb_w=0.02,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1672243220.4109387/Opti_250/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1672288381.923896/Opti_810/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

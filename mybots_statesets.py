@@ -342,6 +342,9 @@ class RecoverySetter(StateSetter):
 
 
 class HalfFlip(StateSetter):
+    def __init__(self):
+        self.rng = np.random.default_rng()
+
     def reset(self, state_wrapper: StateWrapper):
         assert len(state_wrapper.cars) < 3
         mult = -1
@@ -350,6 +353,10 @@ class HalfFlip(StateSetter):
             car.set_rot(0, mult * np.pi * 0.5, 0)
             car.set_lin_vel(0, 0, 0)
             car.set_ang_vel(0, 0, 0)
+            if self.rng.uniform() > 0.1:
+                car.boost = self.rng.uniform(0, 1.000001)
+            else:
+                car.boost = 0
             mult = 1
 
         state_wrapper.ball.set_pos(0, 0, 94)
