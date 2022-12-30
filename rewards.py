@@ -528,6 +528,8 @@ class ZeroSumReward(RewardFunction):
         return float(rew)
 
     def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
+        reg_reward = self.get_reward(player, state, previous_action, previous_model_action)
         # if dist is 0, reward is 1
         dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
-        return float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
+        dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
+        return reg_reward + dist_rew
