@@ -43,22 +43,22 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
-        critic_lr=1e-4,
+        actor_lr=1e-5,
+        critic_lr=1e-5,
         n_steps=Constants_recovery.STEP_SIZE,
         batch_size=250_000,
         minibatch_size=125_000,
         epochs=30,
         gamma=gamma,
-        save_every=10,
+        save_every=5,
         model_every=1000,
-        ent_coef=0.015,
+        ent_coef=0.01,
     )
 
-    run_id = "recovery_run6.04"
+    run_id = "recovery_run6.05"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run6.04",
+                        name="Recovery_Run6.05",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -84,13 +84,10 @@ if __name__ == "__main__":
                                                               velocity_pb_w=0.01,
                                                               boost_gain_w=0.25,
                                                               punish_boost=True,
-                                                              touch_ball_w=2,
+                                                              touch_ball_w=3,
                                                               boost_remain_touch_w=.75,
                                                               touch_grass_w=-0.03,
                                                               supersonic_bonus_vpb_w=0.02,
-                                                              zero_touch_grass_if_ss=True,
-                                                              turtle_w=-0.04,
-                                                              final_reward_ball_dist_w=1,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
