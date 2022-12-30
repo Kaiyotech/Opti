@@ -94,7 +94,13 @@ class ZeroSumReward(RewardFunction):
             touch_ball_w=0,
             boost_remain_touch_w=0,
             supersonic_bonus_vpb_w=0,
+            turtle_w=0,
+            zero_touch_grass_if_ss=False,
+            final_reward_ball_dist_w=0,
     ):
+        self.final_reward_ball_dist_w = final_reward_ball_dist_w
+        self.zero_touch_grass_if_ss = zero_touch_grass_if_ss
+        self.turtle_w = turtle_w
         self.supersonic_bonus_vpb_w = supersonic_bonus_vpb_w
         self.boost_remain_touch_w = boost_remain_touch_w
         self.touch_ball_w = touch_ball_w
@@ -338,9 +344,18 @@ class ZeroSumReward(RewardFunction):
 
             # touch_grass
             if player.on_ground and player.car_data.position[2] < 25:
-                player_self_rewards[i] += self.touch_grass_w
+                if not self.zero_touch_grass_if_ss:
+                    player_self_rewards[i] += self.touch_grass_w
+                elif not np.dot(np.linalg.norm(player.car_data.linear_velocity), player.car_data.forward()) >= 2200:
+                    player_self_rewards[i] += self.touch_grass_w
                 if self.closest_reset_blue == i or self.closest_reset_orange == i:
                     player_self_rewards[i] += self.kickoff_special_touch_ground_w
+
+            # turtle
+            if abs(player.car_data.roll()) > 3 and player.car_data.position[2] < 55 and \
+                np.linalg.norm(player.car_data.angular_velocity) < 5 and abs(last.car_data.roll()) > 3 and \
+                    last.car_data.position[2] < 55:
+                player_self_rewards[i] += self.turtle_w
 
             # touch ceiling
             if player.on_ground and player.car_data.position[2] > CEILING_Z - 20:
@@ -511,3 +526,8 @@ class ZeroSumReward(RewardFunction):
         self.previous_action[self.n] = previous_model_action[0]
         self.n += 1
         return float(rew)
+
+    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
+        # if dist is 0, reward is 1
+        dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
+        return float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
