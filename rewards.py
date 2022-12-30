@@ -346,7 +346,7 @@ class ZeroSumReward(RewardFunction):
             if player.on_ground and player.car_data.position[2] < 25:
                 if not self.zero_touch_grass_if_ss:
                     player_self_rewards[i] += self.touch_grass_w
-                elif not np.dot(np.linalg.norm(player.car_data.linear_velocity), player.car_data.forward()) >= 2200:
+                elif not np.linalg.norm(np.dot(player.car_data.linear_velocity, player.car_data.forward())) >= 2200:
                     player_self_rewards[i] += self.touch_grass_w
                 if self.closest_reset_blue == i or self.closest_reset_orange == i:
                     player_self_rewards[i] += self.kickoff_special_touch_ground_w
