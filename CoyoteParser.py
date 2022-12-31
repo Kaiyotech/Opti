@@ -1,3 +1,4 @@
+import copy
 from typing import Any
 
 import gym.spaces
@@ -103,6 +104,17 @@ class CoyoteAction(ActionParser):
         return np.asarray(parsed_actions)
 
 
+def override_ball(player, state, position_index) -> np.ndarray:
+    # takes the player and ball and returns a new ball position based on the position index
+    # 0 is straight in front, 1500 units away, 1 is diagonal front left, 7 is diagonal front right
+    angle_rad = position_index * np.pi / 4
+    fwd = player.car_data.forward()[:2]  # unit vector in forward direction just xy
+    rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+                          fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+    forward_point = (1500 * rot_fwd) + player.car_data.position[:2]  # distance of 1500 in rotated direction
+    return np.asarray([forward_point[0], forward_point[1], 0])
+
+
 class SelectorParser(ActionParser):
     def __init__(self):
         from submodels.submodel_agent import SubAgent
@@ -110,19 +122,37 @@ class SelectorParser(ActionParser):
 
         self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
                        (SubAgent("kickoff_2_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("gp_1_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-                       (SubAgent("gp_2_jit.pt"),
+                       (SubAgent("gp_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
                        (SubAgent("aerial_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
-                       (SubAgent("flick_jit.pt"),
+                       (SubAgent("flick_1_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                       (SubAgent("flick_2_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                       (SubAgent("flipreset_1_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
-                       (SubAgent("flipreset_jit.pt"),
+                       (SubAgent("flipreset_2_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("flipreset_3_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("pinch_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
-                       (SubAgent("ceilingpinch_jit.pt"),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
+                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                       (SubAgent("recovery_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        ]
         self._lookup_table = self.make_lookup_table(len(self.models))
@@ -160,11 +190,16 @@ class SelectorParser(ActionParser):
             #     self.prev_action[i] = None
             action = int(action)  # change ndarray [0.] to 0
             player = state.players[i]
+            # override ball for recovery
+            actual_ball = copy.deepcopy(state.ball.position)
+            if action >= 10:
+                state.ball.position = override_ball(player, state, action - 10)
             obs = self.models[action][1].build_obs(player, state, self.prev_actions[i])
             parse_action = self.models[action][0].act(obs)[0]
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
             parsed_actions.append(parse_action)
+            state.ball.position = copy.deepcopy(actual_ball)
         return np.asarray(parsed_actions)  # , np.asarray(actions)
 
     # necessary because of the stateful obs

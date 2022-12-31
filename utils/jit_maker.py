@@ -47,7 +47,7 @@ if model_type == "gp":
 
     actor = DiscretePolicy(actor, shape=(373,))
 
-# actor for gp
+# actor for selector
 if model_type == "selector":
     stack_size = 20
     input_size = 426 + (stack_size * 8)
@@ -73,11 +73,13 @@ if model_type == "flipreset":
 
 # actor for flick
 if model_type == "flick":
-    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-                       Linear(256, 256), LeakyReLU(),
-                       Linear(256, 373))
+    actor = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512),
+                       LeakyReLU(),
+                       Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
+                       Linear(512, 373))
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, (373,))
+    actor = DiscretePolicy(actor, shape=(373,))
 
 # actor for ceiling pinch
 if model_type == "ceilingpinch":
@@ -93,13 +95,21 @@ if model_type == "aerial":
 
     actor = DiscretePolicy(actor, (373,))
 
+# actor for recovery
+if model_type == "recovery":
+    actor = Sequential(Linear(222, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
+
+    actor = DiscretePolicy(actor, (373,))
+
 # PPO REQUIRES AN ACTOR/CRITIC AGENT
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 checkpoint = torch.load(os.path.join(cur_dir, filename))
 actor.load_state_dict(checkpoint['actor_state_dict'])
 actor.eval()
 new_name = filename.split("_checkpoint")[0] + "_jit.pt"
-if model_type == "gp":
+if model_type == "gp" or model_type == "flick":
     test_input_embed = (torch.Tensor(1, 251), torch.Tensor(1, 5, 35))
     torch.jit.save(torch.jit.trace(actor, example_inputs=(test_input_embed,)), new_name)
 elif model_type == "selector":
