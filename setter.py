@@ -70,20 +70,49 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
                             AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(GroundAirDribble(), True, False, False),
-                            AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=True), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
                             AugmentSetter(
-                                ReplaySetter(flip_reset_replays[i], random_boost=True, remove_defender_weight=0.1), True, False, False),
+                                ReplaySetter(flip_reset_replays[i], defender_front_goal_weight=0.25, random_boost=True),
+                                True, False, False),
+                            AugmentSetter(WallDribble(), True, False, False),
+                            AugmentSetter(ReplaySetter(wall_flip_reset_replays[i], defender_front_goal_weight=0.25,
+                                                       random_boost=True), True, False, False),
+                            AugmentSetter(WallDribble(speed_min=1700, speed_max=1900, max_rand_z=300), True, False,
+                                          False),
+                            AugmentSetter(ReplaySetter(low_flip_reset_replays[i], defender_front_goal_weight=0.25,
+                                                       random_boost=True), True, False, False),
                             AugmentSetter(ReplaySetter(ceiling_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(ReplaySetter(air_dribble_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(
                                 ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1), True, False, False),
                             AugmentSetter(ReplaySetter(pinch_replays[i], random_boost=True), True, False, False),
                             AugmentSetter(ReplaySetter(team_pinch_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(full_pinch_replays[i], random_boost=True), True, False, False),
+                            AugmentSetter(ReplaySetter(ground_dribble_replays[i],
+                                                       random_boost=True,
+                                                       remove_defender_weight=0.25,
+                                                       ), True, False, False
+                                          ),
+                            AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False,
+                                                       zero_ball_weight=0.8,
+                                                       zero_car_weight=0.2,
+                                                       rotate_car_weight=0.2,
+                                                       backward_car_weight=0.15,
+                                                       vel_div_weight=0.2,
+                                                       ), False, True, False),
+                            AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False,
+                                                       zero_ball_weight=0.8,
+                                                       zero_car_weight=0.2,
+                                                       rotate_car_weight=0.2,
+                                                       backward_car_weight=0.15,
+                                                       vel_div_weight=0.2,
+                                                       ), False, True, False),
+                            HalfFlip(),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
-                        (0.1, 0.05, 0.22, 0.05, 0.01, 0.02, 0.01, 0.01, 0.1, 0.1, 0.1, 0.09, 0.09, 0.05)
+                        (0.10, 0.03, 0.06, 0.05, 0.02, 0.01, 0.01, 0.06, 0.02, 0.09, 0.04, 0.08, 0.05,
+                         0.05, 0.05, 0.02, 0.02, 0.06, 0.02, 0.06, 0.05, 0.05)
                     )
                 )
         elif mode == "kickoff":

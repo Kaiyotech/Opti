@@ -23,6 +23,7 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
+from my_stattrackers import GoalSpeedTop5perc
 from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
 from rlgym.utils.reward_functions.combined_reward import CombinedReward
 
@@ -49,15 +50,15 @@ if __name__ == "__main__":
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=20,
-        model_every=40,
+        save_every=25,
+        model_every=500,
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_0.01"
+    run_id = "selector_run_1.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run-0.01",
+                        name="Selector_Run-1.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     stat_trackers = [
         Speed(normalize=True), Demos(), TimeoutRate(), Touch(), EpisodeLength(), Boost(), BehindBall(), TouchHeight(),
         DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
-        GoalSpeed(), MaxGoalSpeed(),
+        GoalSpeed(), MaxGoalSpeed(), GoalSpeedTop5perc(),
     ]
     parser = SelectorParser()
 
@@ -87,10 +88,10 @@ if __name__ == "__main__":
                                                                  ),
 
                                         lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
-                                                              goal_w=10,
-                                                              concede_w=-10,
+                                                              goal_w=5,
+                                                              concede_w=-5,
                                                               team_spirit=1,
-                                                              punish_action_change_w=-.05  # TODO implement
+                                                              punish_action_change_w=-.03
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -114,7 +115,7 @@ if __name__ == "__main__":
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(9,))
+    actor = DiscretePolicy(actor, shape=(23,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},

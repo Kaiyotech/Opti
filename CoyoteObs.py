@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 
@@ -21,8 +22,10 @@ class CoyoteObsBuilder(ObsBuilder):
                  end_object_choice=None,
                  remove_other_cars=False,
                  zero_other_cars=False,
+                 override_cars=False
                  ):
         super().__init__()
+        self.override_cars = override_cars
         self.zero_other_cars = zero_other_cars
         self.remove_other_cars = remove_other_cars
         self.expanding = expanding
@@ -264,8 +267,24 @@ class CoyoteObsBuilder(ObsBuilder):
             tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
             closest = tmp_oppo[0].car_id
 
+        if self.override_cars:
+            tmp_oppo = [p for p in state.players if p.team_num != player.team_num]
+            tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
+            vec = player.car_data.position - ball.position
+            vec = vec / np.linalg.norm(vec)
+            # put car 400 behind player on vector from ball to player
+            new_points = (400 * vec) + player.car_data.position
+            np.clip(new_points[0], -4096, 4096)
+            np.clip(new_points[1], -5120, 5120)
+            np.clip(new_points[2], 0, 2000)
+            p = tmp_oppo[0]
+            p.car_data.position = new_points
+            opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
+                                                    p.inverted_car_data if inverted else p.car_data, p, ball,
+                                                    p.team_num == player.team_num))
+
         for p in state.players:
-            if p.car_id == player.car_id or zero_other_players:
+            if p.car_id == player.car_id or zero_other_players or self.override_cars:
                 continue
 
             if p.team_num == player.team_num and a_count < a_max:

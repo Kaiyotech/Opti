@@ -19,10 +19,10 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
-                        goal_w=10,
-                        concede_w=-10,
+                        goal_w=5,
+                        concede_w=-5,
                         team_spirit=1,
-                        punish_action_change_w=-.05  # TODO implement
+                        punish_action_change_w=-.03
                         )
     parser = SelectorParser()
     frame_skip = Constants_selector.FRAME_SKIP
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.02
+    infinite_boost_odds = 0.2
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -56,9 +56,8 @@ if __name__ == "__main__":
             streamer_mode = True
             evaluation_prob = 0
             game_speed = 1
-            deterministic_streamer = True
             auto_minimize = False
-            infinite_boost_odds = 0.1
+            infinite_boost_odds = 0.2
 
     match = Match(
         game_speed=game_speed,
@@ -71,7 +70,7 @@ if __name__ == "__main__":
                                      action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
+                             NoTouchTimeoutCondition(fps * 40),
                              TimeoutCondition(fps * 300),
                              ],
         reward_function=rew,
@@ -106,7 +105,7 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.40, '2v2': 0.20, '3v3': 0.40},  # default 1/3
+                                gamemode_weights={'1v1': 0.25, '2v2': 0.20, '3v3': 0.55},  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
