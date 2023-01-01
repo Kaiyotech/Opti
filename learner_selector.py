@@ -46,19 +46,19 @@ if __name__ == "__main__":
         actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=Constants_selector.STEP_SIZE,
-        batch_size=100_000,
+        batch_size=125_000,
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=25,
-        model_every=500,
+        save_every=10,
+        model_every=100,
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_1.00"
+    run_id = "selector_run1.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run-1.00",
+                        name="Selector_Run1.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -91,7 +91,11 @@ if __name__ == "__main__":
                                                               goal_w=5,
                                                               concede_w=-5,
                                                               team_spirit=1,
-                                                              punish_action_change_w=-.03
+                                                              punish_action_change_w=0,
+                                                              flip_reset_w=1,
+                                                              flip_reset_goal_w=5,
+                                                              aerial_goal_w=3,
+                                                              double_tap_w=4,
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -126,6 +130,31 @@ if __name__ == "__main__":
     print(f"Gamma is: {gamma}")
     count_parameters(agent)
 
+    action_dict = {0: "kickoff_1",
+                   1: "kickoff_2",
+                   2: "GP",
+                   3: "aerial",
+                   4: "flick_bump",
+                   5: "flick",
+                   6: "flip_reset_1",
+                   7: "flip_reset_2",
+                   8: "flip_reset_3",
+                   9: "pinch",
+                   10: "recover_0",
+                   11: "recover_-45",
+                   12: "recover_-90",
+                   13: "recover_-135",
+                   14: "recover_180",
+                   15: "recover_135",
+                   16: "recover_90",
+                   17: "recover_45",
+                   18: "recover_back_left",
+                   19: "recover_back_right",
+                   20: "recover_opponent",
+                   21: "recover_back_post",
+                   22: "recover_ball",
+                   }
+
     alg = PPO(
         rollout_gen,
         agent,
@@ -138,6 +167,8 @@ if __name__ == "__main__":
         logger=logger,
         zero_grads_with_none=True,
         disable_gradient_logging=True,
+        action_selection_dict=action_dict,
+        num_actions=23,
     )
 
     # alg.load("Selector_saves/Opti_1668535114.9344256/Opti_780/checkpoint.pt")

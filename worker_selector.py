@@ -22,7 +22,11 @@ if __name__ == "__main__":
                         goal_w=5,
                         concede_w=-5,
                         team_spirit=1,
-                        punish_action_change_w=-.03
+                        punish_action_change_w=0,
+                        flip_reset_w=1,
+                        flip_reset_goal_w=5,
+                        aerial_goal_w=3,
+                        double_tap_w=4,
                         )
     parser = SelectorParser()
     frame_skip = Constants_selector.FRAME_SKIP
