@@ -114,7 +114,7 @@ def override_ball(player, state, position_index) -> np.ndarray:
         fwd = player.car_data.forward()[:2]  # vector in forward direction just xy
         if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
             fwd = player.car_data.up()[:2]
-        fwd = fwd / np.lingalg.norm(fwd)  # make unit
+        fwd = fwd / np.linalg.norm(fwd)  # make unit
         rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                               fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
         forward_point = (1500 * rot_fwd) + player.car_data.position[:2]  # distance of 1500 in rotated direction

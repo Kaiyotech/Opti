@@ -282,6 +282,7 @@ class CoyoteObsBuilder(ObsBuilder):
             opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                     p.inverted_car_data if inverted else p.car_data, p, ball,
                                                     p.team_num == player.team_num))
+            o_count += 1
 
         for p in state.players:
             if p.car_id == player.car_id or zero_other_players or self.override_cars:
