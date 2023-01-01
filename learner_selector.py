@@ -46,19 +46,19 @@ if __name__ == "__main__":
         actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=Constants_selector.STEP_SIZE,
-        batch_size=125_000,
+        batch_size=100_000,
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=10,
-        model_every=100,
+        save_every=25,
+        model_every=200,
         ent_coef=0.01,
     )
 
-    run_id = "selector_run1.01"
+    run_id = "selector_run1.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run1.01",
+                        name="Selector_Run1.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -107,19 +107,20 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
     input_size = 426 + Constants_selector.STACK_SIZE
+    action_size = 23
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, 9))
+                       Linear(128, action_size))
 
     critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(23,))
+    actor = DiscretePolicy(actor, shape=(action_size,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -168,10 +169,10 @@ if __name__ == "__main__":
         zero_grads_with_none=True,
         disable_gradient_logging=True,
         action_selection_dict=action_dict,
-        num_actions=23,
+        num_actions=action_size,
     )
 
-    # alg.load("Selector_saves/Opti_1668535114.9344256/Opti_780/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1672587251.4922924/Opti_990/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
