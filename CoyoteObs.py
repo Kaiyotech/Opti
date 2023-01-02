@@ -277,7 +277,7 @@ class CoyoteObsBuilder(ObsBuilder):
             np.clip(new_points[0], -4096, 4096)
             np.clip(new_points[1], -5120, 5120)
             np.clip(new_points[2], 0, 2000)
-            p = tmp_oppo[0]
+            p = copy.deepcopy(tmp_oppo[0])  # testing imbalance issue
             p.car_data.position = new_points
             opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                     p.inverted_car_data if inverted else p.car_data, p, ball,
