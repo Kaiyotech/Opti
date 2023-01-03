@@ -23,7 +23,7 @@ if __name__ == "__main__":
                         concede_w=-5,
                         team_spirit=1,
                         punish_action_change_w=0,
-                        decay_punish_action_change_w=0.005,
+                        decay_punish_action_change_w=-0.005,
                         flip_reset_w=1,
                         flip_reset_goal_w=5,
                         aerial_goal_w=2,
