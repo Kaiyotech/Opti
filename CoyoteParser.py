@@ -118,8 +118,8 @@ def override_ball(player, state, position_index) -> np.ndarray:
         rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                               fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
         forward_point = (1500 * rot_fwd) + player.car_data.position[:2]  # distance of 1500 in rotated direction
-        np.clip(forward_point[0], -4096, 4096)
-        np.clip(forward_point[1], -5120, 5120)
+        forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+        forward_point[1] = np.clip(forward_point[1], -5120, 5120)
         return np.asarray([forward_point[0], forward_point[1], 40])
     elif position_index < 20:  # 18 and 19 are back left and back right boost
         if player.team_num == 0 and position_index == 18:
@@ -235,15 +235,23 @@ class SelectorParser(ActionParser):
             action = int(action)  # change ndarray [0.] to 0
             player = state.players[i]
             # override ball for recovery
-            actual_ball = copy.deepcopy(state.ball.position)
+            actual_ball = copy.deepcopy(state.ball)
+            inv_ball = copy.deepcopy(state.inverted_ball)
+
             if 10 <= action <= 21:
                 state.ball.position = override_ball(player, state, action)
+                state.inverted_ball.position = override_ball(player, state, action)
+                state.ball.linear_velocity = np.zeros(3)
+                state.inverted_ball.linear_velocity = np.zeros(3)
+                state.ball.angular_velocity = np.zeros(3)
+                state.inverted_ball.angular_velocity = np.zeros(3)
             obs = self.models[action][1].build_obs(player, state, self.prev_actions[i])
             parse_action = self.models[action][0].act(obs)[0]
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
             parsed_actions.append(parse_action)
-            state.ball.position = copy.deepcopy(actual_ball)
+            state.ball = copy.deepcopy(actual_ball)
+            state.inverted_ball = copy.deepcopy(inv_ball)
         return np.asarray(parsed_actions)  # , np.asarray(actions)
 
     # necessary because of the stateful obs

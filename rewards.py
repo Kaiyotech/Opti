@@ -84,6 +84,7 @@ class ZeroSumReward(RewardFunction):
             req_reset_exit_vel=False,
             punish_car_ceiling_w=0,
             punish_action_change_w=0,
+            decay_punish_action_change_w=0,
             goal_speed_exp=1,  # fix this eventually
             min_goal_speed_rewarded_kph=0,
             touch_height_exp=1,
@@ -98,6 +99,7 @@ class ZeroSumReward(RewardFunction):
             zero_touch_grass_if_ss=False,
             final_reward_ball_dist_w=0,
     ):
+        self.decay_punish_action_change_w = decay_punish_action_change_w
         self.final_reward_ball_dist_w = final_reward_ball_dist_w
         self.zero_touch_grass_if_ss = zero_touch_grass_if_ss
         self.turtle_w = turtle_w
@@ -189,6 +191,7 @@ class ZeroSumReward(RewardFunction):
         self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
         self.big_boost = np.asarray(self.big_boosts)
         self.big_boost[:, -1] = 18  # fix the boost height
+        self.last_action_change = None
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -513,6 +516,7 @@ class ZeroSumReward(RewardFunction):
         self.launch_angle_car = [None] * 6
         self.exit_vel_save = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
+        self.last_action_change = np.asarray([0] * len(initial_state.players))
         self.end_object_tracker += 1
         if self.end_object_tracker == 7:
             self.end_object_tracker = 0
@@ -522,6 +526,9 @@ class ZeroSumReward(RewardFunction):
 
         if self.previous_action[self.n] != -1 and self.previous_action[self.n] != previous_model_action[0]:
             rew += self.punish_action_change_w
+            step_since_change = self.kickoff_timer - self.last_action_change[self.n]
+            rew += self.decay_punish_action_change_w * max(0, (1 - ((step_since_change - 1) ** 1.75) / (14 ** 1.75)))
+            self.last_action_change[self.n] = self.kickoff_timer
 
         self.previous_action[self.n] = previous_model_action[0]
         self.n += 1

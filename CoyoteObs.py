@@ -274,9 +274,9 @@ class CoyoteObsBuilder(ObsBuilder):
             vec = vec / np.linalg.norm(vec)
             # put car 400 behind player on vector from ball to player
             new_points = (400 * vec) + player.car_data.position
-            np.clip(new_points[0], -4096, 4096)
-            np.clip(new_points[1], -5120, 5120)
-            np.clip(new_points[2], 0, 2000)
+            new_points[0] = np.clip(new_points[0], -4096, 4096)
+            new_points[1] = np.clip(new_points[1], -5120, 5120)
+            new_points[2] = np.clip(new_points[2], 0, 2000)
             p = copy.deepcopy(tmp_oppo[0])  # testing imbalance issue
             p.car_data.position = new_points
             opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
