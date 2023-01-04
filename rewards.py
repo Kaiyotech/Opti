@@ -98,7 +98,9 @@ class ZeroSumReward(RewardFunction):
             turtle_w=0,
             zero_touch_grass_if_ss=False,
             final_reward_ball_dist_w=0,
+            punish_directional_changes=False,
     ):
+        self.punish_directional_changes = punish_directional_changes
         self.decay_punish_action_change_w = decay_punish_action_change_w
         self.final_reward_ball_dist_w = final_reward_ball_dist_w
         self.zero_touch_grass_if_ss = zero_touch_grass_if_ss
@@ -525,7 +527,8 @@ class ZeroSumReward(RewardFunction):
         rew = self.rewards[self.n]
 
         if self.previous_action[self.n] != -1 and self.previous_action[self.n] != previous_model_action[0] and not \
-                (10 <= previous_model_action[0] < 18 and 10 <= self.previous_action[self.n] < 18):
+                (10 <= previous_model_action[0] < 18 and 10 <= self.previous_action[self.n] < 18 and not
+                 self.punish_directional_changes):
             rew += self.punish_action_change_w
             step_since_change = self.kickoff_timer - self.last_action_change[self.n]
             rew += self.decay_punish_action_change_w * max(0, (1 - ((step_since_change - 1) ** 1.75) / (14 ** 1.75)))

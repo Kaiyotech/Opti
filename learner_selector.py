@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run3.01"
+    run_id = "selector_run4.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run3.01",
+                        name="Selector_Run4.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -92,11 +92,12 @@ if __name__ == "__main__":
                                                               concede_w=-5,
                                                               team_spirit=1,
                                                               punish_action_change_w=0,
-                                                              decay_punish_action_change_w=-0.005,
+                                                              decay_punish_action_change_w=-0.001,
                                                               flip_reset_w=1,
                                                               flip_reset_goal_w=5,
                                                               aerial_goal_w=2,
                                                               double_tap_w=4,
+                                                              punish_directional_changes=True,
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
