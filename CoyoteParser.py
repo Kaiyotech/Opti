@@ -130,10 +130,10 @@ def override_state(player, state, position_index) -> GameState:
         ball = state.ball
 
     oppo_car = [
-        (idx, p.inverted_car_data if inverted else p.car_data) for idx, p in enumerate(state.players) if
+        (p.inverted_car_data if inverted else p.car_data) for p in state.players if
         p.team_num != player.team_num]
     oppo_car.sort(key=lambda c: np.linalg.norm(
-        c[1].position - player_car.position))
+        c.position - player_car.position))
 
     # Ball position first
     ball_pos = np.asarray([0, 0, 0])
@@ -159,10 +159,8 @@ def override_state(player, state, position_index) -> GameState:
 
             ball_pos = np.asarray([-3072, -4096, 40])
 
-
     elif position_index == 20:  # 20 is closest opponent
-
-        ball_pos = oppo_car[0][1].position
+        ball_pos = oppo_car[0].position
     elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
         x_pos = 1000
         if ball.position[0] >= 0:
@@ -191,11 +189,18 @@ def override_state(player, state, position_index) -> GameState:
     oppo_rot = np.array(((oppo_rot_cy, -oppo_rot_sy, 0),
                          (oppo_rot_sy, oppo_rot_cy, 0), (0, 0, 1)))
     # oppo_vel is max driving speed without boosting in direction of ball
-    oppo_vel = 1410 * player_car_ball_pos_vec
+    oppo_vel = [1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0]
     new_oppo_car_data = PhysicsObject(
         position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
-    retstate.players[oppo_car[0][0]].car_data = new_oppo_car_data
-    retstate.players[oppo_car[0][0]].inverted_car_data = new_oppo_car_data
+    oppo_car_idx = len(state.players) // 2
+    retstate.players[oppo_car_idx].car_data = new_oppo_car_data
+    retstate.players[oppo_car_idx].inverted_car_data = new_oppo_car_data
+    # make other opponents so they are definitely farther away and the obs only takes closest
+    # and dummies the rest
+    for i in range(oppo_car_idx + 1, len(state.players)):
+        oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
+        oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
+        retstate.players[i].car_data.position = oppo_pos
     return retstate
 
 

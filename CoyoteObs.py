@@ -305,6 +305,10 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 continue
 
+        if self.only_closest_opp:
+            a_count = 0
+            o_count = 1
+
         for _ in range(a_max - a_count):
             allies.append(self.dummy_player)
 
