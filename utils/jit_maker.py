@@ -49,15 +49,16 @@ if model_type == "gp":
 
 # actor for selector
 if model_type == "selector":
-    stack_size = 20
-    input_size = 426 + (stack_size * 8)
+    input_size = 426 + 45
+    action_size = 23
+
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, 9))
+                       Linear(128, action_size))
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(9,))
+    actor = DiscretePolicy(actor, shape=(action_size,))
 
 # actor for flip reset
 if model_type == "flipreset":
@@ -113,7 +114,7 @@ if model_type == "gp" or model_type == "flick":
     test_input_embed = (torch.Tensor(1, 251), torch.Tensor(1, 5, 35))
     torch.jit.save(torch.jit.trace(actor, example_inputs=(test_input_embed,)), new_name)
 elif model_type == "selector":
-    test_input_embed = (torch.Tensor(1, 411), torch.Tensor(1, 5, 35))
+    test_input_embed = (torch.Tensor(1, 251 + 45), torch.Tensor(1, 5, 35))
     torch.jit.save(torch.jit.trace(actor, example_inputs=(test_input_embed,)), new_name)
 else:
     test_input_norm = torch.Tensor(actor.net._modules['0'].in_features)

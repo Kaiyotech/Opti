@@ -201,6 +201,7 @@ def override_state(player, state, position_index) -> GameState:
         oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
         oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
         retstate.players[i].car_data.position = oppo_pos
+        retstate.players[i].inverted_car_data.position = oppo_pos
     return retstate
 
 

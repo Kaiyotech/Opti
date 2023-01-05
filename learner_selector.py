@@ -50,15 +50,15 @@ if __name__ == "__main__":
         minibatch_size=None,
         epochs=30,
         gamma=gamma,
-        save_every=25,
+        save_every=10,
         model_every=200,
         ent_coef=0.01,
     )
 
-    run_id = "selector_run4.00"
+    run_id = "selector_run4.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run4.00",
+                        name="Selector_Run4.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    # alg.load("Selector_saves/Opti_1672587251.4922924/Opti_990/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1672851279.504643/Opti_875/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
