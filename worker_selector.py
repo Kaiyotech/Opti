@@ -29,6 +29,10 @@ if __name__ == "__main__":
                         aerial_goal_w=2,
                         double_tap_w=4,
                         punish_directional_changes=True,
+                        cons_air_touches_w=0.1,
+                        jump_touch_w=0.3,
+                        wall_touch_w=0.5,
+                        exit_velocity_w=1,
                         )
     parser = SelectorParser()
     frame_skip = Constants_selector.FRAME_SKIP
@@ -41,7 +45,7 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0.01
     past_version_prob = 0.1
-    deterministic_streamer = True
+    deterministic_streamer = False
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True

@@ -288,8 +288,8 @@ class ZeroSumReward(RewardFunction):
             # not touched
             else:
                 if last.ball_touched:
-                    self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1])
-                    self.exit_vel_save[i] = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1])
+                    self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1] + 1e-8)
+                    self.exit_vel_save[i] = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1] + 1e-8)
                 if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.last_touch_car == i:
                     self.exit_rewarded[i] = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
