@@ -24,14 +24,14 @@ if __name__ == "__main__":
                         team_spirit=1,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=-0.001,
-                        flip_reset_w=1,
+                        flip_reset_w=2,
                         flip_reset_goal_w=5,
                         aerial_goal_w=2,
                         double_tap_w=4,
                         punish_directional_changes=True,
-                        cons_air_touches_w=0.1,
-                        jump_touch_w=0.3,
-                        wall_touch_w=0.5,
+                        cons_air_touches_w=0.4,
+                        jump_touch_w=0.5,
+                        wall_touch_w=1,
                         exit_velocity_w=1,
                         )
     parser = SelectorParser()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.2
+    infinite_boost_odds = 0
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
-            infinite_boost_odds = 0.2
+            infinite_boost_odds = 0
 
     match = Match(
         game_speed=game_speed,
@@ -115,7 +115,7 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.25, '2v2': 0.20, '3v3': 0.55},  # default 1/3
+                                gamemode_weights={'1v1': 0.15, '2v2': 0.2, '3v3': 0.65},  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,

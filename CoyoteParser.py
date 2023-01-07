@@ -205,6 +205,97 @@ def override_state(player, state, position_index) -> GameState:
     return retstate
 
 
+def override_abs_state(player, state, position_index) -> GameState:
+    # takes the player and state and returns a new state based on the position index
+    # which mocks specific values such as ball position, nearest opponent position, etc.
+    # for use with the recovery model's observer builder
+    retstate = copy.deepcopy(state)
+    assert 10 <= position_index <= 21
+
+    if player.team_num == 1:
+        inverted = True
+        player_car = player.inverted_car_data
+        ball = state.inverted_ball
+    else:
+        inverted = False
+        player_car = player.car_data
+        ball = state.ball
+
+    oppo_car = [
+        (p.inverted_car_data if inverted else p.car_data) for p in state.players if
+        p.team_num != player.team_num]
+    oppo_car.sort(key=lambda c: np.linalg.norm(
+        c.position - player_car.position))
+
+    # Ball position first
+    ball_pos = np.asarray([0, 0, 0])
+    # 1500 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
+    if position_index < 18:
+        position_index = position_index - 10
+        angle_rad = position_index * np.pi / 4
+        fwd = np.asarray([0, 1])
+        fwd = fwd / np.linalg.norm(fwd)  # make unit
+        rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+                              fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+        # distance of 1500 in rotated direction
+        forward_point = (1500 * rot_fwd) + player_car.position[:2]
+        forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+        forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+        ball_pos = np.asarray([-forward_point[0], -forward_point[1], 40]) if inverted else \
+            np.asarray([forward_point[0], forward_point[1], 40])
+    elif position_index < 20:  # 18 and 19 are back left and back right boost
+        if position_index == 18:
+            ball_pos = np.asarray([3072, -4096, 40])
+        elif position_index == 19:
+
+            ball_pos = np.asarray([-3072, -4096, 40])
+
+    elif position_index == 20:  # 20 is closest opponent
+        ball_pos = oppo_car[0].position
+    elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
+        x_pos = 1000
+        if ball.position[0] >= 0:
+            x_pos = -1000
+        ball_pos = np.asarray([x_pos, -4800, 40])
+    retstate.ball.position = ball_pos
+    retstate.inverted_ball.position = ball_pos
+
+    # Ball velocity next
+    retstate.ball.linear_velocity = np.zeros(3)
+    retstate.inverted_ball.linear_velocity = np.zeros(3)
+    retstate.ball.angular_velocity = np.zeros(3)
+    retstate.inverted_ball.angular_velocity = np.zeros(3)
+
+    # Nearest player next
+    player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
+    player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
+    # oppo_pos is 400 uu behind player
+    oppo_pos = player_car.position[:2] - 400 * player_car_ball_pos_vec
+    # Octane elevation at rest is 17.01uu
+    oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01])
+    oppo_yaw = np.arctan2(
+        player_car_ball_pos_vec[1], player_car_ball_pos_vec[0])
+    oppo_rot_cy = np.cos(oppo_yaw)
+    oppo_rot_sy = np.sin(oppo_yaw)
+    oppo_rot = np.array(((oppo_rot_cy, -oppo_rot_sy, 0),
+                         (oppo_rot_sy, oppo_rot_cy, 0), (0, 0, 1)))
+    # oppo_vel is max driving speed without boosting in direction of ball
+    oppo_vel = [1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0]
+    new_oppo_car_data = PhysicsObject(
+        position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
+    oppo_car_idx = len(state.players) // 2
+    retstate.players[oppo_car_idx].car_data = new_oppo_car_data
+    retstate.players[oppo_car_idx].inverted_car_data = new_oppo_car_data
+    # make other opponents so they are definitely farther away and the obs only takes closest
+    # and dummies the rest
+    for i in range(oppo_car_idx + 1, len(state.players)):
+        oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
+        oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
+        retstate.players[i].car_data.position = oppo_pos
+        retstate.players[i].inverted_car_data.position = oppo_pos
+    return retstate
+
+
 class SelectorParser(ActionParser):
     def __init__(self):
         from submodels.submodel_agent import SubAgent
@@ -309,7 +400,7 @@ class SelectorParser(ActionParser):
             newstate = state
 
             if 10 <= action <= 21:
-                newstate = override_state(player, state, action)
+                newstate = override_abs_state(player, state, action)
 
             obs = self.models[action][1].build_obs(
                 player, newstate, self.prev_actions[i])
