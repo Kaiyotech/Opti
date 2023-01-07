@@ -241,8 +241,7 @@ def override_abs_state(player, state, position_index) -> GameState:
         forward_point = (1500 * rot_fwd) + player_car.position[:2]
         forward_point[0] = np.clip(forward_point[0], -4096, 4096)
         forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-        ball_pos = np.asarray([-forward_point[0], -forward_point[1], 40]) if inverted else \
-            np.asarray([forward_point[0], forward_point[1], 40])
+        ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
     elif position_index < 20:  # 18 and 19 are back left and back right boost
         if position_index == 18:
             ball_pos = np.asarray([3072, -4096, 40])

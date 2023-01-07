@@ -102,6 +102,8 @@ if __name__ == "__main__":
                                                               jump_touch_w=0.5,
                                                               wall_touch_w=1,
                                                               exit_velocity_w=1,
+                                                              velocity_pb_w=0.005,
+                                                              kickoff_w=0.005,
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
