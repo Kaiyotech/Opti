@@ -15,20 +15,51 @@ from selection_listener import SelectionListener
 from setter import CoyoteSetter
 import Constants_selector
 import numpy as np
+import collections
+import threading
 import json
 import os
 
 set_num_threads(1)
 
 class SelectionDispatcher(SelectionListener):
+    """Dispatches model selection messages to redis channel"""
     def __init__(self, redis, redis_channel) -> None:
         super().__init__()
         self.redis = redis
         self.redis_channel = redis_channel
+        self.xthread_queue = collections.deque()
+        self.wake_event = threading.Event()
+        self.should_run = True
+        self.thread = threading.Thread(target=self._run, daemon=True)
+
+    def _flush_queue(self):
+        if len(self.xthread_queue) == 0:
+            return
+
+        pipe = self.redis.pipeline()
+        while len(self.xthread_queue) > 0:
+            selected_model_name, model_action = self.xthread_queue.popleft()
+            selection_message = dict(model=selected_model_name, actions=model_action.tolist())
+            selection_message = json.dumps(selection_message)
+            pipe.publish(self.redis_channel, selection_message)
+        pipe.execute()
+        self.wake_event.clear()
+
+    def _run(self):
+        while self.should_run:
+            self.wake_event.wait()
+            self._flush_queue()
 
     def on_selection(self, selected_model_name: str, model_action: np.ndarray):
-        selection_message = dict(model=selected_model_name, actions=model_action.tolist())
-        self.redis.publish(self.redis_channel, json.dumps(selection_message))
+        self.xthread_queue.append((selected_model_name, model_action))
+        self.wake_event.set()
+
+    def stop(self): # unused
+        self.xthread_queue.clear()
+        self.should_run = False
+        self.wake_event.set()
+        self.thread.join()
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
