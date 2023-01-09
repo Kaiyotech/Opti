@@ -38,6 +38,8 @@ class CoyoteObsBuilder(ObsBuilder):
         self.BOOST_TIMER_STD = 10
         self.DEMO_TIMER_STD = 3
         self.dummy_player = [0] * 35
+        self.dummy_tm8 = [0] * 35
+        self.dummy_tm8[33] = 1
         self.boost_locations = np.array(BOOST_LOCATIONS)
         self.inverted_boost_locations = self.boost_locations[::-1]
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -235,7 +237,7 @@ class CoyoteObsBuilder(ObsBuilder):
             int(_car.is_demoed),
             int(_car.has_jump),
             magnitude / self.POS_STD,
-            teammate,
+            int(teammate),
             self.demo_timers[_car.car_id] / self.DEMO_TIMER_STD,
         ]
         return p
@@ -321,7 +323,7 @@ class CoyoteObsBuilder(ObsBuilder):
             o_count = 1
 
         for _ in range(a_max - a_count):
-            allies.append(self.dummy_player)
+            allies.append(self.dummy_tm8)
 
         for _ in range(o_max - o_count):
             opponents.append(self.dummy_player)
