@@ -32,6 +32,7 @@ class SelectionDispatcher(SelectionListener):
         self.wake_event = threading.Event()
         self.should_run = True
         self.thread = threading.Thread(target=self._run, daemon=True)
+        self.thread.start()
 
     def _flush_queue(self):
         if len(self.xthread_queue) == 0:
