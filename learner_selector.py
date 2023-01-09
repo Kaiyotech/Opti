@@ -139,31 +139,7 @@ if __name__ == "__main__":
     print(f"Gamma is: {gamma}")
     count_parameters(agent)
 
-    action_dict = {0: "kickoff_1",
-                   1: "kickoff_2",
-                   2: "GP",
-                   3: "aerial",
-                   4: "flick_bump",
-                   5: "flick",
-                   6: "flip_reset_1",
-                   7: "flip_reset_2",
-                   8: "flip_reset_3",
-                   9: "pinch",
-                   10: "recover_0",
-                   11: "recover_-45",
-                   12: "recover_-90",
-                   13: "recover_-135",
-                   14: "recover_180",
-                   15: "recover_135",
-                   16: "recover_90",
-                   17: "recover_45",
-                   18: "recover_back_left",
-                   19: "recover_back_right",
-                   20: "recover_opponent",
-                   21: "recover_back_post",
-                   22: "recover_ball",
-                   }
-
+    action_dict = { i: k for i,k in enumerate(Constants_selector.SUB_MODEL_NAMES) }
     alg = PPO(
         rollout_gen,
         agent,

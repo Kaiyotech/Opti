@@ -9,6 +9,7 @@ from rlgym.utils.gamestates import PhysicsObject
 from rlgym.utils.action_parsers import ActionParser
 from rlgym.utils.gamestates import GameState
 from CoyoteObs import CoyoteObsBuilder
+from selection_listener import SelectionListener
 
 
 class CoyoteAction(ActionParser):
@@ -294,10 +295,15 @@ def override_abs_state(player, state, position_index) -> GameState:
         retstate.players[i].inverted_car_data.position = oppo_pos
     return retstate
 
-
 class SelectorParser(ActionParser):
     def __init__(self):
         from submodels.submodel_agent import SubAgent
+        from Constants_selector import SUB_MODEL_NAMES
+        self.sub_model_names = [
+            name.replace("recover", "rush").replace("_", " ").title()
+            for name in SUB_MODEL_NAMES
+        ]
+        self.selection_listener = None
         super().__init__()
 
         self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
@@ -404,6 +410,8 @@ class SelectorParser(ActionParser):
             obs = self.models[action][1].build_obs(
                 player, newstate, self.prev_actions[i])
             parse_action = self.models[action][0].act(obs)[0]
+            if self.selection_listener is not None and i == 0: # only call for first player
+                self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
             parsed_actions.append(parse_action)
@@ -414,6 +422,9 @@ class SelectorParser(ActionParser):
     def reset(self, initial_state: GameState):
         for model in self.models:
             model[1].reset(initial_state)
+
+    def register_selection_listener(self, listener: SelectionListener):
+        self.selection_listener = listener
 
 
 if __name__ == '__main__':
