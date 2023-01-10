@@ -23,9 +23,13 @@ class CoyoteObsBuilder(ObsBuilder):
                  end_object_choice=None,
                  remove_other_cars=False,
                  zero_other_cars=False,
-                 override_cars=False
+                 override_cars=False,
+                 obs_output=None,
+                 obs_info=None,
                  ):
         super().__init__()
+        self.obs_info = obs_info
+        self.obs_output = obs_output
         self.override_cars = override_cars
         self.zero_other_cars = zero_other_cars
         self.remove_other_cars = remove_other_cars
@@ -80,11 +84,12 @@ class CoyoteObsBuilder(ObsBuilder):
 
     def reset(self, initial_state: GameState):
         self.state = None
-        self.boost_timers = np.zeros(self.boost_locations.shape[0])
-        self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
-        self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
-        self.blue_obs = []
-        self.orange_obs = []
+        if self.obs_info is None:
+            self.boost_timers = np.zeros(self.boost_locations.shape[0])
+            self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
+            self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
+            self.blue_obs = []
+            self.orange_obs = []
 
         self.action_stacks = {}
         if self.stack_size != 0 and not self.selector:
@@ -348,7 +353,17 @@ class CoyoteObsBuilder(ObsBuilder):
         stack.insert(0, new_action[0] / self.model_action_size)
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
-                  previous_model_action: np.ndarray = None) -> Any:
+                  previous_model_action: np.ndarray = None, obs_info=None) -> Any:
+
+        if obs_info is not None:
+            # unpack, I'm sure there's a cooler way to do this
+            self.boost_timers = obs_info.boost_timers
+            self.inverted_boost_timers = obs_info.inverted_boost_timers
+            self.boosts_availability = obs_info.boosts_availability
+            self.inverted_boosts_availability = obs_info.inverted_boosts_availability
+            self.blue_obs = obs_info.blue_obs
+            self.orange_obs = obs_info.orange_obs
+            self.demo_timers = obs_info.demo_timers
 
         if player.team_num == 1:
             inverted = True
@@ -382,6 +397,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.expanding and not self.embed_players:
             return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
+            self.obs_output = (np.expand_dims(obs, 0), np.expand_dims(players_data, 0))
             return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs

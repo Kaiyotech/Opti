@@ -296,7 +296,7 @@ def override_abs_state(player, state, position_index) -> GameState:
     return retstate
 
 class SelectorParser(ActionParser):
-    def __init__(self):
+    def __init__(self, obs_info=None):
         from submodels.submodel_agent import SubAgent
         from Constants_selector import SUB_MODEL_NAMES
         self.sub_model_names = [
@@ -304,6 +304,8 @@ class SelectorParser(ActionParser):
             for name in SUB_MODEL_NAMES
         ]
         self.selection_listener = None
+        # self.obs_output = obs_output
+        self.obs_info = obs_info
         super().__init__()
 
         self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
@@ -391,8 +393,9 @@ class SelectorParser(ActionParser):
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
 
-        for models in self.models:
-            models[1].pre_step(state)
+        # for models in self.models:
+        #     models[1].pre_step(state)
+        self.obs_info.pre_step(state)
 
         parsed_actions = []
         for i, action in enumerate(actions):
@@ -408,9 +411,9 @@ class SelectorParser(ActionParser):
                 newstate = override_abs_state(player, state, action)
 
             obs = self.models[action][1].build_obs(
-                player, newstate, self.prev_actions[i])
+                    player, newstate, self.prev_actions[i], obs_info=self.obs_info)
             parse_action = self.models[action][0].act(obs)[0]
-            if self.selection_listener is not None and i == 0: # only call for first player
+            if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
@@ -420,8 +423,10 @@ class SelectorParser(ActionParser):
 
     # necessary because of the stateful obs
     def reset(self, initial_state: GameState):
-        for model in self.models:
-            model[1].reset(initial_state)
+        # add this back if one of them has an action stacker I guess, but no submodels do so :)
+        # for model in self.models:
+        #     model[1].reset(initial_state)
+        self.obs_info.reset(initial_state)
 
     def register_selection_listener(self, listener: SelectionListener):
         self.selection_listener = listener

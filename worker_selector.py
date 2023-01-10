@@ -4,6 +4,8 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
+from rlgym.utils.gamestates import GameState
+
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
@@ -21,6 +23,71 @@ import json
 import os
 
 set_num_threads(1)
+
+
+class ObsInfo:
+    """keeps track of duplicate obs information"""
+    def __init__(self, tick_skip) -> None:
+        from rlgym.utils.common_values import BOOST_LOCATIONS
+        self.boost_locations = np.array(BOOST_LOCATIONS)
+        self.boost_timers = np.zeros(self.boost_locations.shape[0])
+        self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
+        self.boosts_availability = np.zeros(self.boost_locations.shape[0])
+        self.inverted_boosts_availability = np.zeros(self.boost_locations.shape[0])
+        self.blue_obs = None
+        self.orange_obs = None
+        self.demo_timers = None
+        self.BOOST_TIMER_STD = 10
+        self.DEMO_TIMER_STD = 3
+        self.time_interval = tick_skip / 120
+
+    def reset(self, initial_state: GameState):
+        self.boost_timers = np.zeros(self.boost_locations.shape[0])
+        self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
+        self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
+        self.blue_obs = []
+        self.orange_obs = []
+
+    def pre_step(self, state: GameState):
+        # create player/team agnostic items (do these even exist?)
+        self._update_timers(state)
+        # create team specific things
+        self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
+        self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
+
+    def _update_timers(self, state: GameState):
+        current_boosts = state.boost_pads
+        boost_locs = self.boost_locations
+        demo_states = [[p.car_id, p.is_demoed] for p in state.players]
+
+        for i in range(len(current_boosts)):
+            if current_boosts[i] == self.boosts_availability[i]:
+                if self.boosts_availability[i] == 0:
+                    self.boost_timers[i] = max(0, self.boost_timers[i] - self.time_interval)
+            else:
+                if self.boosts_availability[i] == 0:
+                    self.boosts_availability[i] = 1
+                    self.boost_timers[i] = 0
+                else:
+                    self.boosts_availability[i] = 0
+                    if boost_locs[i][2] == 73:
+                        self.boost_timers[i] = 10.0
+                    else:
+                        self.boost_timers[i] = 4.0
+        self.boosts_availability = current_boosts
+        self.inverted_boost_timers = self.boost_timers[::-1]
+        self.inverted_boosts_availability = self.boosts_availability[::-1]
+
+        for cid, dm in demo_states:
+            if dm == True:  # Demoed
+                prev_timer = self.demo_timers[cid]
+                if prev_timer > 0:
+                    self.demo_timers[cid] = max(0, prev_timer - self.time_interval)
+                else:
+                    self.demo_timers[cid] = 3
+            else:  # Not demoed
+                self.demo_timers[cid] = 0
+
 
 class SelectionDispatcher(SelectionListener):
     """Dispatches model selection messages to redis channel"""
@@ -81,7 +148,9 @@ if __name__ == "__main__":
                         velocity_pb_w=0.00,
                         kickoff_w=0.005,
                         )
-    parser = SelectorParser()
+    # obs_output = np.zeros()
+    obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP)
+    parser = SelectorParser(obs_info=obs_info)
     frame_skip = Constants_selector.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
@@ -142,6 +211,8 @@ if __name__ == "__main__":
         elif sys.argv[3] == 'STREAMER':
             setup_streamer()
 
+
+
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
@@ -150,7 +221,8 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      stack_size=Constants_selector.STACK_SIZE,
-                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True),
+                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True,
+                                     ),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
                              NoTouchTimeoutCondition(fps * 40),
