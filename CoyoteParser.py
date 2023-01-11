@@ -206,11 +206,11 @@ def override_state(player, state, position_index) -> GameState:
     return retstate
 
 
-def override_abs_state(player, state, position_index) -> GameState:
+def override_abs_state(player, state, position_index):
     # takes the player and state and returns a new state based on the position index
     # which mocks specific values such as ball position, nearest opponent position, etc.
     # for use with the recovery model's observer builder
-    retstate = copy.deepcopy(state)
+
     assert 10 <= position_index <= 21
 
     if player.team_num == 1:
@@ -257,14 +257,14 @@ def override_abs_state(player, state, position_index) -> GameState:
         if ball.position[0] >= 0:
             x_pos = -1000
         ball_pos = np.asarray([x_pos, -4800, 40])
-    retstate.ball.position = ball_pos
-    retstate.inverted_ball.position = ball_pos
+    state.ball.position = ball_pos
+    state.inverted_ball.position = ball_pos
 
     # Ball velocity next
-    retstate.ball.linear_velocity = np.zeros(3)
-    retstate.inverted_ball.linear_velocity = np.zeros(3)
-    retstate.ball.angular_velocity = np.zeros(3)
-    retstate.inverted_ball.angular_velocity = np.zeros(3)
+    state.ball.linear_velocity = np.zeros(3)
+    state.inverted_ball.linear_velocity = np.zeros(3)
+    state.ball.angular_velocity = np.zeros(3)
+    state.inverted_ball.angular_velocity = np.zeros(3)
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
@@ -284,16 +284,17 @@ def override_abs_state(player, state, position_index) -> GameState:
     new_oppo_car_data = PhysicsObject(
         position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
     oppo_car_idx = len(state.players) // 2
-    retstate.players[oppo_car_idx].car_data = new_oppo_car_data
-    retstate.players[oppo_car_idx].inverted_car_data = new_oppo_car_data
+    state.players[oppo_car_idx].car_data = new_oppo_car_data
+    state.players[oppo_car_idx].inverted_car_data = new_oppo_car_data
     # make other opponents so they are definitely farther away and the obs only takes closest
     # and dummies the rest
     for i in range(oppo_car_idx + 1, len(state.players)):
         oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
         oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
-        retstate.players[i].car_data.position = oppo_pos
-        retstate.players[i].inverted_car_data.position = oppo_pos
-    return retstate
+        state.players[i].car_data.position = oppo_pos
+        state.players[i].inverted_car_data.position = oppo_pos
+    return
+
 
 class SelectorParser(ActionParser):
     def __init__(self, obs_info=None):
@@ -396,8 +397,13 @@ class SelectorParser(ActionParser):
         # for models in self.models:
         #     models[1].pre_step(state)
         self.obs_info.pre_step(state)
+        safe_ball = None
+        safe_inv_ball = None
+        safe_players = None
 
         parsed_actions = []
+        recovery_start = 10
+        recovery_stop = 21
         for i, action in enumerate(actions):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
@@ -405,19 +411,25 @@ class SelectorParser(ActionParser):
             player = state.players[i]
             # override state for recovery
 
-            newstate = state
-
-            if 10 <= action <= 21:
-                newstate = override_abs_state(player, state, action)
+            if recovery_start <= action <= recovery_stop:
+                safe_ball = copy.deepcopy(state.ball)
+                safe_inv_ball = copy.deepcopy(state.inverted_ball)
+                safe_players = copy.deepcopy(state.players)
+                override_abs_state(player, state, action)
 
             obs = self.models[action][1].build_obs(
-                    player, newstate, self.prev_actions[i], obs_info=self.obs_info)
+                    player, state, self.prev_actions[i], obs_info=self.obs_info)
             parse_action = self.models[action][0].act(obs)[0]
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
             # self.prev_action[i] = np.asarray(parse_action)
             self.prev_actions[i] = parse_action
             parsed_actions.append(parse_action)
+
+            if recovery_start <= action <= recovery_stop:
+                state.ball = copy.deepcopy(safe_ball)
+                state.inverted_ball = copy.deepcopy(safe_inv_ball)
+                state.players = copy.deepcopy(safe_players)
 
         return np.asarray(parsed_actions)  # , np.asarray(actions)
 
