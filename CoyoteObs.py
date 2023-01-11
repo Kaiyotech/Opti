@@ -11,6 +11,7 @@ from rlgym.gym import Gym
 from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
+import torch
 from collections.abc import Iterable
 
 
@@ -24,12 +25,12 @@ class CoyoteObsBuilder(ObsBuilder):
                  remove_other_cars=False,
                  zero_other_cars=False,
                  override_cars=False,
-                 obs_output=None,
+                 # obs_output=None,
                  obs_info=None,
                  ):
         super().__init__()
         self.obs_info = obs_info
-        self.obs_output = obs_output
+        # self.obs_output = obs_output
         self.override_cars = override_cars
         self.zero_other_cars = zero_other_cars
         self.remove_other_cars = remove_other_cars
@@ -395,10 +396,11 @@ class CoyoteObsBuilder(ObsBuilder):
                 obs.extend(self.blue_obs)
             self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
         if self.expanding and not self.embed_players:
-            return np.expand_dims(obs, 0)
+            return torch.FloatTensor([obs])
+            # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            self.obs_output = (np.expand_dims(obs, 0), np.expand_dims(players_data, 0))
-            return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
+            return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
+            # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs
         else:
