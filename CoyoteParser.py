@@ -400,6 +400,7 @@ class SelectorParser(ActionParser):
         safe_ball = None
         safe_inv_ball = None
         safe_players = None
+        safe = None
 
         parsed_actions = []
         recovery_start = 10
@@ -412,9 +413,10 @@ class SelectorParser(ActionParser):
             # override state for recovery
 
             if recovery_start <= action <= recovery_stop:
-                safe_ball = copy.deepcopy(state.ball)
-                safe_inv_ball = copy.deepcopy(state.inverted_ball)
-                safe_players = copy.deepcopy(state.players)
+                safe = copy.deepcopy(state)
+                # safe_ball = copy.deepcopy(state.ball)
+                # safe_inv_ball = copy.deepcopy(state.inverted_ball)
+                # safe_players = copy.deepcopy(state.players)
                 override_abs_state(player, state, action)
 
             obs = self.models[action][1].build_obs(
@@ -427,9 +429,10 @@ class SelectorParser(ActionParser):
             parsed_actions.append(parse_action)
 
             if recovery_start <= action <= recovery_stop:
-                state.ball = copy.deepcopy(safe_ball)
-                state.inverted_ball = copy.deepcopy(safe_inv_ball)
-                state.players = copy.deepcopy(safe_players)
+                # state.ball = copy.deepcopy(safe_ball)
+                # state.inverted_ball = copy.deepcopy(safe_inv_ball)
+                # state.players = copy.deepcopy(safe_players)
+                state = copy.deepcopy(safe)
 
         return np.asarray(parsed_actions)  # , np.asarray(actions)
 
