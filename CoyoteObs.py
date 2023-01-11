@@ -14,6 +14,8 @@ from rlgym.utils.common_values import BOOST_LOCATIONS
 import torch
 from collections.abc import Iterable
 
+from numba import jit
+
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
@@ -51,6 +53,8 @@ class CoyoteObsBuilder(ObsBuilder):
         self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
         self.boosts_availability = np.zeros(self.boost_locations.shape[0])
         self.inverted_boosts_availability = np.zeros(self.boost_locations.shape[0])
+        self.boost_values = np.ones(self.boost_locations.shape[0]) * 0.12
+        self.boost_values = np.put(self.boost_values, [3, 4, 15, 18, 29, 30], 1)
         self.boost_objs = []
         self.inverted_boost_objs = []
         self.state = None
@@ -167,6 +171,7 @@ class CoyoteObsBuilder(ObsBuilder):
             else:  # Not demoed
                 self.demo_timers[cid] = 0
 
+    @jit(nopython=True)
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
             ball.position[0] / self.POS_STD, ball.position[1] / self.POS_STD, ball.position[2] / self.POS_STD,
@@ -180,6 +185,7 @@ class CoyoteObsBuilder(ObsBuilder):
         ]
         return p
 
+    @jit(nopython=True)
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
                              prev_model_act: np.ndarray):
         pos_diff = ball.position - car.position
@@ -216,6 +222,7 @@ class CoyoteObsBuilder(ObsBuilder):
 
         return p
 
+    @jit(nopython=True)
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
                           _car: PlayerData, ball: PhysicsObject, teammate: bool):
         diff = car.position - player_car.position
@@ -249,6 +256,7 @@ class CoyoteObsBuilder(ObsBuilder):
         return p
 
     def create_boost_packet(self, player_car: PhysicsObject, boost_index: int, inverted: bool):
+        return NotImplementedError
         # for each boost give the direction, distance, and availability of boost
         boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
         location = self.inverted_boost_locations[boost_index] if inverted else self.boost_locations[boost_index]
@@ -263,8 +271,16 @@ class CoyoteObsBuilder(ObsBuilder):
         return p
 
     def add_boosts_to_obs(self, obs, player_car: PhysicsObject, inverted: bool):
-        for i in range(self.boost_locations.shape[0]):
-            obs.extend(self.create_boost_packet(player_car, i, inverted))
+        boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
+        location = self.inverted_boost_locations if inverted else self.boost_locations
+        dist = location - player_car.position
+        dist_std = dist / self.POS_STD
+        mag = np.linalg.norm(dist, axis=1) / self.POS_STD
+        val = boost_avail_list * self.boost_values
+        obs.extend(np.column_stack((dist_std, val, mag)).flatten())
+
+        # for i in range(self.boost_locations.shape[0]):
+        #     obs.extend(self.create_boost_packet(player_car, i, inverted))
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
                            prev_act: np.ndarray, inverted: bool, previous_model_action, zero_other_players: bool):
