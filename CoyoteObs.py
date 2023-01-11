@@ -12,9 +12,6 @@ from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
 import torch
-from collections.abc import Iterable
-
-from numba import jit
 
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
@@ -54,7 +51,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.boosts_availability = np.zeros(self.boost_locations.shape[0])
         self.inverted_boosts_availability = np.zeros(self.boost_locations.shape[0])
         self.boost_values = np.ones(self.boost_locations.shape[0]) * 0.12
-        self.boost_values = np.put(self.boost_values, [3, 4, 15, 18, 29, 30], 1)
+        np.put(self.boost_values, [3, 4, 15, 18, 29, 30], 1)
         self.boost_objs = []
         self.inverted_boost_objs = []
         self.state = None
@@ -171,7 +168,6 @@ class CoyoteObsBuilder(ObsBuilder):
             else:  # Not demoed
                 self.demo_timers[cid] = 0
 
-    @jit(nopython=True)
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
             ball.position[0] / self.POS_STD, ball.position[1] / self.POS_STD, ball.position[2] / self.POS_STD,
@@ -185,7 +181,6 @@ class CoyoteObsBuilder(ObsBuilder):
         ]
         return p
 
-    @jit(nopython=True)
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
                              prev_model_act: np.ndarray):
         pos_diff = ball.position - car.position
@@ -222,7 +217,6 @@ class CoyoteObsBuilder(ObsBuilder):
 
         return p
 
-    @jit(nopython=True)
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
                           _car: PlayerData, ball: PhysicsObject, teammate: bool):
         diff = car.position - player_car.position
@@ -412,10 +406,11 @@ class CoyoteObsBuilder(ObsBuilder):
                 obs.extend(self.blue_obs)
             self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
         if self.expanding and not self.embed_players:
-            return torch.FloatTensor([obs])
+            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
+            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
+                   np.asarray([players_data])
             # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs
