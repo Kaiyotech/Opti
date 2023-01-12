@@ -13,6 +13,8 @@ from rlgym.utils.obs_builders import ObsBuilder
 from rlgym.utils.common_values import BOOST_LOCATIONS
 import torch
 
+from numba import njit
+
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
@@ -181,6 +183,50 @@ class CoyoteObsBuilder(ObsBuilder):
         ]
         return p
 
+    @staticmethod
+    @njit
+    def create_player_packet_njit(car_position: np.ndarray,
+                                  car_linear_velocity: np.ndarray,
+                                  car_angular_velocity: np.ndarray,
+                                  fwd: np.ndarray,
+                                  up: np.ndarray,
+                                  boost: float,
+                                  on_ground: bool,
+                                  has_jump: bool,
+                                  has_flip: bool,
+                                  is_demoed: bool,
+                                  demo_timer: float,
+                                  pos_std: int,
+                                  vel_std: int,
+                                  ang_std: float,
+                                  ball_position: np.ndarray,
+                                  ball_linear_velocity: np.ndarray,
+                                  prev_act: np.ndarray,
+                                  ):
+        pos_diff = ball_position - car_position
+        vel_diff = ball_linear_velocity - car_linear_velocity
+        p = [
+            car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
+            car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
+            car_linear_velocity[2] / vel_std,
+            car_angular_velocity[0] / ang_std, car_angular_velocity[1] / ang_std,
+            car_angular_velocity[2] / ang_std,
+            pos_diff[0] / pos_std, pos_diff[1] / pos_std, pos_diff[2] / pos_std,
+            vel_diff[0] / vel_std, vel_diff[1] / vel_std, vel_diff[2] / vel_std,
+            fwd[0], fwd[1], fwd[2],
+            up[0], up[1], up[2],
+            math.sqrt(car_linear_velocity[0] ** 2 + car_linear_velocity[1] ** 2 + car_linear_velocity[2] ** 2) / 2300,
+            boost,
+            int(on_ground),
+            int(has_flip),
+            int(is_demoed),
+            int(has_jump),
+            demo_timer,
+            prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
+        ]
+
+        return p
+
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
                              prev_model_act: np.ndarray):
         pos_diff = ball.position - car.position
@@ -215,6 +261,56 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.add_action_to_stack(prev_act, player.car_id)
                 p.extend(list(self.action_stacks[player.car_id]))
 
+        return p
+
+    @staticmethod
+    @njit
+    def create_car_packet_njit(player_car_position: np.ndarray,
+                               player_car_linear_velocity: np.ndarray,
+                               car_position: np.ndarray,
+                               car_linear_velocity: np.ndarray,
+                               car_angular_velocity: np.ndarray,
+                               ball_position: np.ndarray,
+                               ball_linear_velocity: np.ndarray,
+                               fwd: np.ndarray,
+                               up: np.ndarray,
+                               teammate: bool,
+                               boost: float,
+                               on_ground: bool,
+                               has_jump: bool,
+                               has_flip: bool,
+                               is_demoed: bool,
+                               demo_timer: float,
+                               pos_std: int,
+                               vel_std: int,
+                               ang_std: float,
+                               ):
+        diff = car_position - player_car_position
+        magnitude = math.sqrt(diff[0] ** 2 + diff[1] ** 2 + diff[2] ** 2)
+        car_play_vel = car_linear_velocity - player_car_linear_velocity
+        pos_diff = ball_position - car_position
+        ball_car_vel = ball_linear_velocity - car_linear_velocity
+        p = [
+            car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
+            car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
+            car_linear_velocity[2] / vel_std,
+            car_angular_velocity[0] / ang_std, car_angular_velocity[1] / ang_std,
+            car_angular_velocity[2] / ang_std,
+            diff[0] / pos_std, diff[1] / pos_std, diff[2] / pos_std,
+            car_play_vel[0] / vel_std, car_play_vel[1] / vel_std, car_play_vel[2] / vel_std,
+            pos_diff[0] / pos_std, pos_diff[1] / pos_std, pos_diff[2] / pos_std,
+            ball_car_vel[0] / vel_std, ball_car_vel[1] / vel_std, ball_car_vel[2] / vel_std,
+            fwd[0], fwd[1], fwd[2],
+            up[0], up[1], up[2],
+            boost,
+            int(on_ground),
+            int(has_flip),
+            int(is_demoed),
+            int(has_jump),
+            magnitude / pos_std,
+            int(teammate),
+            demo_timer,
+        ]
         return p
 
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
@@ -264,6 +360,20 @@ class CoyoteObsBuilder(ObsBuilder):
         ]
         return p
 
+    @staticmethod
+    @njit
+    def add_boosts_to_obs_njit(obs, player_car_position: np.ndarray,
+                               boost_avail_list: np.ndarray,
+                               location: np.ndarray,
+                               boost_values: np.ndarray,
+                               pos_std: int):
+
+        dist = location - player_car_position
+        dist_std = dist / pos_std
+        mag = np.linalg.norm(dist, axis=1) / pos_std
+        val = boost_avail_list * boost_values
+        obs.extend(np.column_stack((dist_std, val, mag)).flatten())
+
     def add_boosts_to_obs(self, obs, player_car: PhysicsObject, inverted: bool):
         boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
         location = self.inverted_boost_locations if inverted else self.boost_locations
@@ -279,8 +389,28 @@ class CoyoteObsBuilder(ObsBuilder):
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
                            prev_act: np.ndarray, inverted: bool, previous_model_action, zero_other_players: bool):
 
-        player_data = self.create_player_packet(player, player.inverted_car_data
-        if inverted else player.car_data, ball, prev_act, previous_model_action)
+        # player_data = self.create_player_packet(player, player.inverted_car_data
+        #             if inverted else player.car_data, ball, prev_act, previous_model_action)
+        demo_timer = self.demo_timers[player.car_id] / self.DEMO_TIMER_STD
+        player_data = self.create_player_packet_njit(player.inverted_car_data.position if inverted else player.car_data.position,
+                                                     player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                                                     player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
+                                                     player.inverted_car_data.forward() if inverted else player.car_data.forward(),
+                                                     player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
+                                                     player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
+                                                     player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
+                                                     ball.position, ball.linear_velocity, prev_act
+                                                     )
+
+        if self.stack_size != 0:
+            if self.selector:
+                self.model_add_action_to_stack(previous_model_action, player.car_id)
+                player_data.extend(list(self.model_action_stacks[player.car_id]))
+
+            else:
+                self.add_action_to_stack(prev_act, player.car_id)
+                player_data.extend(list(self.action_stacks[player.car_id]))
+
         a_max = 2
         o_max = 3
         a_count = 0
@@ -291,8 +421,8 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.only_closest_opp:
             tmp_oppo = [p for p in state.players if p.team_num != player.team_num]
             tmp_oppo.sort(key=lambda p: np.linalg.norm(p.inverted_car_data.position if inverted else p.car_data.position
-                                                       - player.inverted_car_data.position if inverted else
-                                                        player.car_data.position))
+                                                                                                     - player.inverted_car_data.position if inverted else
+            player.car_data.position))
             closest = tmp_oppo[0].car_id
 
         if self.override_cars:
@@ -307,9 +437,23 @@ class CoyoteObsBuilder(ObsBuilder):
             new_points[2] = np.clip(new_points[2], 0, 2000)
             p = copy.deepcopy(tmp_oppo[0])  # testing imbalance issue
             p.car_data.position = new_points
-            opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
-                                                    p.inverted_car_data if inverted else p.car_data, p, ball,
-                                                    p.team_num == player.team_num))
+            # opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
+            #                                         p.inverted_car_data if inverted else p.car_data, p, ball,
+            #                                         p.team_num == player.team_num))
+            demo_timer = self.demo_timers[p.car_id] / self.DEMO_TIMER_STD
+            opponents.append(
+                self.create_car_packet_njit(player.inverted_car_data.position if inverted else player.car_data.position,
+                                            player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                                            p.inverted_car_data.position if inverted else p.car_data.position,
+                                            p.inverted_car_data.linear_velocity if inverted else p.car_data.linear_velocity,
+                                            p.inverted_car_data.angular_velocity if inverted else p.car_data.angular_velocity,
+                                            ball.position, ball.linear_velocity,
+                                            p.inverted_car_data.forward() if inverted else p.car_data.forward(),
+                                            p.inverted_car_data.up() if inverted else p.car_data.up(),
+                                            p.team_num == player.team_num,
+                                            p.boost_amount, p.on_ground, p.has_jump, p.has_flip, p.is_demoed,
+                                            demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD
+                                            ))
             o_count += 1
 
         for p in state.players:
@@ -324,13 +468,35 @@ class CoyoteObsBuilder(ObsBuilder):
                 continue
 
             if p.team_num == player.team_num and not self.only_closest_opp:
-                allies.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
-                                                     p.inverted_car_data if inverted else p.car_data, p, ball,
-                                                     p.team_num == player.team_num))
+                demo_timer = self.demo_timers[p.car_id] / self.DEMO_TIMER_STD
+                allies.append(self.create_car_packet_njit(
+                    player.inverted_car_data.position if inverted else player.car_data.position,
+                    player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                    p.inverted_car_data.position if inverted else p.car_data.position,
+                    p.inverted_car_data.linear_velocity if inverted else p.car_data.linear_velocity,
+                    p.inverted_car_data.angular_velocity if inverted else p.car_data.angular_velocity,
+                    ball.position, ball.linear_velocity,
+                    p.inverted_car_data.forward() if inverted else p.car_data.forward(),
+                    p.inverted_car_data.up() if inverted else p.car_data.up(),
+                    p.team_num == player.team_num,
+                    p.boost_amount, p.on_ground, p.has_jump, p.has_flip, p.is_demoed,
+                    demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD
+                ))
             elif not self.only_closest_opp or closest == p.car_id:
-                opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
-                                                        p.inverted_car_data if inverted else p.car_data, p, ball,
-                                                        p.team_num == player.team_num))
+                demo_timer = self.demo_timers[p.car_id] / self.DEMO_TIMER_STD
+                opponents.append(self.create_car_packet_njit(
+                    player.inverted_car_data.position if inverted else player.car_data.position,
+                    player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                    p.inverted_car_data.position if inverted else p.car_data.position,
+                    p.inverted_car_data.linear_velocity if inverted else p.car_data.linear_velocity,
+                    p.inverted_car_data.angular_velocity if inverted else p.car_data.angular_velocity,
+                    ball.position, ball.linear_velocity,
+                    p.inverted_car_data.forward() if inverted else p.car_data.forward(),
+                    p.inverted_car_data.up() if inverted else p.car_data.up(),
+                    p.team_num == player.team_num,
+                    p.boost_amount, p.on_ground, p.has_jump, p.has_flip, p.is_demoed,
+                    demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD
+                ))
             else:
                 continue
 
@@ -404,13 +570,19 @@ class CoyoteObsBuilder(ObsBuilder):
                 obs.extend(self.orange_obs)
             else:
                 obs.extend(self.blue_obs)
-            self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
+            # self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
+            self.add_boosts_to_obs_njit(obs, player.inverted_car_data.position if inverted else player.car_data.position,
+                                        self.inverted_boosts_availability if inverted else self.boosts_availability,
+                                        self.inverted_boost_locations if inverted else self.boost_locations,
+                                        self.boost_values, self.POS_STD)
         if self.expanding and not self.embed_players:
-            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
+            # return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
+            return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
-                   np.asarray([players_data])
+            # return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
+            #        np.asarray([players_data])
+            return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
             # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs
