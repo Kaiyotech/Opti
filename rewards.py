@@ -98,8 +98,10 @@ class ZeroSumReward(RewardFunction):
             turtle_w=0,
             zero_touch_grass_if_ss=False,
             final_reward_ball_dist_w=0,
+            final_reward_boost_w=0,
             punish_directional_changes=False,
     ):
+        self.final_reward_boost_w = final_reward_boost_w
         self.punish_directional_changes = punish_directional_changes
         self.decay_punish_action_change_w = decay_punish_action_change_w
         self.final_reward_ball_dist_w = final_reward_ball_dist_w
@@ -543,4 +545,5 @@ class ZeroSumReward(RewardFunction):
         # if dist is 0, reward is 1
         dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
         dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
-        return reg_reward + dist_rew
+        boost_rew = float(player.boost_amount) * self.final_reward_boost_w
+        return reg_reward + dist_rew + boost_rew

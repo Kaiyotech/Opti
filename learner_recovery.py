@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run6.06"
+    run_id = "recovery_run6.07"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run6.06",
+                        name="Recovery_Run6.07",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -82,15 +82,16 @@ if __name__ == "__main__":
                                                                  embed_players=False, ),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.01,
-                                                              boost_gain_w=0.25,
+                                                              boost_gain_w=0.35,
                                                               punish_boost=True,
                                                               touch_ball_w=2,
-                                                              boost_remain_touch_w=.75,
-                                                              touch_grass_w=-0.03,
+                                                              boost_remain_touch_w=1.25,
+                                                              touch_grass_w=-0.02,
                                                               supersonic_bonus_vpb_w=0.02,
                                                               zero_touch_grass_if_ss=True,
                                                               turtle_w=-0.04,
                                                               final_reward_ball_dist_w=1,
+                                                              final_reward_boost_w=0.5,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -158,7 +159,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1672324603.8087897/Opti_1930/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1672440374.7683196/Opti_2300/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
