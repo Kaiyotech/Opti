@@ -14,7 +14,7 @@ from rlgym.utils.common_values import BOOST_LOCATIONS
 import torch
 
 from numba import njit
-
+import scipy
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
@@ -362,7 +362,7 @@ class CoyoteObsBuilder(ObsBuilder):
 
     @staticmethod
     @njit
-    def add_boosts_to_obs_njit(obs, player_car_position: np.ndarray,
+    def add_boosts_to_obs_njit(player_car_position: np.ndarray,
                                boost_avail_list: np.ndarray,
                                location: np.ndarray,
                                boost_values: np.ndarray,
@@ -370,9 +370,12 @@ class CoyoteObsBuilder(ObsBuilder):
 
         dist = location - player_car_position
         dist_std = dist / pos_std
-        mag = np.linalg.norm(dist, axis=1) / pos_std
+
+        mag = np.empty(dist.shape[0])
+        for i in range(dist.shape[0]):
+            mag[i] = np.sqrt(dist[i, 0] * dist[i, 0] + dist[i, 1] * dist[i, 1] + dist[i, 2] * dist[i, 2]) / pos_std
         val = boost_avail_list * boost_values
-        obs.extend(np.column_stack((dist_std, val, mag)).flatten())
+        return np.column_stack((dist_std, val, mag)).flatten()
 
     def add_boosts_to_obs(self, obs, player_car: PhysicsObject, inverted: bool):
         boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
