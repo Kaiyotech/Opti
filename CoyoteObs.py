@@ -574,10 +574,10 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 obs.extend(self.blue_obs)
             # self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
-            self.add_boosts_to_obs_njit(obs, player.inverted_car_data.position if inverted else player.car_data.position,
+            obs.extend(self.add_boosts_to_obs_njit(obs, player.inverted_car_data.position if inverted else player.car_data.position,
                                         self.inverted_boosts_availability if inverted else self.boosts_availability,
                                         self.inverted_boost_locations if inverted else self.boost_locations,
-                                        self.boost_values, self.POS_STD)
+                                        self.boost_values, self.POS_STD))
         if self.expanding and not self.embed_players:
             # return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
             return torch.FloatTensor([obs])
