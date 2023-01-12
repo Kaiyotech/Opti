@@ -7,7 +7,7 @@ from gym.spaces import Discrete
 from rlgym.utils import math
 from rlgym.utils.gamestates import PhysicsObject
 from rlgym.utils.action_parsers import ActionParser
-from rlgym.utils.gamestates import GameState
+from rlgym.utils.gamestates import GameState, PlayerData
 from CoyoteObs import CoyoteObsBuilder
 from selection_listener import SelectionListener
 
@@ -206,11 +206,66 @@ def override_state(player, state, position_index) -> GameState:
     return retstate
 
 
+def copy_state(state) -> GameState:
+    # quickly copy state
+    retstate = GameState()
+    retstate.ball.quaternion = state.ball.quaternion.copy()
+    retstate.inverted_ball.quaternion = state.inverted_ball.quaternion.copy()
+
+    retstate.blue_score = state.blue_score
+    retstate.orange_score = state.orange_score
+
+    retstate.boost_pads = state.boost_pads
+    retstate.inverted_boost_pads = state.inverted_boost_pads
+    retstate.game_type = state.game_type
+    retstate.last_touch = state.last_touch
+
+    for i in range(0, len(state.players)):
+        player = PlayerData()
+        player.ball_touched = state.players[i].ball_touched
+        player.boost_amount = state.players[i].boost_amount
+        player.boost_pickups = state.players[i].boost_pickups
+
+        player.car_data.angular_velocity = state.players[i].car_data.angular_velocity.copy()
+        player.car_data.linear_velocity = state.players[i].car_data.linear_velocity.copy()
+        player.car_data.position = state.players[i].car_data.position.copy()
+        player.car_data.quaternion = state.players[i].car_data.quaternion.copy()
+
+        player.inverted_car_data.angular_velocity = state.players[i].inverted_car_data.angular_velocity.copy()
+        player.inverted_car_data.linear_velocity = state.players[i].inverted_car_data.linear_velocity.copy()
+        player.inverted_car_data.position = state.players[i].inverted_car_data.position.copy()
+        player.inverted_car_data.quaternion = state.players[i].inverted_car_data.quaternion.copy()
+
+        player.car_id = state.players[i].car_id
+        player.has_flip = state.players[i].has_flip
+        player.has_jump = state.players[i].has_jump
+        player.is_demoed = state.players[i].is_demoed
+        player.match_demolishes = state.players[i].match_demolishes
+        player.match_goals = state.players[i].match_goals
+        player.match_saves = state.players[i].match_saves
+        player.match_shots = state.players[i].match_shots
+        player.on_ground = state.players[i].on_ground
+        player.team_num = state.players[i].team_num
+
+        retstate.players.append(player)
+
+    return retstate
+
+
 def override_abs_state(player, state, position_index) -> GameState:
     # takes the player and state and returns a new state based on the position index
     # which mocks specific values such as ball position, nearest opponent position, etc.
     # for use with the recovery model's observer builder
-    retstate = copy.deepcopy(state)
+    # retstate = copy.deepcopy(state)
+    team_size = len(state.players) // 2
+    if player.team_num == 0:
+        oppo_start = team_size
+        oppo_stop = team_size * 2
+    else:
+        oppo_start = 0
+        oppo_stop = team_size
+
+    retstate = copy_state(state)
     assert 10 <= position_index <= 21
 
     if player.team_num == 1:
@@ -283,17 +338,17 @@ def override_abs_state(player, state, position_index) -> GameState:
     oppo_vel = [1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0]
     new_oppo_car_data = PhysicsObject(
         position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
-    oppo_car_idx = len(state.players) // 2
-    retstate.players[oppo_car_idx].car_data = new_oppo_car_data
-    retstate.players[oppo_car_idx].inverted_car_data = new_oppo_car_data
+    retstate.players[oppo_start].car_data = new_oppo_car_data
+    retstate.players[oppo_start].inverted_car_data = new_oppo_car_data
     # make other opponents so they are definitely farther away and the obs only takes closest
     # and dummies the rest
-    for i in range(oppo_car_idx + 1, len(state.players)):
+    for i in range(oppo_start + 1, oppo_stop):
         oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
         oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
         retstate.players[i].car_data.position = oppo_pos
         retstate.players[i].inverted_car_data.position = oppo_pos
     return retstate
+
 
 class SelectorParser(ActionParser):
     def __init__(self, obs_info=None):
