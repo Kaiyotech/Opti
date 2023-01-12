@@ -205,7 +205,7 @@ class CoyoteObsBuilder(ObsBuilder):
                                   ):
         pos_diff = ball_position - car_position
         vel_diff = ball_linear_velocity - car_linear_velocity
-        return np.asarray([
+        return [
             car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
             car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
             car_linear_velocity[2] / vel_std,
@@ -223,7 +223,7 @@ class CoyoteObsBuilder(ObsBuilder):
             int(has_jump),
             demo_timer,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
-        ])
+        ]
 
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
                              prev_model_act: np.ndarray):
@@ -288,7 +288,7 @@ class CoyoteObsBuilder(ObsBuilder):
         car_play_vel = car_linear_velocity - player_car_linear_velocity
         pos_diff = ball_position - car_position
         ball_car_vel = ball_linear_velocity - car_linear_velocity
-        return np.asarray([
+        return [
             car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
             car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
             car_linear_velocity[2] / vel_std,
@@ -308,7 +308,7 @@ class CoyoteObsBuilder(ObsBuilder):
             magnitude / pos_std,
             int(teammate),
             demo_timer,
-        ])
+        ]
 
     def create_car_packet(self, player_car: PhysicsObject, car: PhysicsObject,
                           _car: PlayerData, ball: PhysicsObject, teammate: bool):
@@ -400,7 +400,7 @@ class CoyoteObsBuilder(ObsBuilder):
                                                      player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
                                                      player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
                                                      ball.position, ball.linear_velocity, prev_act
-                                                     ).tolist()
+                                                     )
 
         if self.stack_size != 0:
             if self.selector:
