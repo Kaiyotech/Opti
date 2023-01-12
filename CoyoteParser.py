@@ -335,7 +335,7 @@ def override_abs_state(player, state, position_index) -> GameState:
     oppo_rot = np.array(((oppo_rot_cy, -oppo_rot_sy, 0),
                          (oppo_rot_sy, oppo_rot_cy, 0), (0, 0, 1)))
     # oppo_vel is max driving speed without boosting in direction of ball
-    oppo_vel = [1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0]
+    oppo_vel = np.asarray([1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0])
     new_oppo_car_data = PhysicsObject(
         position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
     retstate.players[oppo_start].car_data = new_oppo_car_data
