@@ -79,6 +79,7 @@ class ZeroSumReward(RewardFunction):
             kickoff_final_boost_w=0,
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
+            forward_ctrl_w=0,
             exit_velocity_w=0,
             exit_vel_angle_w=0,
             req_reset_exit_vel=False,
@@ -101,6 +102,7 @@ class ZeroSumReward(RewardFunction):
             final_reward_boost_w=0,
             punish_directional_changes=False,
     ):
+        self.forward_ctrl_w = forward_ctrl_w
         self.final_reward_boost_w = final_reward_boost_w
         self.punish_directional_changes = punish_directional_changes
         self.decay_punish_action_change_w = decay_punish_action_change_w
@@ -537,6 +539,9 @@ class ZeroSumReward(RewardFunction):
             self.last_action_change[self.n] = self.kickoff_timer
 
         self.previous_action[self.n] = previous_model_action[0]
+        # forward on stick
+        if previous_action[2] == 1 and previous_action[3] == 0:
+            rew += self.forward_ctrl_w
         self.n += 1
         return float(rew)
 
