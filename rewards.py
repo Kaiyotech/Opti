@@ -540,7 +540,7 @@ class ZeroSumReward(RewardFunction):
 
         self.previous_action[self.n] = previous_model_action[0]
         # forward on stick
-        if previous_action[2] == 1 and previous_action[3] == 0:
+        if previous_action[2] == 1 and previous_action[3] == 0 and not player.on_ground:
             rew += self.forward_ctrl_w
         self.n += 1
         return float(rew)

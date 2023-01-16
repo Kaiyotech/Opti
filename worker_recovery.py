@@ -31,7 +31,7 @@ if __name__ == "__main__":
                         turtle_w=-0.04,
                         final_reward_ball_dist_w=1,
                         final_reward_boost_w=0.1,
-                        forward_ctrl_w=0.004,
+                        forward_ctrl_w=0.015,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
     fps = 120 // frame_skip
