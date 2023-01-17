@@ -43,8 +43,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-5,
-        critic_lr=1e-5,
+        actor_lr=1e-4,
+        critic_lr=1e-4,
         n_steps=Constants_recovery.STEP_SIZE,
         batch_size=250_000,
         minibatch_size=125_000,
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run6.15"
+    run_id = "recovery_run6.16"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run6.15",
+                        name="Recovery_Run6.16",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -101,7 +101,7 @@ if __name__ == "__main__":
                                         clear=False,
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
-                                        max_age=0,
+                                        max_age=1,
                                         )
 
     # critic = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1673970353.1804342/Opti_4035/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1673975534.0320034/Opti_4100/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
