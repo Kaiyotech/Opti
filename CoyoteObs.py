@@ -576,13 +576,13 @@ class CoyoteObsBuilder(ObsBuilder):
                                         self.inverted_boost_locations if inverted else self.boost_locations,
                                         self.boost_values, self.POS_STD))
         if self.expanding and not self.embed_players:
-            # return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
-            return torch.FloatTensor([obs])
+            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
+            # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            # return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
-            #        np.asarray([players_data])
-            return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
+            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
+                    np.asarray([players_data])
+            # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
             # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
             return obs
