@@ -184,7 +184,7 @@ class CoyoteObsBuilder(ObsBuilder):
         return p
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def create_player_packet_njit(car_position: np.ndarray,
                                   car_linear_velocity: np.ndarray,
                                   car_angular_velocity: np.ndarray,
@@ -262,7 +262,7 @@ class CoyoteObsBuilder(ObsBuilder):
         return p
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def create_car_packet_njit(player_car_position: np.ndarray,
                                player_car_linear_velocity: np.ndarray,
                                car_position: np.ndarray,
@@ -358,7 +358,7 @@ class CoyoteObsBuilder(ObsBuilder):
         return p
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def add_boosts_to_obs_njit(player_car_position: np.ndarray,
                                boost_avail_list: np.ndarray,
                                location: np.ndarray,
