@@ -31,9 +31,10 @@ if __name__ == "__main__":
                         acel_ball_w=1,
                         team_spirit=1,
                         # cons_air_touches_w=2,
-                        jump_touch_w=1,
-                        wall_touch_w=0.25,
-                        touch_grass_w=0, )
+                        jump_touch_w=1.5,
+                        wall_touch_w=1,
+                        touch_grass_w=0,
+                        )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"

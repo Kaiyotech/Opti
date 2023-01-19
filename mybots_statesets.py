@@ -1,9 +1,13 @@
+from typing import Type
+
 from rlgym.utils.state_setters import StateSetter
 from rlgym.utils.state_setters import StateWrapper
 from rlgym.utils.common_values import BLUE_TEAM, ORANGE_TEAM, CEILING_Z, GOAL_HEIGHT, \
     SIDE_WALL_X, BACK_WALL_Y, CAR_MAX_SPEED, CAR_MAX_ANG_VEL, BALL_RADIUS, BOOST_LOCATIONS
 import numpy as np
 from numpy import random as rand
+from rlgym.utils.state_setters.state_wrapper import CarWrapper
+from collections import namedtuple
 
 DEG_TO_RAD = 3.14159265 / 180
 
@@ -342,7 +346,8 @@ class RecoverySetter(StateSetter):
 
 
 class HalfFlip(StateSetter):
-    def __init__(self):
+    def __init__(self, zero_boost_weight=0):
+        self.zero_boost_weight = zero_boost_weight
         self.rng = np.random.default_rng()
 
     def reset(self, state_wrapper: StateWrapper):
@@ -352,15 +357,32 @@ class HalfFlip(StateSetter):
         state_wrapper.ball.set_pos(x, y, 94)
         state_wrapper.ball.set_lin_vel(0, 0, 0)
         state_wrapper.ball.set_ang_vel(0, 0, 0)
-        mult = -1
+        if self.rng.uniform() > self.zero_boost_weight:
+            boost = self.rng.uniform(0, 1.000001)
+        else:
+            boost = 0
         for car in state_wrapper.cars:
-            car.set_pos(x, y + mult * 2500)
-            car.set_rot(0, mult * np.pi * 0.5, 0)
-            car.set_lin_vel(0, 0, 0)
-            car.set_ang_vel(0, 0, 0)
-            if self.rng.uniform() > 0.1:
-                car.boost = self.rng.uniform(0, 1.000001)
+            if car.id == 0:
+                car.set_pos(x, y + 2500)
+                car.set_rot(0, np.pi * 0.5, 0)
+                car.set_lin_vel(0, 0, 0)
+                car.set_ang_vel(0, 0, 0)
             else:
-                car.boost = 0
-            mult = 1
+                values = mirror(state_wrapper.cars[0])
+                car.set_pos(*values.pos)
+                car.set_rot(*values.rot)
+                car.set_lin_vel(*values.lin_vel)
+                car.set_ang_vel(*values.ang_vel)
+            car.boost = boost
+
+
+def mirror(car: CarWrapper):
+    my_car = namedtuple('my_car', 'pos lin_vel rot ang_vel')
+    my_car.pos = -car.position[0], -car.position[1], car.position[2]
+    my_car.lin_vel = -car.linear_velocity[0], -car.linear_velocity[1], car.linear_velocity[2]
+    my_car.rot = car.rotation[0], -car.rotation[1], car.rotation[2]
+    my_car.ang_vel = -car.angular_velocity[0], -car.angular_velocity[1], car.angular_velocity[2]
+    return my_car
+
+
 
