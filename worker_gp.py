@@ -15,6 +15,10 @@ from setter import CoyoteSetter
 import Constants_gp
 import os
 
+from pretrained_agents.necto.necto_v1 import NectoV1
+from pretrained_agents.nexto.nexto_v2 import NextoV2
+from pretrained_agents.KBB.kbb import KBB
+
 set_num_threads(1)
 
 if __name__ == "__main__":
@@ -107,6 +111,16 @@ if __name__ == "__main__":
                   db=Constants_gp.DB_NUM,
                   )
 
+    model_name = "necto-model-30Y.pt"
+    nectov1 = NectoV1(model_string=model_name, n_players=6)
+    model_name = "nexto-model.pt"
+    nexto = NextoV2(model_string=model_name, n_players=6)
+    model_name = "kbb.pt"
+    kbb = KBB(model_string=model_name)
+
+    pretrained_agents = {nectov1: 0.01, nexto: 0.02, kbb: 0.02}
+    # pretrained_agents = None
+
     worker = RedisRolloutWorker(r, name, match,
                                 past_version_prob=past_version_prob,
                                 sigma_target=2,
@@ -123,6 +137,7 @@ if __name__ == "__main__":
                                 # testing
                                 batch_mode=batch_mode,
                                 step_size=Constants_gp.STEP_SIZE,
+                                pretrained_agents=None if streamer_mode else pretrained_agents,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
