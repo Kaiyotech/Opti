@@ -17,6 +17,8 @@ from numba import njit
 import scipy
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
+
+
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
                  embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0,
@@ -28,6 +30,12 @@ class CoyoteObsBuilder(ObsBuilder):
                  override_cars=False,
                  # obs_output=None,
                  obs_info=None,
+                 add_handbrake=False,
+                 add_jumptime=False,
+                 add_fliptime=False,
+                 add_airtime=False,
+                 add_boosttime=False,
+                 dodge_deadzone=0.8
                  ):
         super().__init__()
         self.obs_info = obs_info
@@ -51,7 +59,8 @@ class CoyoteObsBuilder(ObsBuilder):
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
         self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
         self.boosts_availability = np.zeros(self.boost_locations.shape[0])
-        self.inverted_boosts_availability = np.zeros(self.boost_locations.shape[0])
+        self.inverted_boosts_availability = np.zeros(
+            self.boost_locations.shape[0])
         self.boost_values = np.ones(self.boost_locations.shape[0]) * 0.12
         np.put(self.boost_values, [3, 4, 15, 18, 29, 30], 1)
         self.boost_objs = []
@@ -85,20 +94,46 @@ class CoyoteObsBuilder(ObsBuilder):
         self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
         self.big_boosts = np.asarray(self.big_boosts)
         self.big_boosts[:, -1] = 18
+        self.add_boosttime = add_boosttime
+        self.add_jumptime = add_jumptime
+        self.add_fliptime = add_fliptime
+        self.add_airtime = add_airtime
+        self.add_handbrake = add_handbrake
+        self.dodge_deadzone = dodge_deadzone
+        if add_boosttime:
+            self.boosttimes = [0] * 6
+        if add_jumptime:
+            self.jumptimes = [0] * 6
+        if add_fliptime:
+            self.fliptimes = [0] * 6
+            self.has_flippeds = [False] * 6
+            self.has_doublejumpeds = [False] * 6
+        if add_airtime:
+            self.airtimes = [0] * 6
+        if add_jumptime or add_fliptime or add_airtime:
+            self.on_grounds = [False] * 6
+            self.prev_prev_actions = [[0] * 8 for _ in range(6)]
+            self.is_jumpings = [False] * 6
+            self.has_jumpeds = [False] * 6
+        if add_handbrake:
+            self.handbrakes = [0] * 6
 
     def reset(self, initial_state: GameState):
         self.state = None
         if self.obs_info is None:
             self.boost_timers = np.zeros(self.boost_locations.shape[0])
-            self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
-            self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
+            self.inverted_boost_timers = np.zeros(
+                self.boost_locations.shape[0])
+            self.demo_timers = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
             self.blue_obs = []
             self.orange_obs = []
 
         self.action_stacks = {}
         if self.stack_size != 0 and not self.selector:
             for p in initial_state.players:
-                self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+                self.action_stacks[p.car_id] = np.concatenate(
+                    [self.default_action] * self.stack_size)
 
         self.model_action_stacks = {}
         if self.stack_size != 0 and self.selector:
@@ -121,7 +156,31 @@ class CoyoteObsBuilder(ObsBuilder):
             if self.end_object_tracker == 7:
                 self.end_object_tracker = 0
 
-    def pre_step(self, state: GameState):
+        if self.add_boosttime:
+            self.boosttimes = [0] * 6
+
+        if self.add_jumptime:
+            self.jumptimes = [0] * 6
+
+        if self.add_fliptime:
+            self.fliptimes = [0] * 6
+            self.has_flippeds = [False] * 6
+            self.has_doublejumpeds = [False] * 6
+
+        if self.add_airtime:
+            self.airtimes = [0] * 6
+
+        if self.add_jumptime or self.add_fliptime or self.add_airtime:
+            self.on_grounds = [
+                player.on_ground for player in initial_state.players]
+            self.prev_prev_actions = [[0] * 8 for _ in range(6)]
+            self.is_jumpings = [False] * 6
+            self.has_jumpeds = [False] * 6
+
+        if self.add_handbrake:
+            self.handbrakes = [0] * 6
+
+    def pre_step(self, state: GameState, prev_actions=None):
         self.state = state
         # create player/team agnostic items (do these even exist?)
         self._update_timers(state)
@@ -137,6 +196,92 @@ class CoyoteObsBuilder(ObsBuilder):
                 for player in state.players:
                     player.boost_amount /= 1
 
+        if self.add_boosttime:
+            for i, _ in enumerate(state.players):
+                # if this player was not boosting last tick and their boosttime timer means they actually stopped boosting, set to 0
+                if prev_actions[i][6] == 0 and self.boosttimes[i] == 12:
+                    self.boosttimes[i] = 0
+                # otherwise, just increment the boosttime
+                else:
+                    self.boosttimes[i] += self.time_interval * 120
+                    self.boosttimes[i] = min(12, self.boosttimes[i])
+
+        # update jumptime
+        if self.add_jumptime or self.add_fliptime or self.add_airtime:
+            for i, _ in enumerate(state.players):
+                if self.on_grounds[i] and not self.is_jumpings[i]:
+                    self.has_jumpeds[i] = False
+
+                if self.is_jumpings[i]:
+                    # JUMP_MIN_TIME = 3 ticks
+                    # JUMP_MAX_TIME = 24 ticks
+                    if not ((self.jumptimes[i] < 3 or prev_actions[i][5] == 1) and self.jumptimes[i] < 24):
+                        self.is_jumpings[i] = self.jumptimes[i] < 3
+                elif prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0 and self.on_grounds[i]:
+                    self.is_jumpings[i] = True
+                    self.jumptimes[i] = 0
+
+                if self.is_jumpings[i]:
+                    self.has_jumpeds[i] = True
+                    self.jumptimes[i] += self.time_interval * 120
+                    self.jumptimes[i] = min(
+                        24, self.jumptimes[i])
+                else:
+                    self.jumptimes[i] = 0
+
+        # update airtime and fliptime
+        if self.add_fliptime or self.add_airtime:
+            for i, _ in enumerate(state.players):
+                if self.on_grounds[i]:
+                    self.has_doublejumpeds[i] = False
+                    self.has_flippeds[i] = False
+                    self.airtimes[i] = 0
+                else:
+                    if self.has_jumpeds[i] and not self.is_jumpings[i]:
+                        self.airtimes[i] += self.time_interval * 120
+                        # DOUBLEJUMP_MAX_DELAY = 150 ticks
+                        self.airtimes[i] = min(
+                            150, self.airtimes[i])
+                    else:
+                        self.airtimes[i] = 0
+                    if self.has_jumpeds[i] and (prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0) and self.airtimes[i] < 150:
+                        if not self.has_doublejumpeds[i] and not self.has_flippeds[i]:
+                            should_flip = max(max(abs(prev_actions[i][3]), abs(prev_actions[i][2])), abs(
+                                prev_actions[i][4])) >= self.dodge_deadzone
+                            if should_flip:
+                                self.fliptimes[i] = 0
+                                self.has_flippeds[i] = True
+                            else:
+                                self.has_doublejumpeds[i] = True
+                if self.has_flippeds[i]:
+                    self.fliptimes[i] += self.time_interval * 120
+                    # FLIP_TORQUE_TIME = 78 ticks
+                    self.fliptimes[i] = min(
+                        78, self.fliptimes[i])
+
+        # update handbrake
+        if self.add_handbrake:
+            for i, _ in enumerate(state.players):
+                if prev_actions[i][7] == 1:
+                    # POWERSLIDE_RISE_RATE = 5
+                    self.handbrakes[i] += 5 * self.time_interval
+                    self.handbrakes[i] = min(
+                        1, self.handbrakes[i])
+                else:
+                    # POWERSLIDE_FALL_RATE = 2
+                    self.handbrakes[i] -= 2 * self.time_interval
+                    self.handbrakes[i] = max(
+                        0, self.handbrakes[i])
+
+        # Save this info for next tick
+        if self.add_jumptime or self.add_fliptime:
+            self.on_grounds = {}
+            self.prev_prev_actions = {}
+            for i, player in enumerate(state.players):
+                self.on_grounds[i] = player.on_ground
+                self.prev_prev_actions[i] = copy.deepcopy(
+                    prev_actions[i])
+
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
         boost_locs = self.boost_locations
@@ -145,7 +290,8 @@ class CoyoteObsBuilder(ObsBuilder):
         for i in range(len(current_boosts)):
             if current_boosts[i] == self.boosts_availability[i]:
                 if self.boosts_availability[i] == 0:
-                    self.boost_timers[i] = max(0, self.boost_timers[i] - self.time_interval)
+                    self.boost_timers[i] = max(
+                        0, self.boost_timers[i] - self.time_interval)
             else:
                 if self.boosts_availability[i] == 0:
                     self.boosts_availability[i] = 1
@@ -164,7 +310,8 @@ class CoyoteObsBuilder(ObsBuilder):
             if dm == True:  # Demoed
                 prev_timer = self.demo_timers[cid]
                 if prev_timer > 0:
-                    self.demo_timers[cid] = max(0, prev_timer - self.time_interval)
+                    self.demo_timers[cid] = max(
+                        0, prev_timer - self.time_interval)
                 else:
                     self.demo_timers[cid] = 3
             else:  # Not demoed
@@ -172,10 +319,13 @@ class CoyoteObsBuilder(ObsBuilder):
 
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
-            ball.position[0] / self.POS_STD, ball.position[1] / self.POS_STD, ball.position[2] / self.POS_STD,
-            ball.linear_velocity[0] / self.VEL_STD, ball.linear_velocity[1] / self.VEL_STD,
+            ball.position[0] / self.POS_STD, ball.position[1] /
+            self.POS_STD, ball.position[2] / self.POS_STD,
+            ball.linear_velocity[0] /
+            self.VEL_STD, ball.linear_velocity[1] / self.VEL_STD,
             ball.linear_velocity[2] / self.VEL_STD,
-            ball.angular_velocity[0] / self.ANG_STD, ball.angular_velocity[1] / self.ANG_STD,
+            ball.angular_velocity[0] /
+            self.ANG_STD, ball.angular_velocity[1] / self.ANG_STD,
             ball.angular_velocity[2] / self.ANG_STD,
             math.sqrt(
                 ball.linear_velocity[0] ** 2 + ball.linear_velocity[1] ** 2 + ball.linear_velocity[2] ** 2) / 2300,
@@ -206,16 +356,21 @@ class CoyoteObsBuilder(ObsBuilder):
         pos_diff = ball_position - car_position
         vel_diff = ball_linear_velocity - car_linear_velocity
         return [
-            car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
+            car_position[0] / pos_std, car_position[1] /
+            pos_std, car_position[2] / pos_std,
             car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
             car_linear_velocity[2] / vel_std,
-            car_angular_velocity[0] / ang_std, car_angular_velocity[1] / ang_std,
+            car_angular_velocity[0] /
+            ang_std, car_angular_velocity[1] / ang_std,
             car_angular_velocity[2] / ang_std,
-            pos_diff[0] / pos_std, pos_diff[1] / pos_std, pos_diff[2] / pos_std,
-            vel_diff[0] / vel_std, vel_diff[1] / vel_std, vel_diff[2] / vel_std,
+            pos_diff[0] / pos_std, pos_diff[1] /
+            pos_std, pos_diff[2] / pos_std,
+            vel_diff[0] / vel_std, vel_diff[1] /
+            vel_std, vel_diff[2] / vel_std,
             fwd[0], fwd[1], fwd[2],
             up[0], up[1], up[2],
-            np.sqrt(car_linear_velocity[0] ** 2 + car_linear_velocity[1] ** 2 + car_linear_velocity[2] ** 2) / 2300,
+            np.sqrt(car_linear_velocity[0] ** 2 + car_linear_velocity[1]
+                    ** 2 + car_linear_velocity[2] ** 2) / 2300,
             boost,
             int(on_ground),
             int(has_flip),
@@ -232,16 +387,22 @@ class CoyoteObsBuilder(ObsBuilder):
         fwd = car.forward()
         up = car.up()
         p = [
-            car.position[0] / self.POS_STD, car.position[1] / self.POS_STD, car.position[2] / self.POS_STD,
-            car.linear_velocity[0] / self.VEL_STD, car.linear_velocity[1] / self.VEL_STD,
+            car.position[0] / self.POS_STD, car.position[1] /
+            self.POS_STD, car.position[2] / self.POS_STD,
+            car.linear_velocity[0] /
+            self.VEL_STD, car.linear_velocity[1] / self.VEL_STD,
             car.linear_velocity[2] / self.VEL_STD,
-            car.angular_velocity[0] / self.ANG_STD, car.angular_velocity[1] / self.ANG_STD,
+            car.angular_velocity[0] /
+            self.ANG_STD, car.angular_velocity[1] / self.ANG_STD,
             car.angular_velocity[2] / self.ANG_STD,
-            pos_diff[0] / self.POS_STD, pos_diff[1] / self.POS_STD, pos_diff[2] / self.POS_STD,
-            vel_diff[0] / self.VEL_STD, vel_diff[1] / self.VEL_STD, vel_diff[2] / self.VEL_STD,
+            pos_diff[0] / self.POS_STD, pos_diff[1] /
+            self.POS_STD, pos_diff[2] / self.POS_STD,
+            vel_diff[0] / self.VEL_STD, vel_diff[1] /
+            self.VEL_STD, vel_diff[2] / self.VEL_STD,
             fwd[0], fwd[1], fwd[2],
             up[0], up[1], up[2],
-            math.sqrt(car.linear_velocity[0] ** 2 + car.linear_velocity[1] ** 2 + car.linear_velocity[2] ** 2) / 2300,
+            math.sqrt(car.linear_velocity[0] ** 2 + car.linear_velocity[1]
+                      ** 2 + car.linear_velocity[2] ** 2) / 2300,
             player.boost_amount,
             int(player.on_ground),
             int(player.has_flip),
@@ -250,6 +411,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.demo_timers[player.car_id] / self.DEMO_TIMER_STD,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
         ]
+
         if self.stack_size != 0:
             if self.selector:
                 self.model_add_action_to_stack(prev_model_act, player.car_id)
@@ -289,15 +451,20 @@ class CoyoteObsBuilder(ObsBuilder):
         pos_diff = ball_position - car_position
         ball_car_vel = ball_linear_velocity - car_linear_velocity
         return [
-            car_position[0] / pos_std, car_position[1] / pos_std, car_position[2] / pos_std,
+            car_position[0] / pos_std, car_position[1] /
+            pos_std, car_position[2] / pos_std,
             car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
             car_linear_velocity[2] / vel_std,
-            car_angular_velocity[0] / ang_std, car_angular_velocity[1] / ang_std,
+            car_angular_velocity[0] /
+            ang_std, car_angular_velocity[1] / ang_std,
             car_angular_velocity[2] / ang_std,
             diff[0] / pos_std, diff[1] / pos_std, diff[2] / pos_std,
-            car_play_vel[0] / vel_std, car_play_vel[1] / vel_std, car_play_vel[2] / vel_std,
-            pos_diff[0] / pos_std, pos_diff[1] / pos_std, pos_diff[2] / pos_std,
-            ball_car_vel[0] / vel_std, ball_car_vel[1] / vel_std, ball_car_vel[2] / vel_std,
+            car_play_vel[0] / vel_std, car_play_vel[1] /
+            vel_std, car_play_vel[2] / vel_std,
+            pos_diff[0] / pos_std, pos_diff[1] /
+            pos_std, pos_diff[2] / pos_std,
+            ball_car_vel[0] / vel_std, ball_car_vel[1] /
+            vel_std, ball_car_vel[2] / vel_std,
             fwd[0], fwd[1], fwd[2],
             up[0], up[1], up[2],
             boost,
@@ -320,15 +487,22 @@ class CoyoteObsBuilder(ObsBuilder):
         fwd = car.forward()
         up = car.up()
         p = [
-            car.position[0] / self.POS_STD, car.position[1] / self.POS_STD, car.position[2] / self.POS_STD,
-            car.linear_velocity[0] / self.VEL_STD, car.linear_velocity[1] / self.VEL_STD,
+            car.position[0] / self.POS_STD, car.position[1] /
+            self.POS_STD, car.position[2] / self.POS_STD,
+            car.linear_velocity[0] /
+            self.VEL_STD, car.linear_velocity[1] / self.VEL_STD,
             car.linear_velocity[2] / self.VEL_STD,
-            car.angular_velocity[0] / self.ANG_STD, car.angular_velocity[1] / self.ANG_STD,
+            car.angular_velocity[0] /
+            self.ANG_STD, car.angular_velocity[1] / self.ANG_STD,
             car.angular_velocity[2] / self.ANG_STD,
-            diff[0] / self.POS_STD, diff[1] / self.POS_STD, diff[2] / self.POS_STD,
-            car_play_vel[0] / self.VEL_STD, car_play_vel[1] / self.VEL_STD, car_play_vel[2] / self.VEL_STD,
-            pos_diff[0] / self.POS_STD, pos_diff[1] / self.POS_STD, pos_diff[2] / self.POS_STD,
-            ball_car_vel[0] / self.VEL_STD, ball_car_vel[1] / self.VEL_STD, ball_car_vel[2] / self.VEL_STD,
+            diff[0] / self.POS_STD, diff[1] /
+            self.POS_STD, diff[2] / self.POS_STD,
+            car_play_vel[0] / self.VEL_STD, car_play_vel[1] /
+            self.VEL_STD, car_play_vel[2] / self.VEL_STD,
+            pos_diff[0] / self.POS_STD, pos_diff[1] /
+            self.POS_STD, pos_diff[2] / self.POS_STD,
+            ball_car_vel[0] / self.VEL_STD, ball_car_vel[1] /
+            self.VEL_STD, ball_car_vel[2] / self.VEL_STD,
             fwd[0], fwd[1], fwd[2],
             up[0], up[1], up[2],
             _car.boost_amount,
@@ -348,10 +522,13 @@ class CoyoteObsBuilder(ObsBuilder):
         boost_avail_list = self.inverted_boosts_availability if inverted else self.boosts_availability
         location = self.inverted_boost_locations[boost_index] if inverted else self.boost_locations[boost_index]
         dist = location - player_car.position
-        mag = math.sqrt(dist[0] ** 2 + dist[1] ** 2 + dist[2] ** 2) / self.POS_STD
-        val = 0 if not bool(boost_avail_list[boost_index]) else (1.0 if location[2] == 73.0 else 0.12)
+        mag = math.sqrt(dist[0] ** 2 + dist[1] ** 2 +
+                        dist[2] ** 2) / self.POS_STD
+        val = 0 if not bool(boost_avail_list[boost_index]) else (
+            1.0 if location[2] == 73.0 else 0.12)
         p = [
-            dist[0] / self.POS_STD, dist[1] / self.POS_STD, dist[2] / self.POS_STD,
+            dist[0] / self.POS_STD, dist[1] /
+            self.POS_STD, dist[2] / self.POS_STD,
             val,
             mag
         ]
@@ -370,7 +547,8 @@ class CoyoteObsBuilder(ObsBuilder):
 
         mag = np.empty(dist.shape[0])
         for i in range(dist.shape[0]):
-            mag[i] = np.sqrt(dist[i, 0] * dist[i, 0] + dist[i, 1] * dist[i, 1] + dist[i, 2] * dist[i, 2]) / pos_std
+            mag[i] = np.sqrt(dist[i, 0] * dist[i, 0] + dist[i, 1]
+                             * dist[i, 1] + dist[i, 2] * dist[i, 2]) / pos_std
         val = boost_avail_list * boost_values
         return np.column_stack((dist_std, val, mag)).flatten()
 
@@ -404,8 +582,10 @@ class CoyoteObsBuilder(ObsBuilder):
 
         if self.stack_size != 0:
             if self.selector:
-                self.model_add_action_to_stack(previous_model_action, player.car_id)
-                player_data.extend(list(self.model_action_stacks[player.car_id]))
+                self.model_add_action_to_stack(
+                    previous_model_action, player.car_id)
+                player_data.extend(
+                    list(self.model_action_stacks[player.car_id]))
 
             else:
                 self.add_action_to_stack(prev_act, player.car_id)
@@ -419,15 +599,18 @@ class CoyoteObsBuilder(ObsBuilder):
         opponents = []
         closest = 0
         if self.only_closest_opp:
-            tmp_oppo = [p for p in state.players if p.team_num != player.team_num]
+            tmp_oppo = [
+                p for p in state.players if p.team_num != player.team_num]
             tmp_oppo.sort(key=lambda p: np.linalg.norm(p.inverted_car_data.position if inverted else p.car_data.position
-                                                                                                     - player.inverted_car_data.position if inverted else
-            player.car_data.position))
+                                                       - player.inverted_car_data.position if inverted else
+                                                       player.car_data.position))
             closest = tmp_oppo[0].car_id
 
         if self.override_cars:
-            tmp_oppo = [p for p in state.players if p.team_num != player.team_num]
-            tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
+            tmp_oppo = [
+                p for p in state.players if p.team_num != player.team_num]
+            tmp_oppo.sort(key=lambda p: np.linalg.norm(
+                p.car_data.position - player.car_data.position))
             vec = player.car_data.position - ball.position
             vec = vec / np.linalg.norm(vec)
             # put car 400 behind player on vector from ball to player
@@ -572,16 +755,16 @@ class CoyoteObsBuilder(ObsBuilder):
                 obs.extend(self.blue_obs)
             # self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
             obs.extend(self.add_boosts_to_obs_njit(player.inverted_car_data.position if inverted else player.car_data.position,
-                                        self.inverted_boosts_availability if inverted else self.boosts_availability,
-                                        self.inverted_boost_locations if inverted else self.boost_locations,
-                                        self.boost_values, self.POS_STD))
+                                                   self.inverted_boosts_availability if inverted else self.boosts_availability,
+                                                   self.inverted_boost_locations if inverted else self.boost_locations,
+                                                   self.boost_values, self.POS_STD))
         if self.expanding and not self.embed_players:
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
             # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
-                    np.asarray([players_data])
+                np.asarray([players_data])
             # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
             # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:
@@ -611,7 +794,8 @@ class CoyoteStackedObsBuilder(CoyoteObsBuilder):
         super().reset(initial_state)
         self.action_stacks = {}
         for p in initial_state.players:
-            self.action_stacks[p.car_id] = np.concatenate([self.default_action] * self.stack_size)
+            self.action_stacks[p.car_id] = np.concatenate(
+                [self.default_action] * self.stack_size)
         self.action_parser.reset(initial_state)
 
 
