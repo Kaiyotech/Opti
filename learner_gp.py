@@ -93,7 +93,7 @@ if __name__ == "__main__":
                                                               team_spirit=1,
                                                               # cons_air_touches_w=2,
                                                               jump_touch_w=1.5,
-                                                              wall_touch_w=1,
+                                                              wall_touch_w=2,
                                                               touch_grass_w=0,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1674142738.090773/Opti_15020/checkpoint.pt")
+    alg.load("GP_saves/Opti_1674164458.825828/Opti_15700/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

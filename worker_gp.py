@@ -36,7 +36,7 @@ if __name__ == "__main__":
                         team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=1.5,
-                        wall_touch_w=1,
+                        wall_touch_w=2,
                         touch_grass_w=0,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
