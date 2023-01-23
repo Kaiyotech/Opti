@@ -238,6 +238,8 @@ class CoyoteObsBuilder(ObsBuilder):
                     self.has_doublejumpeds[i] = False
                     self.has_flippeds[i] = False
                     self.airtimes[i] = 0
+                    self.fliptimes[i] = 0
+                    self.flipdirs[i] = [0, 0]
                 else:
                     if self.has_jumpeds[i] and not self.is_jumpings[i]:
                         self.airtimes[i] += self.time_interval * 120
