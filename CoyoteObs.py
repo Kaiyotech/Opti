@@ -108,6 +108,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.fliptimes = [0] * 6
             self.has_flippeds = [False] * 6
             self.has_doublejumpeds = [False] * 6
+            self.flipdirs = [[0] * 2 for _ in range(6)]
         if add_airtime:
             self.airtimes = [0] * 6
         if add_jumptime or add_fliptime or add_airtime:
@@ -166,6 +167,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.fliptimes = [0] * 6
             self.has_flippeds = [False] * 6
             self.has_doublejumpeds = [False] * 6
+            self.flipdirs = [[0] * 2 for _ in range(6)]
 
         if self.add_airtime:
             self.airtimes = [0] * 6
@@ -251,6 +253,10 @@ class CoyoteObsBuilder(ObsBuilder):
                             if should_flip:
                                 self.fliptimes[i] = 0
                                 self.has_flippeds[i] = True
+                                flipdir = np.asarray(
+                                    [-prev_actions[i][2], prev_actions[i][3]+prev_actions[i][4]])
+                                self.flipdirs[i] = list(
+                                    flipdir / np.linalg.norm(flipdir))
                             else:
                                 self.has_doublejumpeds[i] = True
                 if self.has_flippeds[i]:
