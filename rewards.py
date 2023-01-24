@@ -381,9 +381,7 @@ class ZeroSumReward(RewardFunction):
                     if _i == i:
                         continue
                     dist = np.linalg.norm(player.car_data.position - state.players[_i].car_data.position)
-                    if dist < 650:
-                        player_self_rewards[i] += self.punish_bad_spacing_w
-                        break
+                    player_self_rewards[i] += self.punish_bad_spacing_w * max(((700 - dist) / 700), 0.0)
 
             # touch ceiling
             if player.on_ground and player.car_data.position[2] > CEILING_Z - 20:
