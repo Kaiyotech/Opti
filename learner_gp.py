@@ -54,10 +54,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.07"
+    run_id = "gp_run3.09"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.07",
+                        name="GP_Run3.09",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -95,6 +95,7 @@ if __name__ == "__main__":
                                                               jump_touch_w=1.5,
                                                               wall_touch_w=2,
                                                               touch_grass_w=0,
+                                                              punish_bad_spacing_w=-0.1,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -146,7 +147,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1674164458.825828/Opti_15700/checkpoint.pt")
+    alg.load("GP_saves/Opti_1674312981.1218257/Opti_16840/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

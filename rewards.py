@@ -101,7 +101,9 @@ class ZeroSumReward(RewardFunction):
             final_reward_ball_dist_w=0,
             final_reward_boost_w=0,
             punish_directional_changes=False,
+            punish_bad_spacing_w=0,
     ):
+        self.punish_bad_spacing_w = punish_bad_spacing_w
         self.forward_ctrl_w = forward_ctrl_w
         self.final_reward_boost_w = final_reward_boost_w
         self.punish_directional_changes = punish_directional_changes
@@ -365,6 +367,23 @@ class ZeroSumReward(RewardFunction):
                 np.linalg.norm(player.car_data.angular_velocity) < 5 and abs(last.car_data.roll()) > 3 and \
                     last.car_data.position[2] < 55:
                 player_self_rewards[i] += self.turtle_w
+
+            # spacing punishment
+            mid = len(player_rewards) // 2
+            if mid > 1:  # skip in 1v1
+                if i < mid:
+                    start = 0
+                    stop = mid
+                else:
+                    start = mid
+                    stop = mid * 2
+                for _i in range(start, stop):
+                    if _i == i:
+                        continue
+                    dist = np.linalg.norm(player.car_data.position - state.players[_i].car_data.position)
+                    if dist < 650:
+                        player_self_rewards[i] += self.punish_bad_spacing_w
+                        break
 
             # touch ceiling
             if player.on_ground and player.car_data.position[2] > CEILING_Z - 20:
