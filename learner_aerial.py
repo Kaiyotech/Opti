@@ -60,6 +60,7 @@ if __name__ == "__main__":
                         id=run_id,
                         config=config,
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
+                        resume=True,
                         )
     redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_aerial.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
