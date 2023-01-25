@@ -5,7 +5,8 @@ from rlgym_tools.extra_state_setters.replay_setter import ReplaySetter
 from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampleSetter
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 from rlgym.utils.state_setters.random_state import RandomState
-from mybots_statesets import GroundAirDribble, WallDribble, FlickSetter, RecoverySetter, HalfFlip
+from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, Wavedash, \
+    Curvedash, Chaindash, RandomEvenRecovery
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -203,30 +204,42 @@ class CoyoteSetter(DynamicGMSetter):
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
-                        (
-                            AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False,
-                                                       zero_ball_weight=0.8,
-                                                       zero_car_weight=0.2,
-                                                       rotate_car_weight=0.2,
-                                                       backward_car_weight=0.2,
-                                                       vel_div_weight=0.1,
-                                                       special_loc_weight=0.1,
-                                                       zero_boost_weight=0.2,
-                                                       ), False, True, False),
-                            AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False,
-                                                       zero_ball_weight=0.8,
-                                                       zero_car_weight=0.2,
-                                                       rotate_car_weight=0.2,
-                                                       backward_car_weight=0.2,
-                                                       vel_div_weight=0.1,
-                                                       special_loc_weight=0.1,
-                                                       zero_boost_weight=0.2,
-                                                       ), False, True, False),
-                            HalfFlip(),
-                        ),
-                        (0.75, 0.15, 0.1)
+                        (HalfFlip(zero_boost_weight=0.2),
+                         Curvedash(zero_boost_weight=0.2),
+                         RandomEvenRecovery(zero_boost_weight=0.2),
+                         Chaindash(zero_boost_weight=0.2),
+                         Walldash(zero_boost_weight=0.2),
+                         Wavedash(zero_boost_weight=0.2),
+                         ),
+                        (0.175, 0.175, 0.1, 0.2, 0.15, 0.2)
                     )
                 )
+                # self.setters.append(
+                #     WeightedSampleSetter(
+                #         (
+                #             AugmentSetter(ReplaySetter(low_recovery_replays[i], random_boost=False,
+                #                                        zero_ball_weight=0.8,
+                #                                        zero_car_weight=0.2,
+                #                                        rotate_car_weight=0.2,
+                #                                        backward_car_weight=0.2,
+                #                                        vel_div_weight=0.1,
+                #                                        special_loc_weight=0.1,
+                #                                        zero_boost_weight=0.2,
+                #                                        ), False, True, False),
+                #             AugmentSetter(ReplaySetter(high_recovery_replays[i], random_boost=False,
+                #                                        zero_ball_weight=0.8,
+                #                                        zero_car_weight=0.2,
+                #                                        rotate_car_weight=0.2,
+                #                                        backward_car_weight=0.2,
+                #                                        vel_div_weight=0.1,
+                #                                        special_loc_weight=0.1,
+                #                                        zero_boost_weight=0.2,
+                #                                        ), False, True, False),
+                #             HalfFlip(),
+                #         ),
+                #         (0.75, 0.15, 0.1)
+                #     )
+                # )
 
     def reset(self, state_wrapper: StateWrapper):
         # if self.end_object_choice is not None and self.end_object_choice == "random":
