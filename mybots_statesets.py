@@ -364,7 +364,7 @@ class HalfFlip(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
+            if car.id == 1:
                 car.set_pos(x, y + 2500)
                 car.set_rot(0, (np.pi * 0.5) + self.rng.uniform(-0.04, 0.04) * np.pi, 0)
                 car.set_lin_vel(0, 0, 0)
@@ -397,7 +397,7 @@ class Wavedash(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
+            if car.id == 1:
                 car.set_pos(x, y + 2500, self.rng.uniform(50, 350))
                 car.set_rot(0, -np.pi * 0.5, 0)
                 car.set_lin_vel(0, 0, 0)
@@ -434,8 +434,8 @@ class Chaindash(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
-                car.set_pos(x, y + 2500, self.rng.uniform(50, 350))
+            if car.id == 1:
+                car.set_pos(x, y - self.rng.uniform(3000, 5000), self.rng.uniform(50, 350))
                 car.set_rot(self.rng.uniform(-np.pi/8, np.pi/8),
                             self.rng.uniform(-np.pi, np.pi),
                             self.rng.uniform(-np.pi/8, np.pi/8))
@@ -475,7 +475,7 @@ class RandomEvenRecovery(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
+            if car.id == 1:
                 car.set_pos(self.rng.uniform(-1000, 1000), y + 2500, self.rng.uniform(50, 350))
                 car.set_rot(self.rng.uniform(-np.pi/2, np.pi/2),
                             self.rng.uniform(-np.pi, np.pi),
@@ -501,6 +501,7 @@ class Curvedash(StateSetter):
     def reset(self, state_wrapper: StateWrapper):
         assert len(state_wrapper.cars) < 3
         side_wall = self.rng.choice([True, False])
+        side_wall = True
         if side_wall:
             ball_x = 0
             ball_y = self.rng.uniform(-3900, 3900)
@@ -508,6 +509,7 @@ class Curvedash(StateSetter):
             ball_x = self.rng.uniform(-2800, 2800)
             ball_y = 0
         ball_y = 0
+        ball_x = 0
         state_wrapper.ball.set_pos(ball_x, ball_y, 94)
         state_wrapper.ball.set_lin_vel(0, 0, 0)
         state_wrapper.ball.set_ang_vel(0, 0, 0)
@@ -516,11 +518,11 @@ class Curvedash(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
+            if car.id == 1:
                 neg = self.rng.choice([-1, 1])
-                car.set_pos(neg * SIDE_WALL_X - 17 if side_wall else ball_x,
-                            ball_y if side_wall else neg * BACK_WALL_Y - 17,
-                            self.rng.uniform(150, 350))
+                car.set_pos(neg * SIDE_WALL_X - 17 if side_wall else ball_x + (neg * self.rng.uniform(900, 2900)),
+                            ball_y + (neg * self.rng.uniform(0, 2500)) if side_wall else neg * BACK_WALL_Y - 17,
+                            self.rng.uniform(600, 1000))
                 car.set_rot((-90 + self.rng.uniform(-30, 30)) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
                 car.set_lin_vel(0, 0, -self.rng.uniform(500, 1800))
                 car.set_ang_vel(0, 0, 0)
@@ -555,11 +557,11 @@ class Walldash(StateSetter):
         else:
             boost = 0
         for car in state_wrapper.cars:
-            if car.id == 0:
+            if car.id == 1:
                 neg = self.rng.choice([-1, 1])
                 car.set_pos(neg * SIDE_WALL_X - 17,
-                            ball_y - (ball_sign * self.rng.uniform(500, 3900)),
-                            self.rng.uniform(150, 1700))
+                            ball_y - (ball_sign * self.rng.uniform(1500, 5100)),
+                            self.rng.uniform(300, 1700))
                 car.set_rot(self.rng.uniform(-30, 30) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
                 car.set_lin_vel(0, ball_sign * self.rng.uniform(500, 1800), 0)
                 car.set_ang_vel(0, 0, 0)

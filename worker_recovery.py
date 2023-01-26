@@ -20,7 +20,7 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_pb_w=0,
+                        velocity_pb_w=0.02,
                         boost_gain_w=0.35,
                         punish_boost=True,
                         touch_ball_w=2,
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0
-    past_version_prob = 0.2
-    deterministic_streamer = True
+    past_version_prob = 0.1
+    deterministic_streamer = False
     force_old_deterministic = False
     gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     team_size = 3
@@ -71,13 +71,14 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="recovery", end_object_choice="random"),
+        state_setter=CoyoteSetter(mode="recovery"),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
                                      embed_players=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             TimeoutCondition(fps * 100),
+                             # TimeoutCondition(fps * 100),
+                             TimeoutCondition(fps * 2),
                              BallTouchedCondition(),
                              ],
         reward_function=rew,
