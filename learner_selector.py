@@ -157,7 +157,7 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    alg.load("Selector_saves/Opti_1673494421.0792859/Opti_2505/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1673548000.4596217/Opti_2525/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
