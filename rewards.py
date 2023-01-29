@@ -1,5 +1,5 @@
 from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
-    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y
+    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y, SIDE_WALL_X
 import numpy as np
 from rlgym.utils.gamestates import PlayerData, GameState
 from rlgym.utils.reward_functions import RewardFunction
@@ -263,11 +263,13 @@ class ZeroSumReward(RewardFunction):
                 max_height = CEILING_Z - BALL_RADIUS
                 rnge = max_height - min_height
                 if not player.on_ground and state.ball.position[2] > min_height:
+                    # x_from_wall = min(SIDE_WALL_X - BALL_RADIUS - abs(state.ball.position[0]), 20)
+                    # wall_multiplier = x_from_wall / 20
                     player_rewards[i] += self.jump_touch_w * (
                             (state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
 
                 # wall touch
-                min_height = 350
+                min_height = 500
                 if player.on_ground and state.ball.position[2] > min_height:
                     player_self_rewards[i] += self.wall_touch_w * (state.ball.position[2] - min_height) / rnge
 

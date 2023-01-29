@@ -28,7 +28,7 @@ if __name__ == "__main__":
                         # double_tap_w=5,
                         velocity_bg_w=0.075,
                         velocity_pb_w=0,
-                        boost_gain_w=0.3,
+                        boost_gain_w=0.45,
                         punish_boost=True,
                         # boost_spend_w=2.25,
                         demo_w=0.5,
@@ -36,7 +36,7 @@ if __name__ == "__main__":
                         team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=1.5,
-                        wall_touch_w=2,
+                        wall_touch_w=2.75,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
                         )
