@@ -16,6 +16,7 @@ import torch
 from numba import njit
 import scipy
 
+
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 
 
@@ -35,9 +36,10 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_fliptime=False,
                  add_airtime=False,
                  add_boosttime=False,
-                 dodge_deadzone=0.8
+                 dodge_deadzone=0.5
                  ):
         super().__init__()
+        assert add_boosttime == add_airtime == add_fliptime == add_jumptime == add_handbrake, "All timers must match"
         self.obs_info = obs_info
         # self.obs_output = obs_output
         self.override_cars = override_cars
@@ -100,6 +102,8 @@ class CoyoteObsBuilder(ObsBuilder):
         self.add_airtime = add_airtime
         self.add_handbrake = add_handbrake
         self.dodge_deadzone = dodge_deadzone
+        self.any_timers = add_boosttime or add_jumptime or add_fliptime or add_airtime or add_handbrake
+
         if add_boosttime:
             self.boosttimes = [0] * 6
         if add_jumptime:
@@ -158,34 +162,37 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.end_object_tracker = 0
 
         if self.add_boosttime:
-            self.boosttimes = [0] * 6
+            self.boosttimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
 
         if self.add_jumptime:
-            self.jumptimes = [0] * 6
+            self.jumptimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
 
         if self.add_fliptime:
-            self.fliptimes = [0] * 6
-            self.has_flippeds = [False] * 6
-            self.has_doublejumpeds = [False] * 6
-            self.flipdirs = [[0] * 2 for _ in range(6)]
+            self.fliptimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
+            self.has_flippeds = [False] * max(p.car_id for p in initial_state.players) + 1
+            self.has_doublejumpeds = [False] * max(p.car_id for p in initial_state.players) + 1
+            self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
 
         if self.add_airtime:
-            self.airtimes = [0] * 6
+            self.airtimes = [0] * max(p.car_id for p in initial_state.players) + 1
 
         if self.add_jumptime or self.add_fliptime or self.add_airtime:
-            self.on_grounds = [
-                player.on_ground for player in initial_state.players]
-            self.prev_prev_actions = [[0] * 8 for _ in range(6)]
-            self.is_jumpings = [False] * 6
-            self.has_jumpeds = [False] * 6
+            self.on_grounds = [[p.car_id, p.on_ground] for p in initial_state.players]
+            self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+            self.is_jumpings = [False] * max(p.car_id for p in initial_state.players) + 1
+            self.has_jumpeds = [False] * max(p.car_id for p in initial_state.players) + 1
 
         if self.add_handbrake:
-            self.handbrakes = [0] * 6
+            self.handbrakes = [0] * max(p.car_id for p in initial_state.players) + 1
 
     def pre_step(self, state: GameState, prev_actions=None):
+        prev_actions = prev_actions
         self.state = state
         # create player/team agnostic items (do these even exist?)
-        self._update_timers(state)
+        self._update_timers(state, prev_actions)
         # create team specific things
         self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
         self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
@@ -198,99 +205,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 for player in state.players:
                     player.boost_amount /= 1
 
-        if self.add_boosttime:
-            for i, _ in enumerate(state.players):
-                # if this player was not boosting last tick and their boosttime timer means they actually stopped boosting, set to 0
-                if prev_actions[i][6] == 0 and self.boosttimes[i] == 12:
-                    self.boosttimes[i] = 0
-                # otherwise, just increment the boosttime
-                else:
-                    self.boosttimes[i] += self.time_interval * 120
-                    self.boosttimes[i] = min(12, self.boosttimes[i])
-
-        # update jumptime
-        if self.add_jumptime or self.add_fliptime or self.add_airtime:
-            for i, _ in enumerate(state.players):
-                if self.on_grounds[i] and not self.is_jumpings[i]:
-                    self.has_jumpeds[i] = False
-
-                if self.is_jumpings[i]:
-                    # JUMP_MIN_TIME = 3 ticks
-                    # JUMP_MAX_TIME = 24 ticks
-                    if not ((self.jumptimes[i] < 3 or prev_actions[i][5] == 1) and self.jumptimes[i] < 24):
-                        self.is_jumpings[i] = self.jumptimes[i] < 3
-                elif prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0 and self.on_grounds[i]:
-                    self.is_jumpings[i] = True
-                    self.jumptimes[i] = 0
-
-                if self.is_jumpings[i]:
-                    self.has_jumpeds[i] = True
-                    self.jumptimes[i] += self.time_interval * 120
-                    self.jumptimes[i] = min(
-                        24, self.jumptimes[i])
-                else:
-                    self.jumptimes[i] = 0
-
-        # update airtime and fliptime
-        if self.add_fliptime or self.add_airtime:
-            for i, _ in enumerate(state.players):
-                if self.on_grounds[i]:
-                    self.has_doublejumpeds[i] = False
-                    self.has_flippeds[i] = False
-                    self.airtimes[i] = 0
-                    self.fliptimes[i] = 0
-                    self.flipdirs[i] = [0, 0]
-                else:
-                    if self.has_jumpeds[i] and not self.is_jumpings[i]:
-                        self.airtimes[i] += self.time_interval * 120
-                        # DOUBLEJUMP_MAX_DELAY = 150 ticks
-                        self.airtimes[i] = min(
-                            150, self.airtimes[i])
-                    else:
-                        self.airtimes[i] = 0
-                    if self.has_jumpeds[i] and (prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0) and self.airtimes[i] < 150:
-                        if not self.has_doublejumpeds[i] and not self.has_flippeds[i]:
-                            should_flip = max(max(abs(prev_actions[i][3]), abs(prev_actions[i][2])), abs(
-                                prev_actions[i][4])) >= self.dodge_deadzone
-                            if should_flip:
-                                self.fliptimes[i] = 0
-                                self.has_flippeds[i] = True
-                                flipdir = np.asarray(
-                                    [-prev_actions[i][2], prev_actions[i][3]+prev_actions[i][4]])
-                                self.flipdirs[i] = list(
-                                    flipdir / np.linalg.norm(flipdir))
-                            else:
-                                self.has_doublejumpeds[i] = True
-                if self.has_flippeds[i]:
-                    self.fliptimes[i] += self.time_interval * 120
-                    # FLIP_TORQUE_TIME = 78 ticks
-                    self.fliptimes[i] = min(
-                        78, self.fliptimes[i])
-
-        # update handbrake
-        if self.add_handbrake:
-            for i, _ in enumerate(state.players):
-                if prev_actions[i][7] == 1:
-                    # POWERSLIDE_RISE_RATE = 5
-                    self.handbrakes[i] += 5 * self.time_interval
-                    self.handbrakes[i] = min(
-                        1, self.handbrakes[i])
-                else:
-                    # POWERSLIDE_FALL_RATE = 2
-                    self.handbrakes[i] -= 2 * self.time_interval
-                    self.handbrakes[i] = max(
-                        0, self.handbrakes[i])
-
-        # Save this info for next tick
-        if self.add_jumptime or self.add_fliptime:
-            self.on_grounds = {}
-            self.prev_prev_actions = {}
-            for i, player in enumerate(state.players):
-                self.on_grounds[i] = player.on_ground
-                self.prev_prev_actions[i] = copy.deepcopy(
-                    prev_actions[i])
-
-    def _update_timers(self, state: GameState):
+    def _update_timers(self, state: GameState, prev_actions=None):
         current_boosts = state.boost_pads
         boost_locs = self.boost_locations
         demo_states = [[p.car_id, p.is_demoed] for p in state.players]
@@ -324,6 +239,103 @@ class CoyoteObsBuilder(ObsBuilder):
                     self.demo_timers[cid] = 3
             else:  # Not demoed
                 self.demo_timers[cid] = 0
+
+        if self.add_boosttime:
+            for i, _ in enumerate(state.players):
+                # if this player was not boosting last tick and their boosttime timer means they actually stopped boosting, set to 0
+                if prev_actions[i][6] == 0 and self.boosttimes[i] == 12:
+                    self.boosttimes[i] = 0
+                # otherwise, just increment the boosttime
+                else:
+                    self.boosttimes[i] += self.time_interval * 120
+                    self.boosttimes[i] = min(12, self.boosttimes[i])
+
+        # update jumptime
+        if self.add_jumptime or self.add_fliptime or self.add_airtime:
+            for i, _ in enumerate(state.players):
+                cid = state.players[i].car_id
+                if self.on_grounds[cid] and not self.is_jumpings[cid]:
+                    self.has_jumpeds[cid] = False
+
+                if self.is_jumpings[cid]:
+                    # JUMP_MIN_TIME = 3 ticks
+                    # JUMP_MAX_TIME = 24 ticks
+                    if not ((self.jumptimes[cid] < 3 or prev_actions[i][5] == 1) and self.jumptimes[cid] < 24):
+                        self.is_jumpings[cid] = self.jumptimes[cid] < 3
+                elif prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0 and self.on_grounds[cid]:
+                    self.is_jumpings[cid] = True
+                    self.jumptimes[cid] = 0
+
+                if self.is_jumpings[cid]:
+                    self.has_jumpeds[cid] = True
+                    self.jumptimes[cid] += self.time_interval * 120
+                    self.jumptimes[cid] = min(
+                        24, self.jumptimes[cid])
+                else:
+                    self.jumptimes[cid] = 0
+
+        # update airtime and fliptime
+        if self.add_fliptime or self.add_airtime:
+            for i, _ in enumerate(state.players):
+                cid = state.players[i].car_id
+                if self.on_grounds[cid]:
+                    self.has_doublejumpeds[cid] = False
+                    self.has_flippeds[cid] = False
+                    self.airtimes[cid] = 0
+                    self.fliptimes[cid] = 0
+                    self.flipdirs[cid] = [0, 0]
+                else:
+                    if self.has_jumpeds[cid] and not self.is_jumpings[cid]:
+                        self.airtimes[cid] += self.time_interval * 120
+                        # DOUBLEJUMP_MAX_DELAY = 150 ticks
+                        self.airtimes[cid] = min(
+                            150, self.airtimes[cid])
+                    else:
+                        self.airtimes[cid] = 0
+                    if self.has_jumpeds[cid] and (prev_actions[i][5] == 1 and self.prev_prev_actions[i][5] == 0) and \
+                            self.airtimes[cid] < 150:
+                        if not self.has_doublejumpeds[cid] and not self.has_flippeds[cid]:
+                            should_flip = max(max(abs(prev_actions[i][3]), abs(prev_actions[i][2])), abs(
+                                prev_actions[i][4])) >= self.dodge_deadzone
+                            if should_flip:
+                                self.fliptimes[cid] = 0
+                                self.has_flippeds[cid] = True
+                                flipdir = np.asarray(
+                                    [-prev_actions[i][2], prev_actions[i][3] + prev_actions[i][4]])
+                                self.flipdirs[cid] = list(
+                                    flipdir / np.linalg.norm(flipdir))
+                            else:
+                                self.has_doublejumpeds[cid] = True
+                if self.has_flippeds[cid]:
+                    self.fliptimes[cid] += self.time_interval * 120
+                    # FLIP_TORQUE_TIME = 78 ticks
+                    self.fliptimes[cid] = min(
+                        78, self.fliptimes[cid])
+
+        # update handbrake
+        if self.add_handbrake:
+            for i, _ in enumerate(state.players):
+                cid = state.players[i].car_id
+                if prev_actions[i][7] == 1:
+                    # POWERSLIDE_RISE_RATE = 5
+                    self.handbrakes[cid] += 5 * self.time_interval
+                    self.handbrakes[cid] = min(
+                        1, self.handbrakes[cid])
+                else:
+                    # POWERSLIDE_FALL_RATE = 2
+                    self.handbrakes[cid] -= 2 * self.time_interval
+                    self.handbrakes[cid] = max(
+                        0, self.handbrakes[cid])
+
+        # Save this info for next tick
+        if self.add_jumptime or self.add_fliptime:
+            self.on_grounds = {}
+            self.prev_prev_actions = {}
+            for i, player in enumerate(state.players):
+                cid = state.players[i].car_id
+                self.on_grounds[cid] = player.on_ground
+                self.prev_prev_actions[i] = copy.deepcopy(
+                    prev_actions[i])
 
     def create_ball_packet(self, ball: PhysicsObject):
         p = [
@@ -386,6 +398,63 @@ class CoyoteObsBuilder(ObsBuilder):
             int(has_jump),
             demo_timer,
             prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
+        ]
+
+    @staticmethod
+    @njit(cache=True)
+    def create_player_packet_timers_njit(car_position: np.ndarray,
+                                         car_linear_velocity: np.ndarray,
+                                         car_angular_velocity: np.ndarray,
+                                         fwd: np.ndarray,
+                                         up: np.ndarray,
+                                         boost: float,
+                                         on_ground: bool,
+                                         has_jump: bool,
+                                         has_flip: bool,
+                                         is_demoed: bool,
+                                         demo_timer: float,
+                                         pos_std: int,
+                                         vel_std: int,
+                                         ang_std: float,
+                                         ball_position: np.ndarray,
+                                         ball_linear_velocity: np.ndarray,
+                                         prev_act: np.ndarray,
+                                         boosttime: float,
+                                         jumptime: float,
+                                         airtime: float,
+                                         fliptime: float,
+                                         braketime: float,
+                                         ):
+        pos_diff = ball_position - car_position
+        vel_diff = ball_linear_velocity - car_linear_velocity
+        return [
+            car_position[0] / pos_std, car_position[1] /
+            pos_std, car_position[2] / pos_std,
+            car_linear_velocity[0] / vel_std, car_linear_velocity[1] / vel_std,
+            car_linear_velocity[2] / vel_std,
+            car_angular_velocity[0] /
+            ang_std, car_angular_velocity[1] / ang_std,
+            car_angular_velocity[2] / ang_std,
+            pos_diff[0] / pos_std, pos_diff[1] /
+            pos_std, pos_diff[2] / pos_std,
+            vel_diff[0] / vel_std, vel_diff[1] /
+            vel_std, vel_diff[2] / vel_std,
+            fwd[0], fwd[1], fwd[2],
+            up[0], up[1], up[2],
+            np.sqrt(car_linear_velocity[0] ** 2 + car_linear_velocity[1]
+                    ** 2 + car_linear_velocity[2] ** 2) / 2300,
+            boost,
+            int(on_ground),
+            int(has_flip),
+            int(is_demoed),
+            int(has_jump),
+            demo_timer,
+            prev_act[0], prev_act[1], prev_act[2], prev_act[3], prev_act[4], prev_act[5], prev_act[6], prev_act[7],
+            boosttime / 12,
+            jumptime / 24,
+            airtime / 150,
+            fliptime / 78,
+            braketime,
         ]
 
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
@@ -578,15 +647,30 @@ class CoyoteObsBuilder(ObsBuilder):
         # player_data = self.create_player_packet(player, player.inverted_car_data
         #             if inverted else player.car_data, ball, prev_act, previous_model_action)
         demo_timer = self.demo_timers[player.car_id] / self.DEMO_TIMER_STD
-        player_data = self.create_player_packet_njit(player.inverted_car_data.position if inverted else player.car_data.position,
-                                                     player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
-                                                     player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
-                                                     player.inverted_car_data.forward() if inverted else player.car_data.forward(),
-                                                     player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
-                                                     player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
-                                                     player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
-                                                     ball.position, ball.linear_velocity, prev_act
-                                                     )
+        cid = player.car_id
+        if self.any_timers:
+            player_data = self.create_player_packet_timers_njit(
+                player.inverted_car_data.position if inverted else player.car_data.position,
+                player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
+                player.inverted_car_data.forward() if inverted else player.car_data.forward(),
+                player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
+                player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
+                player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
+                ball.position, ball.linear_velocity, prev_act, self.boosttimes[cid],
+                self.jumptimes[cid], self.airtimes[cid], self.fliptimes[cid], self.handbrakes[cid],
+            )
+        else:
+            player_data = self.create_player_packet_njit(
+                player.inverted_car_data.position if inverted else player.car_data.position,
+                player.inverted_car_data.linear_velocity if inverted else player.car_data.linear_velocity,
+                player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
+                player.inverted_car_data.forward() if inverted else player.car_data.forward(),
+                player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
+                player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
+                player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
+                ball.position, ball.linear_velocity, prev_act,
+            )
 
         if self.stack_size != 0:
             if self.selector:
@@ -610,8 +694,8 @@ class CoyoteObsBuilder(ObsBuilder):
             tmp_oppo = [
                 p for p in state.players if p.team_num != player.team_num]
             tmp_oppo.sort(key=lambda p: np.linalg.norm(p.inverted_car_data.position if inverted else p.car_data.position
-                                                       - player.inverted_car_data.position if inverted else
-                                                       player.car_data.position))
+                                                                                                     - player.inverted_car_data.position if inverted else
+            player.car_data.position))
             closest = tmp_oppo[0].car_id
 
         if self.override_cars:
@@ -762,17 +846,18 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 obs.extend(self.blue_obs)
             # self.add_boosts_to_obs(obs, player.inverted_car_data if inverted else player.car_data, inverted)
-            obs.extend(self.add_boosts_to_obs_njit(player.inverted_car_data.position if inverted else player.car_data.position,
-                                                   self.inverted_boosts_availability if inverted else self.boosts_availability,
-                                                   self.inverted_boost_locations if inverted else self.boost_locations,
-                                                   self.boost_values, self.POS_STD))
+            obs.extend(
+                self.add_boosts_to_obs_njit(player.inverted_car_data.position if inverted else player.car_data.position,
+                                            self.inverted_boosts_availability if inverted else self.boosts_availability,
+                                            self.inverted_boost_locations if inverted else self.boost_locations,
+                                            self.boost_values, self.POS_STD))
         if self.expanding and not self.embed_players:
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
             # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0),\
-                np.asarray([players_data])
+            return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
+                   np.asarray([players_data])
             # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
             # return np.expand_dims(obs, 0), np.expand_dims(players_data, 0)
         elif not self.expanding and not self.embed_players:

@@ -80,7 +80,12 @@ if __name__ == "__main__":
                                         lambda: CoyoteObsBuilder(expanding=True,
                                                                  tick_skip=Constants_recovery.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
-                                                                 embed_players=False, ),
+                                                                 embed_players=False,
+                                                                 add_jumptime=True,
+                                                                 add_airtime=True,
+                                                                 add_fliptime=True,
+                                                                 add_boosttime=True,
+                                                                 add_handbrake=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0.02,
                                                               boost_gain_w=0.35,
@@ -128,11 +133,11 @@ if __name__ == "__main__":
     #
     # actor = DiscretePolicy(actor, (373,))
 
-    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    critic = Sequential(Linear(227, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 128), LeakyReLU(),
                         Linear(128, 1))
 
-    actor = Sequential(Linear(222, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+    actor = Sequential(Linear(227, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
                        Linear(128, 128), LeakyReLU(),
                        Linear(128, 373))
 
