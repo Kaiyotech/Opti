@@ -36,7 +36,7 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_fliptime=False,
                  add_airtime=False,
                  add_boosttime=False,
-                 dodge_deadzone=0.5
+                 dodge_deadzone=0.8
                  ):
         super().__init__()
         assert add_boosttime == add_airtime == add_fliptime == add_jumptime == add_handbrake, "All timers must match"
