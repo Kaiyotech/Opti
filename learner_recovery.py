@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run8.00"
+    run_id = "recovery_run9.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run8.00",
+                        name="Recovery_Run9.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                                                               punish_boost=True,
                                                               touch_ball_w=2,
                                                               boost_remain_touch_w=1.5,
-                                                              touch_grass_w=-0.01,
+                                                              touch_grass_w=-0.001,
                                                               supersonic_bonus_vpb_w=0,
                                                               zero_touch_grass_if_ss=False,
                                                               turtle_w=0,
