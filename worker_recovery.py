@@ -20,17 +20,18 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                        velocity_pb_w=0,
+                        velocity_pb_w=0.01,
                         boost_gain_w=0.35,
+                        boost_spend_w=3,
                         punish_boost=True,
                         touch_ball_w=2,
-                        boost_remain_touch_w=1.25,
+                        boost_remain_touch_w=1.5,
                         touch_grass_w=-0.01,
                         supersonic_bonus_vpb_w=0,
                         zero_touch_grass_if_ss=False,
                         turtle_w=0,
                         final_reward_ball_dist_w=1,
-                        final_reward_boost_w=0.1,
+                        final_reward_boost_w=0.2,
                         forward_ctrl_w=0,
                         )
     frame_skip = Constants_recovery.FRAME_SKIP
@@ -84,6 +85,7 @@ if __name__ == "__main__":
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),
+                             # TimeoutCondition(fps * 2),
                              BallTouchedCondition(),
                              ],
         reward_function=rew,

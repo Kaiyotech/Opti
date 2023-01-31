@@ -6,7 +6,7 @@ from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampl
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 from rlgym.utils.state_setters.random_state import RandomState
 from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, Wavedash, \
-    Curvedash, Chaindash, RandomEvenRecovery
+    Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -204,14 +204,15 @@ class CoyoteSetter(DynamicGMSetter):
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
-                        (HalfFlip(zero_boost_weight=0.2),
-                         Curvedash(zero_boost_weight=0.2),
-                         RandomEvenRecovery(zero_boost_weight=0.2),
-                         Chaindash(zero_boost_weight=0.2),
-                         Walldash(zero_boost_weight=0.2),
-                         Wavedash(zero_boost_weight=0.2),
+                        (HalfFlip(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         Curvedash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         RandomEvenRecovery(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         Chaindash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         Walldash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         Wavedash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
+                         RecoverySetter(zero_boost_weight=0.6, zero_ball_vel_weight=0.8)
                          ),
-                        (0.175, 0.175, 0.1, 0.2, 0.15, 0.2)
+                        (0.15, 0.2, 0.1, 0.175, 0.15, 0.175, 0.05)
                     )
                 )
                 # self.setters.append(
