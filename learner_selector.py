@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_6.07"
+    run_id = "selector_run_test1"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_6.07",
+                        name="Selector_Run_test1",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -123,13 +123,13 @@ if __name__ == "__main__":
 
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, action_size))
+                       Linear(128, action_size + 1))
 
     critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(action_size,))
+    actor = DiscretePolicy(actor, shape=(action_size, 1))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     print(f"Gamma is: {gamma}")
     count_parameters(agent)
 
-    action_dict = { i: k for i,k in enumerate(Constants_selector.SUB_MODEL_NAMES) }
+    action_dict = {i: k for i, k in enumerate(Constants_selector.SUB_MODEL_NAMES)}
     alg = PPO(
         rollout_gen,
         agent,
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    alg.load("Selector_saves/Opti_1673548000.4596217/Opti_2525/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1673548000.4596217/Opti_2525/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 

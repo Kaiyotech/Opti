@@ -57,7 +57,7 @@ class SubAgent:
         torch.set_num_threads(1)
         self.action_parser = parser
 
-    def act(self, state, deterministic=True):
+    def act(self, state, deterministic=True, zero_boost=False):
         with torch.no_grad():
             all_actions = []
             dist = get_action_distribution(state, self.actor)
@@ -73,4 +73,4 @@ class SubAgent:
                 padded_actions.append(action)
 
             all_actions = padded_actions
-        return self.action_parser.parse_actions(all_actions, state)
+        return self.action_parser.parse_actions(all_actions, state, zero_boost)
