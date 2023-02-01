@@ -204,13 +204,13 @@ class CoyoteSetter(DynamicGMSetter):
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
-                        (HalfFlip(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         Curvedash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         RandomEvenRecovery(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         Chaindash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         Walldash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         Wavedash(zero_boost_weight=0.6, zero_ball_vel_weight=0.8),
-                         RecoverySetter(zero_boost_weight=0.6, zero_ball_vel_weight=0.8)
+                        (HalfFlip(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         Curvedash(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         RandomEvenRecovery(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         Chaindash(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         Walldash(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         Wavedash(zero_boost_weight=0.7, zero_ball_vel_weight=0.8),
+                         RecoverySetter(zero_boost_weight=0.7, zero_ball_vel_weight=0.8)
                          ),
                         (0.15, 0.2, 0.1, 0.175, 0.15, 0.175, 0.05)
                     )

@@ -406,6 +406,8 @@ class CoyoteObsBuilder(ObsBuilder):
                                          airtime: float,
                                          fliptime: float,
                                          braketime: float,
+                                         flip_dir_1: float,
+                                         flip_dir_2: float,
                                          ):
         pos_diff = ball_position - car_position
         vel_diff = ball_linear_velocity - car_linear_velocity
@@ -437,6 +439,8 @@ class CoyoteObsBuilder(ObsBuilder):
             airtime / 150,
             fliptime / 78,
             braketime,
+            flip_dir_1,
+            flip_dir_2
         ]
 
     def create_player_packet(self, player: PlayerData, car: PhysicsObject, ball: PhysicsObject, prev_act: np.ndarray,
@@ -641,6 +645,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
                 ball.position, ball.linear_velocity, prev_act, self.boosttimes[cid],
                 self.jumptimes[cid], self.airtimes[cid], self.fliptimes[cid], self.handbrakes[cid],
+                self.flipdirs[cid][0], self.flipdirs[cid][1],
             )
         else:
             player_data = self.create_player_packet_njit(
