@@ -35,7 +35,8 @@ if __name__ == "__main__":
                         final_reward_boost_w=0.2,
                         forward_ctrl_w=0,
                         tick_skip=frame_skip,
-                        dash_w=1,
+                        curve_wave_zap_dash_w=1,
+                        walldash_w=0.075,
                         )
 
     fps = 120 // frame_skip
