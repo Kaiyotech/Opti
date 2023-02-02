@@ -88,9 +88,9 @@ class ZeroSumReward(RewardFunction):
             punish_action_change_w=0,
             decay_punish_action_change_w=0,
             # wave_zap_dash_w=0,
-            # curvedash_w=0,
-            # walldash_w=0,
-            dash_w=0,
+            curve_wave_zap_dash_w=0,
+            walldash_w=0,
+            # dash_w=0,
             dodge_deadzone=0.8,
             goal_speed_exp=1,  # fix this eventually
             min_goal_speed_rewarded_kph=0,
@@ -108,10 +108,9 @@ class ZeroSumReward(RewardFunction):
             punish_directional_changes=False,
             punish_bad_spacing_w=0,
     ):
-        # self.walldash_w = walldash_w
-        # self.curvedash_w = curvedash_w
-        # self.wave_zap_dash_w = wave_zap_dash_w
-        self.dash_w = dash_w
+        self.curve_wave_zap_dash_w = curve_wave_zap_dash_w
+        self.walldash_w = walldash_w
+        # self.dash_w = dash_w
         self.dodge_deadzone = dodge_deadzone
         self.punish_bad_spacing_w = punish_bad_spacing_w
         self.forward_ctrl_w = forward_ctrl_w
@@ -213,7 +212,7 @@ class ZeroSumReward(RewardFunction):
         self.time_interval = tick_skip / 120
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
-        if self.dash_w != 0:
+        if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
             self.jumptimes = [0] * 6
             self.fliptimes = [0] * 6
             self.has_flippeds = [False] * 6
@@ -571,7 +570,7 @@ class ZeroSumReward(RewardFunction):
             self.end_object_tracker = 0
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
-        if self.dash_w != 0:
+        if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
 
             self.jumptimes = np.zeros(
                 max(p.car_id for p in initial_state.players) + 1)
@@ -610,7 +609,7 @@ class ZeroSumReward(RewardFunction):
 
         # dash timers
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
-        if self.dash_w != 0:
+        if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
             rew += self._update_addl_timers(player, previous_action)
 
         self.n += 1
@@ -690,8 +689,8 @@ class ZeroSumReward(RewardFunction):
 
         if dash_timer > 0:
             dash_rew = (79 - dash_timer) / 40
-            # if player.car_data.position[2] > 300:  # wall curve about 300?
-            #     return dash_rew * self.walldash_w
-            # elif player.car_data.position[2] < 300
-            return dash_rew * self.dash_w
+            if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
+                return dash_rew * self.walldash_w
+            elif player.car_data.position[2] <= 100:
+                return dash_rew * self.curve_wave_zap_dash_w
         return 0.0

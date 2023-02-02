@@ -101,7 +101,8 @@ if __name__ == "__main__":
                                                               final_reward_boost_w=0.2,
                                                               forward_ctrl_w=0,
                                                               tick_skip=Constants_recovery.FRAME_SKIP,
-                                                              dash_w=1,
+                                                              curve_wave_zap_dash_w=1,
+                                                              walldash_w=0.075,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -169,7 +170,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("recovery_saves/Opti_1675263068.2163131/Opti_665/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675358986.0893235/Opti_20/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
