@@ -694,7 +694,7 @@ class ZeroSumReward(RewardFunction):
             pos_diff = state.ball.position - player.car_data.position
             norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
             norm_vel = vel / CAR_MAX_SPEED
-            speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.05)
+            speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
 
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
                 return dash_rew * self.walldash_w * speed_rew
