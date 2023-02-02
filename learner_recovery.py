@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run10.01"
+    run_id = "recovery_run10.02"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run10.01",
+                        name="Recovery_Run10.02",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,

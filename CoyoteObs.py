@@ -184,6 +184,9 @@ class CoyoteObsBuilder(ObsBuilder):
             self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
             self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
             self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            for p in initial_state.players:
+                self.on_grounds[p.car_id] = p.on_ground
 
         if self.add_handbrake:
             self.handbrakes = np.zeros(
@@ -279,6 +282,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.airtimes[cid] = 0
             self.fliptimes[cid] = 0
             self.flipdirs[cid] = [0, 0]
+            self.on_grounds[cid] = True
         else:
             if self.has_jumpeds[cid] and not self.is_jumpings[cid]:
                 self.airtimes[cid] += self.time_interval * 120
