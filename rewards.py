@@ -610,7 +610,7 @@ class ZeroSumReward(RewardFunction):
         # dash timers
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
-            rew += self._update_addl_timers(player, previous_action)
+            rew += self._update_addl_timers(player, state, previous_action)
 
         self.n += 1
         return float(rew)
@@ -623,7 +623,7 @@ class ZeroSumReward(RewardFunction):
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
         return reg_reward + dist_rew + boost_rew
 
-    def _update_addl_timers(self, player: PlayerData, prev_actions: np.ndarray) -> float:
+    def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray) -> float:
         cid = player.car_id
         dash_timer = -1
 
@@ -689,8 +689,15 @@ class ZeroSumReward(RewardFunction):
 
         if dash_timer > 0:
             dash_rew = (79 - dash_timer) / 40
+            # vel pb
+            vel = player.car_data.linear_velocity
+            pos_diff = state.ball.position - player.car_data.position
+            norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+            norm_vel = vel / CAR_MAX_SPEED
+            speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.05)
+
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
-                return dash_rew * self.walldash_w
+                return dash_rew * self.walldash_w * speed_rew
             elif player.car_data.position[2] <= 100:
-                return dash_rew * self.curve_wave_zap_dash_w
+                return dash_rew * self.curve_wave_zap_dash_w * speed_rew
         return 0.0
