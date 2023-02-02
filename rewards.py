@@ -48,6 +48,7 @@ class ZeroSumReward(RewardFunction):
     # (https://github.com/Rolv-Arild/Necto/blob/master/training/reward.py)
     def __init__(
             self,
+            tick_skip: int,
             goal_w=0,  # go to 10 after working
             concede_w=0,
             velocity_pb_w=0,  # 0.01,
@@ -86,10 +87,14 @@ class ZeroSumReward(RewardFunction):
             punish_car_ceiling_w=0,
             punish_action_change_w=0,
             decay_punish_action_change_w=0,
+            # wave_zap_dash_w=0,
+            # curvedash_w=0,
+            # walldash_w=0,
+            dash_w=0,
+            dodge_deadzone=0.8,
             goal_speed_exp=1,  # fix this eventually
             min_goal_speed_rewarded_kph=0,
             touch_height_exp=1,
-            tick_skip=FRAME_SKIP,
             team_spirit=0,  # increase as they learn
             zero_sum=True,
             prevent_chain_reset=False,
@@ -103,6 +108,11 @@ class ZeroSumReward(RewardFunction):
             punish_directional_changes=False,
             punish_bad_spacing_w=0,
     ):
+        # self.walldash_w = walldash_w
+        # self.curvedash_w = curvedash_w
+        # self.wave_zap_dash_w = wave_zap_dash_w
+        self.dash_w = dash_w
+        self.dodge_deadzone = dodge_deadzone
         self.punish_bad_spacing_w = punish_bad_spacing_w
         self.forward_ctrl_w = forward_ctrl_w
         self.final_reward_boost_w = final_reward_boost_w
@@ -200,6 +210,20 @@ class ZeroSumReward(RewardFunction):
         self.big_boost = np.asarray(self.big_boosts)
         self.big_boost[:, -1] = 18  # fix the boost height
         self.last_action_change = None
+        self.time_interval = tick_skip / 120
+
+        # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
+        if self.dash_w != 0:
+            self.jumptimes = [0] * 6
+            self.fliptimes = [0] * 6
+            self.has_flippeds = [False] * 6
+            self.has_doublejumpeds = [False] * 6
+            self.flipdirs = [[0] * 2 for _ in range(6)]
+            self.airtimes = [0] * 6
+            self.on_grounds = [False] * 6
+            self.prev_prev_actions = [[0] * 8 for _ in range(6)]
+            self.is_jumpings = [False] * 6
+            self.has_jumpeds = [False] * 6
 
     def pre_step(self, state: GameState):
         if state != self.current_state:
@@ -311,7 +335,7 @@ class ZeroSumReward(RewardFunction):
                     if self.exit_vel_angle_w != 0:
                         # 0.785 is 45
 
-                        dot_product = np.dot(self.launch_angle_car[i], self.exit_vel_save[i])
+                        dot_product = np.dot(self.launch_angle_car[i], self.exit_vel_save[i])  # noqa
                         angle = min(np.arccos(dot_product), 0.785) / 0.785
                         if np.isnan(angle):  # rare enough to just avoid in the data
                             angle = 0
@@ -546,6 +570,28 @@ class ZeroSumReward(RewardFunction):
         if self.end_object_tracker == 7:
             self.end_object_tracker = 0
 
+        # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
+        if self.dash_w != 0:
+
+            self.jumptimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
+
+            self.fliptimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
+            self.has_flippeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+
+            self.airtimes = np.zeros(
+                max(p.car_id for p in initial_state.players) + 1)
+
+            self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+            self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            for p in initial_state.players:
+                self.on_grounds[p.car_id] = p.on_ground
+
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]
 
@@ -561,6 +607,12 @@ class ZeroSumReward(RewardFunction):
         # forward on stick
         if previous_action[2] == 1 and previous_action[3] == 0 and not player.on_ground:
             rew += self.forward_ctrl_w
+
+        # dash timers
+        # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
+        if self.dash_w != 0:
+            rew += self._update_addl_timers(player, previous_action)
+
         self.n += 1
         return float(rew)
 
@@ -571,3 +623,75 @@ class ZeroSumReward(RewardFunction):
         dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
         return reg_reward + dist_rew + boost_rew
+
+    def _update_addl_timers(self, player: PlayerData, prev_actions: np.ndarray) -> float:
+        cid = player.car_id
+        dash_timer = -1
+
+        # update jumptime
+        if self.on_grounds[cid] and not self.is_jumpings[cid]:
+            self.has_jumpeds[cid] = False
+
+        if self.is_jumpings[cid]:
+            # JUMP_MIN_TIME = 3 ticks
+            # JUMP_MAX_TIME = 24 ticks
+            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
+                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+        elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
+            self.is_jumpings[cid] = True
+            self.jumptimes[cid] = 0
+
+        if self.is_jumpings[cid]:
+            self.has_jumpeds[cid] = True
+            self.jumptimes[cid] += self.time_interval * 120
+            self.jumptimes[cid] = min(
+                24, self.jumptimes[cid])
+        else:
+            self.jumptimes[cid] = 0
+
+        # update airtime and fliptime
+        # dashed (torque lasts 78 ticks)
+        if player.on_ground and self.has_flippeds[cid] and self.fliptimes[cid] < 78:
+            dash_timer = self.fliptimes[cid]
+        if player.on_ground:
+            self.has_doublejumpeds[cid] = False
+            self.has_flippeds[cid] = False
+            self.airtimes[cid] = 0
+            self.fliptimes[cid] = 0
+            self.flipdirs[cid] = [0, 0]
+            self.on_grounds[cid] = True
+        else:
+            if self.has_jumpeds[cid] and not self.is_jumpings[cid]:
+                self.airtimes[cid] += self.time_interval * 120
+                # DOUBLEJUMP_MAX_DELAY = 150 ticks
+                self.airtimes[cid] = min(
+                    150, self.airtimes[cid])
+            else:
+                self.airtimes[cid] = 0
+            if self.has_jumpeds[cid] and (prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0) and \
+                    self.airtimes[cid] < 150:
+                if not self.has_doublejumpeds[cid] and not self.has_flippeds[cid]:
+                    should_flip = max(max(abs(prev_actions[3]), abs(prev_actions[2])), abs(
+                        prev_actions[4])) >= self.dodge_deadzone
+                    if should_flip:
+                        self.fliptimes[cid] = 0
+                        self.has_flippeds[cid] = True
+                        flipdir = np.asarray(
+                            [-prev_actions[2], prev_actions[3] + prev_actions[4]])
+                        self.flipdirs[cid] = list(
+                            flipdir / np.linalg.norm(flipdir))
+                    else:
+                        self.has_doublejumpeds[cid] = True
+        if self.has_flippeds[cid]:
+            self.fliptimes[cid] += self.time_interval * 120
+            # FLIP_TORQUE_TIME = 78 ticks
+            self.fliptimes[cid] = min(
+                78, self.fliptimes[cid])
+
+        if dash_timer > 0:
+            dash_rew = (79 - dash_timer) / 40
+            # if player.car_data.position[2] > 300:  # wall curve about 300?
+            #     return dash_rew * self.walldash_w
+            # elif player.car_data.position[2] < 300
+            return dash_rew * self.dash_w
+        return 0.0

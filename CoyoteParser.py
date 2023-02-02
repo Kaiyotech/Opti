@@ -116,7 +116,7 @@ class CoyoteAction(ActionParser):
     def get_model_action_size(self) -> int:
         return len(self._lookup_table)
 
-    def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
+    def parse_actions(self, actions: Any, state: GameState, zero_boost: bool = False) -> np.ndarray:
         # hacky pass through to allow multiple types of agent actions while still parsing nectos
 
         # strip out fillers, pass through 8sets, get look up table values, recombine
@@ -139,7 +139,8 @@ class CoyoteAction(ActionParser):
                 parsed_actions.append(self._lookup_table[stripped_action])
             else:
                 parsed_actions.append(action)
-
+        if zero_boost:
+            parsed_actions[6] = 0
         return np.asarray(parsed_actions)
 
 
@@ -466,7 +467,7 @@ class SelectorParser(ActionParser):
         return actions
 
     def get_action_space(self) -> gym.spaces.Space:
-        return Discrete(len(self._lookup_table))
+        return Discrete(len(self._lookup_table), 1)
 
     @staticmethod
     def get_model_action_space() -> int:
@@ -485,7 +486,8 @@ class SelectorParser(ActionParser):
         for i, action in enumerate(actions):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
-            action = int(action)  # change ndarray [0.] to 0
+            zero_boost = bool(action[1])  # boost action 1 means no boost usage
+            action = int(action[0])  # change ndarray [0.] to 0
             player = state.players[i]
             # override state for recovery
 
@@ -495,7 +497,7 @@ class SelectorParser(ActionParser):
                 newstate = override_abs_state(player, state, action)
 
             obs = self.models[action][1].build_obs(
-                    player, newstate, self.prev_actions[i], obs_info=self.obs_info)
+                    player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost)
             parse_action = self.models[action][0].act(obs)[0]
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)

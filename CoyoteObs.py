@@ -184,6 +184,9 @@ class CoyoteObsBuilder(ObsBuilder):
             self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
             self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
             self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+            for p in initial_state.players:
+                self.on_grounds[p.car_id] = p.on_ground
 
         if self.add_handbrake:
             self.handbrakes = np.zeros(
@@ -279,6 +282,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.airtimes[cid] = 0
             self.fliptimes[cid] = 0
             self.flipdirs[cid] = [0, 0]
+            self.on_grounds[cid] = True
         else:
             if self.has_jumpeds[cid] and not self.is_jumpings[cid]:
                 self.airtimes[cid] += self.time_interval * 120
@@ -628,7 +632,8 @@ class CoyoteObsBuilder(ObsBuilder):
         #     obs.extend(self.create_boost_packet(player_car, i, inverted))
 
     def add_players_to_obs(self, obs: List, state: GameState, player: PlayerData, ball: PhysicsObject,
-                           prev_act: np.ndarray, inverted: bool, previous_model_action, zero_other_players: bool):
+                           prev_act: np.ndarray, inverted: bool, previous_model_action, zero_other_players: bool,
+                           zero_boost: bool):
 
         # player_data = self.create_player_packet(player, player.inverted_car_data
         #             if inverted else player.car_data, ball, prev_act, previous_model_action)
@@ -641,11 +646,11 @@ class CoyoteObsBuilder(ObsBuilder):
                 player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
                 player.inverted_car_data.forward() if inverted else player.car_data.forward(),
                 player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
-                player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
+                0 if zero_boost else player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
                 player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
                 ball.position, ball.linear_velocity, prev_act, self.boosttimes[cid],
                 self.jumptimes[cid], self.airtimes[cid], self.fliptimes[cid], self.handbrakes[cid],
-                self.flipdirs[cid][0], self.flipdirs[cid][1],
+                self.flipdirs[cid][0], self.flipdirs[cid][1]
             )
         else:
             player_data = self.create_player_packet_njit(
@@ -654,9 +659,9 @@ class CoyoteObsBuilder(ObsBuilder):
                 player.inverted_car_data.angular_velocity if inverted else player.car_data.angular_velocity,
                 player.inverted_car_data.forward() if inverted else player.car_data.forward(),
                 player.inverted_car_data.up() if inverted else player.inverted_car_data.up(),
-                player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
+                0 if zero_boost else player.boost_amount, player.on_ground, player.has_jump, player.has_flip,
                 player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
-                ball.position, ball.linear_velocity, prev_act,
+                ball.position, ball.linear_velocity, prev_act
             )
 
         if self.stack_size != 0:
@@ -792,7 +797,7 @@ class CoyoteObsBuilder(ObsBuilder):
         stack.insert(0, new_action[0] / self.model_action_size)
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
-                  previous_model_action: np.ndarray = None, obs_info=None) -> Any:
+                  previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False,) -> Any:
 
         if self.any_timers:
             self._update_addl_timers(player, state, previous_action)
@@ -823,7 +828,7 @@ class CoyoteObsBuilder(ObsBuilder):
         obs = []
         players_data = []
         player_dat = self.add_players_to_obs(players_data, state, player, ball, previous_action, inverted,
-                                             previous_model_action, self.zero_other_cars)
+                                             previous_model_action, self.zero_other_cars, zero_boost)
         obs.extend(player_dat)
         obs.extend(self.create_ball_packet(ball))
         if not self.embed_players and not self.remove_other_cars:
