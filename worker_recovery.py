@@ -25,7 +25,7 @@ if __name__ == "__main__":
                         boost_gain_w=0.35,
                         boost_spend_w=3,
                         punish_boost=True,
-                        touch_ball_w=2,
+                        touch_ball_w=2.5,
                         boost_remain_touch_w=1.5,
                         touch_grass_w=-0.005,
                         supersonic_bonus_vpb_w=0,
@@ -34,8 +34,8 @@ if __name__ == "__main__":
                         final_reward_ball_dist_w=1,
                         final_reward_boost_w=0.2,
                         forward_ctrl_w=0,
-                        tick_skip=frame_skip,
-                        curve_wave_zap_dash_w=1,
+                        tick_skip=Constants_recovery.FRAME_SKIP,
+                        curve_wave_zap_dash_w=0.5,
                         walldash_w=0.2,
                         )
 

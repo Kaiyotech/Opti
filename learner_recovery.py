@@ -91,7 +91,7 @@ if __name__ == "__main__":
                                                               boost_gain_w=0.35,
                                                               boost_spend_w=3,
                                                               punish_boost=True,
-                                                              touch_ball_w=2,
+                                                              touch_ball_w=2.5,
                                                               boost_remain_touch_w=1.5,
                                                               touch_grass_w=-0.005,
                                                               supersonic_bonus_vpb_w=0,
@@ -101,7 +101,7 @@ if __name__ == "__main__":
                                                               final_reward_boost_w=0.2,
                                                               forward_ctrl_w=0,
                                                               tick_skip=Constants_recovery.FRAME_SKIP,
-                                                              curve_wave_zap_dash_w=1,
+                                                              curve_wave_zap_dash_w=0.5,
                                                               walldash_w=0.2,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1675361862.1867542/Opti_65/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675367410.3648064/Opti_120/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
