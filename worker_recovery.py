@@ -19,6 +19,7 @@ import os
 set_num_threads(1)
 
 if __name__ == "__main__":
+    frame_skip = Constants_recovery.FRAME_SKIP
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                         velocity_pb_w=0.01,
                         boost_gain_w=0.35,
@@ -33,8 +34,10 @@ if __name__ == "__main__":
                         final_reward_ball_dist_w=1,
                         final_reward_boost_w=0.2,
                         forward_ctrl_w=0,
+                        tick_skip=frame_skip,
+                        dash_w=1,
                         )
-    frame_skip = Constants_recovery.FRAME_SKIP
+
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False

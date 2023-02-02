@@ -39,6 +39,7 @@ if __name__ == "__main__":
                         wall_touch_w=2.75,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
+                        tick_skip=4,  # this is wrong but it has to be done for now
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip

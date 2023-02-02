@@ -97,6 +97,7 @@ if __name__ == "__main__":
                                                               wall_touch_w=2.75,
                                                               touch_grass_w=0,
                                                               punish_bad_spacing_w=-0.1,
+                                                              tick_skip=Constants_gp.FRAME_SKIP,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
