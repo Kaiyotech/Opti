@@ -87,13 +87,13 @@ if __name__ == "__main__":
                                                                  add_boosttime=True,
                                                                  add_handbrake=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
-                                                              velocity_pb_w=0.01,
+                                                              velocity_pb_w=0,
                                                               boost_gain_w=0.35,
                                                               boost_spend_w=3,
                                                               punish_boost=True,
                                                               touch_ball_w=2.5,
                                                               boost_remain_touch_w=1.5,
-                                                              touch_grass_w=-0.005,
+                                                              touch_grass_w=0,
                                                               supersonic_bonus_vpb_w=0,
                                                               zero_touch_grass_if_ss=False,
                                                               turtle_w=0,
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("recovery_saves/Opti_1675367410.3648064/Opti_120/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675374276.947228/Opti_300/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
