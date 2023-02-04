@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run11.00"
+    run_id = "recovery_run11.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run11.00",
+                        name="Recovery_Run11.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -89,10 +89,10 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                                                               velocity_pb_w=0,
                                                               boost_gain_w=0.35,
-                                                              boost_spend_w=3,
+                                                              boost_spend_w=4,
                                                               punish_boost=True,
                                                               touch_ball_w=2.5,
-                                                              boost_remain_touch_w=1.5,
+                                                              boost_remain_touch_w=1.75,
                                                               touch_grass_w=0,
                                                               supersonic_bonus_vpb_w=0,
                                                               zero_touch_grass_if_ss=False,
@@ -101,8 +101,10 @@ if __name__ == "__main__":
                                                               final_reward_boost_w=0.2,
                                                               forward_ctrl_w=0,
                                                               tick_skip=Constants_recovery.FRAME_SKIP,
-                                                              curve_wave_zap_dash_w=0.5,
-                                                              walldash_w=0.2,
+                                                              curve_wave_zap_dash_w=0.1,
+                                                              walldash_w=0.35,
+                                                              jump_high_speed_w=-1,
+                                                              slow_w=-0.5,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -168,10 +170,13 @@ if __name__ == "__main__":
         logger=logger,
         zero_grads_with_none=True,
         disable_gradient_logging=True,
+
     )
 
-    alg.load("recovery_saves/Opti_1675374276.947228/Opti_300/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675399228.0879781/Opti_935/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
+
+    alg.freeze_policy(100)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_saves")

@@ -107,7 +107,11 @@ class ZeroSumReward(RewardFunction):
             final_reward_boost_w=0,
             punish_directional_changes=False,
             punish_bad_spacing_w=0,
+            jump_high_speed_w=0,
+            slow_w=0,
     ):
+        self.slow_w = slow_w
+        self.jump_high_speed_w = jump_high_speed_w
         self.curve_wave_zap_dash_w = curve_wave_zap_dash_w
         self.walldash_w = walldash_w
         # self.dash_w = dash_w
@@ -432,6 +436,10 @@ class ZeroSumReward(RewardFunction):
             if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                 player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
 
+            # slow
+            if self.slow_w != 0 and np.linalg.norm(vel) < 200 and np.linalg.norm(last.car_data.linear_velocity) < 200:
+                player_self_rewards[i] += self.slow_w
+
             # flip reset helper
             if self.flip_reset_help_w != 0:
                 upness = cosine_similarity(
@@ -611,6 +619,11 @@ class ZeroSumReward(RewardFunction):
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
             rew += self._update_addl_timers(player, state, previous_action)
+
+        # high speed jump
+        if self.jump_high_speed_w != 0 and previous_action[5] == 1:
+            if np.linalg.norm(player.car_data.linear_velocity) > (0.99 * CAR_MAX_SPEED):
+                rew += self.jump_high_speed_w
 
         self.n += 1
         return float(rew)
