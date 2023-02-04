@@ -23,10 +23,10 @@ if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_recovery.ZERO_SUM,
                         velocity_pb_w=0,
                         boost_gain_w=0.35,
-                        boost_spend_w=3,
+                        boost_spend_w=4,
                         punish_boost=True,
                         touch_ball_w=2.5,
-                        boost_remain_touch_w=1.5,
+                        boost_remain_touch_w=1.75,
                         touch_grass_w=0,
                         supersonic_bonus_vpb_w=0,
                         zero_touch_grass_if_ss=False,
@@ -35,8 +35,10 @@ if __name__ == "__main__":
                         final_reward_boost_w=0.2,
                         forward_ctrl_w=0,
                         tick_skip=Constants_recovery.FRAME_SKIP,
-                        curve_wave_zap_dash_w=0.5,
-                        walldash_w=0.2,
+                        curve_wave_zap_dash_w=0.1,
+                        walldash_w=0.35,
+                        jump_high_speed_w=-1,
+                        slow_w=-0.5,
                         )
 
     fps = 120 // frame_skip
