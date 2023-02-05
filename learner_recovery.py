@@ -43,8 +43,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=3e-5,
-        critic_lr=3e-5,
+        actor_lr=9e-5,
+        critic_lr=9e-5,
         n_steps=Constants_recovery.STEP_SIZE,
         batch_size=250_000,
         minibatch_size=125_000,
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "recovery_run11.02"
+    run_id = "recovery_run11.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Recovery_Run11.02",
+                        name="Recovery_Run11.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -173,10 +173,10 @@ if __name__ == "__main__":
 
     )
 
-    alg.load("recovery_saves/Opti_1675515807.4002893/Opti_1320/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675569709.6808238/Opti_1630/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
     alg.freeze_policy(20)
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_ball_saves")

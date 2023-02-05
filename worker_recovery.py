@@ -78,7 +78,7 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="recovery"),
+        state_setter=CoyoteSetter(mode="recovery_ball"),
         obs_builder=CoyoteObsBuilder(expanding=True,
                                      tick_skip=Constants_recovery.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,

@@ -318,7 +318,9 @@ class FlickSetter(StateSetter):
 
 
 class RecoverySetter(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight=zero_boost_weight
         self.zero_ball_vel_weight=zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -346,14 +348,18 @@ class RecoverySetter(StateSetter):
         loc = random_valid_loc()
         state_wrapper.ball.set_pos(x=loc[0], y=loc[1], z=94)
         if self.rng.uniform() > self.zero_ball_vel_weight:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-200, 200), self.rng.uniform(-200, 200), self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-200, 200),
+                                           self.ball_vel_mult * self.rng.uniform(-200, 200),
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         else:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         state_wrapper.ball.set_ang_vel(0, 0, 0)
 
 
 class HalfFlip(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.zero_boost_weight = zero_boost_weight
         self.rng = np.random.default_rng()
@@ -369,9 +375,9 @@ class HalfFlip(StateSetter):
         if zero_ball_vel:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
-                                           self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
@@ -395,7 +401,9 @@ class HalfFlip(StateSetter):
 
 
 class Wavedash(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -411,9 +419,9 @@ class Wavedash(StateSetter):
         if zero_ball_vel:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
-                                           self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
@@ -437,7 +445,9 @@ class Wavedash(StateSetter):
 
 
 class Chaindash(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -457,9 +467,9 @@ class Chaindash(StateSetter):
         if zero_ball_vel:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
-                                           self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
@@ -486,7 +496,9 @@ class Chaindash(StateSetter):
 
 
 class RandomEvenRecovery(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -510,9 +522,9 @@ class RandomEvenRecovery(StateSetter):
         if zero_ball_vel:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
-                                           self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-600, 600) if y == 0 and x != 0 else 0,
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if x == 0 and y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
@@ -538,7 +550,9 @@ class RandomEvenRecovery(StateSetter):
 
 
 class Curvedash(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -558,9 +572,9 @@ class Curvedash(StateSetter):
         if zero_ball_vel:
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
-            state_wrapper.ball.set_lin_vel(self.rng.uniform(-600, 600) if ball_y == 0 and ball_x != 0 else 0,
-                                           self.rng.uniform(-600, 600) if ball_x == 0 and ball_y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_lin_vel(self.ball_vel_mult * self.rng.uniform(-600, 600) if ball_y == 0 and ball_x != 0 else 0,
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if ball_x == 0 and ball_y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
@@ -585,7 +599,9 @@ class Curvedash(StateSetter):
 
 
 class Walldash(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+        self.ball_zero_z = ball_zero_z
+        self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
@@ -602,8 +618,8 @@ class Walldash(StateSetter):
             state_wrapper.ball.set_lin_vel(0, 0, 0)
         else:
             state_wrapper.ball.set_lin_vel(0,
-                                           self.rng.uniform(-600, 600) if ball_y != 0 else 0,
-                                           self.rng.uniform(-200, 200))
+                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if ball_y != 0 else 0,
+                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
         state_wrapper.ball.set_ang_vel(0, 0, 0)
         if ball_y >= 0:
             ball_sign = 1
