@@ -37,8 +37,8 @@ if __name__ == "__main__":
                         tick_skip=Constants_recovery.FRAME_SKIP,
                         curve_wave_zap_dash_w=0.15,
                         walldash_w=0.35,
-                        jump_high_speed_w=-0.02,
-                        slow_w=-0.01,
+                        jump_high_speed_w=-0.1,
+                        slow_w=-0.05,
                         )
 
     fps = 120 // frame_skip
