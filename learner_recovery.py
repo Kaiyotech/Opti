@@ -43,8 +43,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
-        critic_lr=1e-4,
+        actor_lr=3e-5,
+        critic_lr=3e-5,
         n_steps=Constants_recovery.STEP_SIZE,
         batch_size=250_000,
         minibatch_size=125_000,
@@ -103,8 +103,8 @@ if __name__ == "__main__":
                                                               tick_skip=Constants_recovery.FRAME_SKIP,
                                                               curve_wave_zap_dash_w=0.15,
                                                               walldash_w=0.35,
-                                                              jump_high_speed_w=-0.02,
-                                                              slow_w=-0.01,
+                                                              jump_high_speed_w=-0.1,
+                                                              slow_w=-0.05,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -173,10 +173,10 @@ if __name__ == "__main__":
 
     )
 
-    alg.load("recovery_saves/Opti_1675399228.0879781/Opti_935/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675515807.4002893/Opti_1320/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(60)
+    alg.freeze_policy(20)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_saves")
