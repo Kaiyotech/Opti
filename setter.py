@@ -224,13 +224,13 @@ class CoyoteSetter(DynamicGMSetter):
             for i in range(3):
                 self.setters.append(
                     WeightedSampleSetter(
-                        (HalfFlip(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         Curvedash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         RandomEvenRecovery(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         Chaindash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         Walldash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         Wavedash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5),
-                         RecoverySetter(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=6.5)
+                        (HalfFlip(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
+                         Curvedash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=2),
+                         RandomEvenRecovery(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
+                         Chaindash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
+                         Walldash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
+                         Wavedash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
+                         RecoverySetter(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3)
                          ),
                         (0, 0.15, 0.2, 0.2, 0.2, 0.1, 0.15)
                     )
