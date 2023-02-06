@@ -232,7 +232,7 @@ class CoyoteSetter(DynamicGMSetter):
                          Wavedash(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3),
                          RecoverySetter(zero_boost_weight=0.7, zero_ball_vel_weight=0, ball_zero_z=True, ball_vel_mult=3)
                          ),
-                        (0, 0.15, 0.2, 0.2, 0.2, 0.1, 0.15)
+                        (0, 0.075, 0.2, 0.4, 0.075, 0.1, 0.15)
                     )
                 )
                 # self.setters.append(
