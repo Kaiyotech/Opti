@@ -81,15 +81,15 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=WeightedSampleSetter(
                         (Walldash(location="back_boost", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=300, max_car_vel=700),
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
                          Walldash(location="45", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=300, max_car_vel=700),
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
                          Walldash(location="90", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=300, max_car_vel=700),
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
                          Walldash(location="same_z", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=300, max_car_vel=700),
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
                          Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=300, max_car_vel=700),
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
              ),
             # (0.4, 0.25, 0.1, 0.15, 0.1)
             (0.1, 0.45, 0.1, 0.35, 0)  # temp to learn walldash
