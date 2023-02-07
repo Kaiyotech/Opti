@@ -281,11 +281,15 @@ class PlayerTouchGround(TerminalCondition):
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
-        return True if a player reaches the objective
+        return True if a player touches ground, with hacks for end object allowances
         """
+        dist_limit_x = self.dist_from_side_wall
         if self.end_object is not None and self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
             return False
+        if self.end_object is not None and (abs(self.end_object.position[0]) == 3072 and abs(self.end_object.position[1]) == 4096):
+            dist_limit_x = 1300  # allow reaching boost
+
         for i, player in enumerate(current_state.players):
             if player.on_ground and player.car_data.position[2] < 30:
-                return (SIDE_WALL_X - abs(player.car_data.position[0])) > self.dist_from_side_wall
+                return (SIDE_WALL_X - abs(player.car_data.position[0])) > dist_limit_x
 

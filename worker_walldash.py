@@ -85,7 +85,8 @@ if __name__ == "__main__":
                          Walldash(location="same_z", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
                          Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
                          ),
-                        (0.4, 0.25, 0.1, 0.15, 0.1)
+                        # (0.4, 0.25, 0.1, 0.15, 0.1)
+                        (0.1, 0.45, 0.1, 0.35, 0)  # temp to learn walldash
                     ),
         obs_builder=CoyoteObsBuilder(expanding=True,
                                      tick_skip=Constants_walldash.FRAME_SKIP,
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                              # TimeoutCondition(fps * 2),
                              BallTouchedCondition(),
                              ReachObject(end_object=end_object),
-                             PlayerTouchGround(dist_from_side_wall=1300, end_object=end_object),
+                             PlayerTouchGround(dist_from_side_wall=250, end_object=end_object),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
