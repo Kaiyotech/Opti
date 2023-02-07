@@ -618,7 +618,13 @@ class Walldash(StateSetter):
     def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False,
                  end_object: PhysicsObject = None,
                  location: str = None,
+                 min_car_vel=0,
+                 max_car_vel=CAR_MAX_SPEED,
                  ):
+
+        self.max_car_vel = max_car_vel
+        self.min_car_vel = min_car_vel
+        assert self.min_car_vel < self.max_car_vel
         self.ball_zero_z = ball_zero_z
         self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
@@ -675,7 +681,7 @@ class Walldash(StateSetter):
                                 self.rng.uniform(300, 600),
                                 )
                     car.set_rot((90 + self.rng.uniform(-10, 10)) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
-                    car.set_lin_vel(0, 0, self.rng.uniform(0, 400))
+                    car.set_lin_vel(0, 0, self.rng.uniform(200, 600))
                     set_pos(end_object=self.end_object, x=x, y=y, z=1750)
                 elif self.location == "45":
                     object_y = self.rng.choice([-1, 1])
@@ -695,7 +701,8 @@ class Walldash(StateSetter):
                     car.set_rot(((180 if object_y == -1 else 0) + (45 * pitch_mod) + self.rng.uniform(-10, 10)) * DEG_TO_RAD,
                                 90 * DEG_TO_RAD,
                                 90 * DEG_TO_RAD * neg)
-                    car.set_lin_vel(0, 0, 0)
+                    speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
+                    car.set_lin_vel(0, speed * object_y * 0.707, speed * 0.707 * (1 if object_pos_45 else -1))
                     set_pos(end_object=self.end_object, x=x, y=y + (dist_yz * object_y * 0.707), z=z + (dist_yz * 0.5 * (1 if object_pos_45 else -1)))
                 elif self.location == "same_z":
                     object_y = self.rng.choice([-1, 1])
@@ -710,7 +717,8 @@ class Walldash(StateSetter):
                     car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-10, 10)) * DEG_TO_RAD,
                                 90 * DEG_TO_RAD,
                                 90 * DEG_TO_RAD * neg)
-                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
+                    car.set_lin_vel(0, speed * object_y, 0)
                     set_pos(end_object=self.end_object, x=x, y=y + (dist_yz * object_y), z=z)
                 elif self.location == "ball":
                     object_y = self.rng.choice([-1, 1])
@@ -740,7 +748,8 @@ class Walldash(StateSetter):
                     car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-30, 30)) * DEG_TO_RAD,
                                 90 * DEG_TO_RAD,
                                 90 * DEG_TO_RAD * neg)
-                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
+                    car.set_lin_vel(0, speed * object_y, 0)
                     set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
                 elif self.location == "back_boost":
                     object_y = self.rng.choice([-1, 1])
@@ -761,7 +770,8 @@ class Walldash(StateSetter):
                     car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-30, 30)) * DEG_TO_RAD,
                                 90 * DEG_TO_RAD,
                                 90 * DEG_TO_RAD * neg)
-                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
+                    car.set_lin_vel(0, speed * object_y, 0)
                     set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
             else:
                 values = mirror(state_wrapper.cars[0], ball_x, ball_y)

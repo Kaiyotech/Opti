@@ -7,7 +7,8 @@ from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     BallTouchedCondition
-from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch, AttackerTouchCloseGoal, ReachObject, PlayerTouchGround
+from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch, AttackerTouchCloseGoal, ReachObject, \
+    PlayerTouchGround
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
@@ -79,15 +80,20 @@ if __name__ == "__main__":
         spawn_opponents=False,
         team_size=team_size,
         state_setter=WeightedSampleSetter(
-                        (Walldash(location="back_boost", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
-                         Walldash(location="45", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
-                         Walldash(location="90", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
-                         Walldash(location="same_z", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
-                         Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7, ball_vel_mult=2.5),
-                         ),
-                        # (0.4, 0.25, 0.1, 0.15, 0.1)
-                        (0.1, 0.45, 0.1, 0.35, 0)  # temp to learn walldash
-                    ),
+                        (Walldash(location="back_boost", end_object=end_object, zero_boost_weight=0.7,
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                         Walldash(location="45", end_object=end_object, zero_boost_weight=0.7,
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                         Walldash(location="90", end_object=end_object, zero_boost_weight=0.7,
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                         Walldash(location="same_z", end_object=end_object, zero_boost_weight=0.7,
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                         Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7,
+                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+             ),
+            # (0.4, 0.25, 0.1, 0.15, 0.1)
+            (0.1, 0.45, 0.1, 0.35, 0)  # temp to learn walldash
+        ),
         obs_builder=CoyoteObsBuilder(expanding=True,
                                      tick_skip=Constants_walldash.FRAME_SKIP,
                                      team_size=3, extra_boost_info=False,
