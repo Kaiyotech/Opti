@@ -284,10 +284,12 @@ class PlayerTouchGround(TerminalCondition):
         return True if a player touches ground, with hacks for end object allowances
         """
         dist_limit_x = self.dist_from_side_wall
-        if self.end_object is not None and self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
-            return False
-        if self.end_object is not None and (abs(self.end_object.position[0]) == 3072 and abs(self.end_object.position[1]) == 4096):
+        if self.end_object is not None and (
+                abs(current_state.ball.position[0]) == 3072 and abs(current_state.ball.position[1]) == 4096):
             dist_limit_x = 1300  # allow reaching boost
+        elif self.end_object is not None and \
+                self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+            return False
 
         for i, player in enumerate(current_state.players):
             if player.on_ground and player.car_data.position[2] < 30:
