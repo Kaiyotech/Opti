@@ -8,9 +8,25 @@ import numpy as np
 from numpy import random as rand
 from rlgym.utils.state_setters.state_wrapper import CarWrapper
 from collections import namedtuple
+from rlgym.utils.gamestates.physics_object import PhysicsObject
 
 DEG_TO_RAD = 3.14159265 / 180
 
+
+def set_pos(end_object: PhysicsObject, x: float = None, y: float = None, z: float = None):
+    """
+    Sets position.
+    :param end_object: object to set
+    :param x: Float indicating x position value.
+    :param y: Float indicating y position value.
+    :param z: Float indicating z position value.
+    """
+    if x is not None:
+        end_object.position[0] = x
+    if y is not None:
+        end_object.position[1] = y
+    if z is not None:
+        end_object.position[2] = z
 
 def random_valid_loc() -> np.ndarray:
     rng = np.random.default_rng()
@@ -599,32 +615,43 @@ class Curvedash(StateSetter):
 
 
 class Walldash(StateSetter):
-    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False):
+    def __init__(self, zero_boost_weight=0, zero_ball_vel_weight=0, ball_vel_mult=1, ball_zero_z=False,
+                 end_object: PhysicsObject = None,
+                 location: str = None,
+                 ):
         self.ball_zero_z = ball_zero_z
         self.ball_vel_mult = ball_vel_mult
         self.zero_boost_weight = zero_boost_weight
         self.zero_ball_vel_weight = zero_ball_vel_weight
         self.rng = np.random.default_rng()
+        self.end_object = end_object
+        self.location = location
 
     def reset(self, state_wrapper: StateWrapper):
         assert len(state_wrapper.cars) < 3
         zero_ball_vel = True
-        if self.rng.uniform() > self.zero_ball_vel_weight:
-            zero_ball_vel = False
-        ball_x = 0
-        ball_y = self.rng.uniform(-2500, 2500)
-        state_wrapper.ball.set_pos(ball_x, ball_y, 94)
-        if zero_ball_vel:
-            state_wrapper.ball.set_lin_vel(0, 0, 0)
+        if self.location is None:
+            if self.rng.uniform() > self.zero_ball_vel_weight:
+                zero_ball_vel = False
+            ball_x = 0
+            ball_y = self.rng.uniform(-2500, 2500)
+            state_wrapper.ball.set_pos(ball_x, ball_y, 94)
+            if zero_ball_vel:
+                state_wrapper.ball.set_lin_vel(0, 0, 0)
+            else:
+                state_wrapper.ball.set_lin_vel(0,
+                                               self.ball_vel_mult * self.rng.uniform(-600, 600) if ball_y != 0 else 0,
+                                               0 if self.ball_zero_z else self.rng.uniform(-200, 200))
+            state_wrapper.ball.set_ang_vel(0, 0, 0)
+            if ball_y >= 0:
+                ball_sign = 1
+            else:
+                ball_sign = -1
         else:
-            state_wrapper.ball.set_lin_vel(0,
-                                           self.ball_vel_mult * self.rng.uniform(-600, 600) if ball_y != 0 else 0,
-                                           0 if self.zero_ball_vel_weight else self.rng.uniform(-200, 200))
-        state_wrapper.ball.set_ang_vel(0, 0, 0)
-        if ball_y >= 0:
+            ball_y = 0
+            ball_x = 0
             ball_sign = 1
-        else:
-            ball_sign = -1
+            state_wrapper.ball.set_pos(0, 0, 94)
         if self.rng.uniform() > self.zero_boost_weight:
             boost = self.rng.uniform(0, 1.000001)
         else:
@@ -632,12 +659,110 @@ class Walldash(StateSetter):
         for car in state_wrapper.cars:
             if car.id == 1:
                 neg = self.rng.choice([-1, 1])
-                car.set_pos(neg * SIDE_WALL_X - 17,
-                            ball_y - (ball_sign * self.rng.uniform(800, 1500)),
-                            self.rng.uniform(300, 1700))
-                car.set_rot(self.rng.uniform(-30, 30) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
-                car.set_lin_vel(0, ball_sign * self.rng.uniform(300, 1000), 0)
-                car.set_ang_vel(0, 0, 0)
+                if self.location is None:
+                    car.set_pos(neg * SIDE_WALL_X - 17,
+                                ball_y - (ball_sign * self.rng.uniform(800, 1500)),
+                                self.rng.uniform(300, 1700))
+                    car.set_rot(self.rng.uniform(-30, 30) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, ball_sign * self.rng.uniform(300, 1000), 0)
+                    car.set_ang_vel(0, 0, 0)
+                elif self.location == "90":
+                    #object_y = self.rng.choice([-1, 1])
+                    x = neg * SIDE_WALL_X - 17
+                    y = self.rng.uniform(-3500, 3500)
+                    car.set_pos(x,
+                                y,
+                                self.rng.uniform(300, 600),
+                                )
+                    car.set_rot((90 + self.rng.uniform(-10, 10)) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, 0, self.rng.uniform(0, 400))
+                    set_pos(end_object=self.end_object, x=x, y=y, z=1750)
+                elif self.location == "45":
+                    object_y = self.rng.choice([-1, 1])
+                    object_pos_45 = self.rng.choice([False, True])
+                    dist_yz = 2300
+                    x = neg * SIDE_WALL_X - 17
+                    y = self.rng.uniform(-3500, 2000) * object_y
+                    z = self.rng.uniform(300, 700) if object_pos_45 else self.rng.uniform(1350, 1750)
+                    car.set_pos(x,
+                                y,
+                                z,
+                                )
+                    if object_pos_45:
+                        pitch_mod = object_y
+                    else:
+                        pitch_mod = -object_y
+                    car.set_rot(((180 if object_y == -1 else 0) + (45 * pitch_mod) + self.rng.uniform(-10, 10)) * DEG_TO_RAD,
+                                90 * DEG_TO_RAD,
+                                90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, 0, 0)
+                    set_pos(end_object=self.end_object, x=x, y=y + (dist_yz * object_y * 0.707), z=z + (dist_yz * 0.5 * (1 if object_pos_45 else -1)))
+                elif self.location == "same_z":
+                    object_y = self.rng.choice([-1, 1])
+                    dist_yz = 2400
+                    x = neg * SIDE_WALL_X - 17
+                    y = self.rng.uniform(-3500, 1500) * object_y
+                    z = self.rng.uniform(300, 1600)
+                    car.set_pos(x,
+                                y,
+                                z,
+                                )
+                    car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-10, 10)) * DEG_TO_RAD,
+                                90 * DEG_TO_RAD,
+                                90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    set_pos(end_object=self.end_object, x=x, y=y + (dist_yz * object_y), z=z)
+                elif self.location == "ball":
+                    object_y = self.rng.choice([-1, 1])
+                    zero_ball_vel = True
+                    dist_yz = 2400
+                    if self.rng.uniform() > self.zero_ball_vel_weight:
+                        zero_ball_vel = False
+                    ball_x = neg * SIDE_WALL_X - BALL_RADIUS
+                    ball_y = self.rng.uniform(-1500, 3500) * object_y
+                    ball_z = self.rng.uniform(300, 1700)
+                    state_wrapper.ball.set_pos(ball_x, ball_y, ball_z)
+                    if zero_ball_vel:
+                        state_wrapper.ball.set_lin_vel(0, 0, 0)
+                    else:
+                        state_wrapper.ball.set_lin_vel(0,
+                                                       self.ball_vel_mult * self.rng.uniform(-600,
+                                                                                             600),
+                                                       self.ball_vel_mult * self.rng.uniform(-200, 200))
+                    state_wrapper.ball.set_ang_vel(0, 0, 0)
+                    x = neg * SIDE_WALL_X - 17
+                    y = ball_y - (dist_yz * object_y)
+                    z = self.rng.uniform(300, 1600)
+                    car.set_pos(x,
+                                y,
+                                z,
+                                )
+                    car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-30, 30)) * DEG_TO_RAD,
+                                90 * DEG_TO_RAD,
+                                90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
+                elif self.location == "back_boost":
+                    object_y = self.rng.choice([-1, 1])
+                    dist_yz = 3000
+                    ball_x = neg * 3072
+                    ball_y = 4096 * object_y
+                    ball_z = 17
+                    state_wrapper.ball.set_pos(ball_x, ball_y, ball_z)
+                    state_wrapper.ball.set_lin_vel(0, 0, 0)
+                    state_wrapper.ball.set_ang_vel(0, 0, 0)
+                    x = neg * SIDE_WALL_X - 17
+                    y = ball_y - (dist_yz * object_y)
+                    z = self.rng.uniform(300, 1600)
+                    car.set_pos(x,
+                                y,
+                                z,
+                                )
+                    car.set_rot(((180 if object_y == -1 else 0) + self.rng.uniform(-30, 30)) * DEG_TO_RAD,
+                                90 * DEG_TO_RAD,
+                                90 * DEG_TO_RAD * neg)
+                    car.set_lin_vel(0, self.rng.uniform(0, 200) * object_y, 0)
+                    set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
             else:
                 values = mirror(state_wrapper.cars[0], ball_x, ball_y)
                 car.set_pos(*values.pos)
