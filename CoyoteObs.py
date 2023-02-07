@@ -36,9 +36,11 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_fliptime=False,
                  add_airtime=False,
                  add_boosttime=False,
-                 dodge_deadzone=0.8
+                 dodge_deadzone=0.8,
+                 end_object: PhysicsObject = None,
                  ):
         super().__init__()
+        self.end_object = end_object
         assert add_boosttime == add_airtime == add_fliptime == add_jumptime == add_handbrake, "All timers must match"
         self.obs_info = obs_info
         # self.obs_output = obs_output
@@ -156,10 +158,6 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.env.update_settings(boost_consumption=1)
                 self.infinite_boost_episode = False
 
-        if self.end_object_choice is not None and self.end_object_choice == "random":
-            self.end_object_tracker += 1
-            if self.end_object_tracker == 7:
-                self.end_object_tracker = 0
 
         if self.add_boosttime:
             self.boosttimes = np.zeros(
@@ -207,6 +205,14 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 for player in state.players:
                     player.boost_amount /= 1
+
+        if self.end_object is not None and \
+                not (self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1):
+            state.ball.position[0] = self.end_object.position[0]
+            state.ball.position[1] = self.end_object.position[1]
+            state.ball.position[2] = self.end_object.position[2]
+            state.ball.linear_velocity = np.asarray([0, 0, 0])
+            state.ball.angular_velocity = np.asarray([0, 0, 0])
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
@@ -820,8 +826,11 @@ class CoyoteObsBuilder(ObsBuilder):
             inverted = False
             ball = state.ball
 
-        if self.end_object_choice is not None and self.end_object_tracker != 0:
-            ball.position = self.big_boosts[self.end_object_tracker - 1]
+        if self.end_object is not None and \
+                not (self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1):
+            ball.position[0] = self.end_object.position[0]
+            ball.position[1] = self.end_object.position[1]
+            ball.position[2] = self.end_object.position[2]
             ball.linear_velocity = np.asarray([0, 0, 0])
             ball.angular_velocity = np.asarray([0, 0, 0])
 

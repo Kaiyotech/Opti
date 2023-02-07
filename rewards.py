@@ -1,7 +1,7 @@
 from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
     CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y, SIDE_WALL_X
 import numpy as np
-from rlgym.utils.gamestates import PlayerData, GameState
+from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 from rlgym.utils.reward_functions import RewardFunction
 from rlgym.utils.math import cosine_similarity
 from Constants_kickoff import FRAME_SKIP
@@ -109,7 +109,17 @@ class ZeroSumReward(RewardFunction):
             punish_bad_spacing_w=0,
             jump_high_speed_w=0,
             slow_w=0,
+            end_object: PhysicsObject = None,
+            vp_end_object_w=0,
+            final_rwd_object_dist_w=0,
+            touch_object_w=0,
+            boost_remain_touch_object_w=0,
     ):
+        self.boost_remain_touch_object_w = boost_remain_touch_object_w
+        self.touch_object_w = touch_object_w
+        self.final_rwd_object_dist_w = final_rwd_object_dist_w
+        self.vp_end_object_w = vp_end_object_w
+        self.end_object = end_object
         self.slow_w = slow_w
         self.jump_high_speed_w = jump_high_speed_w
         self.curve_wave_zap_dash_w = curve_wave_zap_dash_w
@@ -127,7 +137,6 @@ class ZeroSumReward(RewardFunction):
         self.supersonic_bonus_vpb_w = supersonic_bonus_vpb_w
         self.boost_remain_touch_w = boost_remain_touch_w
         self.touch_ball_w = touch_ball_w
-        self.end_object_tracker = 0
         self.min_goal_speed_rewarded = min_goal_speed_rewarded_kph * 27.78  # to uu
         self.exit_vel_angle_w = exit_vel_angle_w
         self.quick_flip_reset_w = quick_flip_reset_w
@@ -423,22 +432,38 @@ class ZeroSumReward(RewardFunction):
                 player_rewards[i] += self.demo_w
 
             # vel pb
-            vel = player.car_data.linear_velocity
-            pos_diff = state.ball.position - player.car_data.position
-            norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
-            norm_vel = vel / CAR_MAX_SPEED
-            supersonic = False
-            if self.supersonic_bonus_vpb_w != 0 and np.linalg.norm(vel) >= 2190:
-                supersonic = True
-            speed_rew = float(np.dot(norm_pos_diff, norm_vel))
-            player_rewards[i] += self.velocity_pb_w * speed_rew
-            player_rewards[i] += supersonic * self.supersonic_bonus_vpb_w * speed_rew
-            if state.ball.position[0] != 0 and state.ball.position[1] != 0:
-                player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
+            if self.end_object is None or self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+                vel = player.car_data.linear_velocity
+                pos_diff = state.ball.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                supersonic = False
+                if self.supersonic_bonus_vpb_w != 0 and np.linalg.norm(vel) >= 2190:
+                    supersonic = True
+                speed_rew = float(np.dot(norm_pos_diff, norm_vel))
+                player_rewards[i] += self.velocity_pb_w * speed_rew
+                player_rewards[i] += supersonic * self.supersonic_bonus_vpb_w * speed_rew
+                if state.ball.position[0] != 0 and state.ball.position[1] != 0:
+                    player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
 
             # slow
+            vel = player.car_data.linear_velocity
             if self.slow_w != 0 and np.linalg.norm(vel) < 200 and np.linalg.norm(last.car_data.linear_velocity) < 200:
                 player_self_rewards[i] += self.slow_w
+
+            # vel player to end object
+            if self.end_object is not None and not (self.end_object.position[0] == self.end_object.position[1] ==
+                    self.end_object.position[2] == -1):
+                vel = player.car_data.linear_velocity
+                pos_diff = self.end_object.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = float(np.dot(norm_pos_diff, norm_vel))
+                player_rewards[i] += self.vp_end_object_w * speed_rew
+                # end object touch
+                if np.linalg.norm(pos_diff) < 15:
+                    player_rewards[i] += self.touch_object_w
+                    player_rewards[i] += player.boost_amount * self.boost_remain_touch_object_w
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
@@ -573,9 +598,6 @@ class ZeroSumReward(RewardFunction):
         self.exit_vel_save = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
         self.last_action_change = np.asarray([0] * len(initial_state.players))
-        self.end_object_tracker += 1
-        if self.end_object_tracker == 7:
-            self.end_object_tracker = 0
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
@@ -631,8 +653,13 @@ class ZeroSumReward(RewardFunction):
     def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         reg_reward = self.get_reward(player, state, previous_action, previous_model_action)
         # if dist is 0, reward is 1
-        dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
-        dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
+        if self.end_object is None or\
+                self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+            dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
+            dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
+        else:
+            dist = np.linalg.norm(player.car_data.position - self.end_object.position) - 15
+            dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_rwd_object_dist_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
         return reg_reward + dist_rew + boost_rew
 

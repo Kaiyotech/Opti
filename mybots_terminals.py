@@ -1,6 +1,7 @@
 from rlgym.utils.terminal_conditions import TerminalCondition
 from rlgym.utils.gamestates import GameState
-from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z, BOOST_LOCATIONS
+from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y, CEILING_Z, BOOST_LOCATIONS, SIDE_WALL_X
+from rlgym.utils.gamestates.physics_object import PhysicsObject
 import numpy as np
 
 
@@ -251,28 +252,37 @@ class ReachObject(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
-    def __init__(self):
+    def __init__(self, end_object: PhysicsObject):
         super().__init__()
-        self.end_object_tracker = 0
-        self.big_boosts = [BOOST_LOCATIONS[i] for i in [3, 4, 15, 18, 29, 30]]
-        self.big_boosts = np.asarray(self.big_boosts)
-        self.big_boosts[:, -1] = 18  # fix the boost height
+        self.end_object = end_object
 
     def reset(self, initial_state: GameState):
-        self.end_object_tracker += 1
-        if self.end_object_tracker == 7:
-            self.end_object_tracker = 0
+        pass
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
         return True if a player reaches the objective
         """
         for i, player in enumerate(current_state.players):
-            if self.end_object_tracker == 0:
-                if player.ball_touched:
-                    return True
-            else:
-                end_objective = self.big_boosts[self.end_object_tracker - 1]
-                pos_diff = end_objective - player.car_data.position
-                if np.linalg.norm(pos_diff) < 15:  # reached the big boost
-                    return True
+            pos_diff = self.end_object.position - player.car_data.position
+            if np.linalg.norm(pos_diff) < 15:  # reached the location
+                return True
+
+
+class PlayerTouchGround(TerminalCondition):
+
+    def __init__(self, dist_from_side_wall: int = -50):
+        super().__init__()
+        self.dist_from_side_wall = dist_from_side_wall
+
+    def reset(self, initial_state: GameState):
+        pass
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        """
+        return True if a player reaches the objective
+        """
+        for i, player in enumerate(current_state.players):
+            if player.on_ground and player.car_data.position[2] < 30:
+                return (SIDE_WALL_X - abs(player.car_data.position[0])) > self.dist_from_side_wall
+
