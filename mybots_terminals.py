@@ -271,8 +271,9 @@ class ReachObject(TerminalCondition):
 
 class PlayerTouchGround(TerminalCondition):
 
-    def __init__(self, dist_from_side_wall: int = -50):
+    def __init__(self, dist_from_side_wall: int = -50, end_object: PhysicsObject = None):
         super().__init__()
+        self.end_object = end_object
         self.dist_from_side_wall = dist_from_side_wall
 
     def reset(self, initial_state: GameState):
@@ -282,6 +283,8 @@ class PlayerTouchGround(TerminalCondition):
         """
         return True if a player reaches the objective
         """
+        if self.end_object is not None and self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+            return False
         for i, player in enumerate(current_state.players):
             if player.on_ground and player.car_data.position[2] < 30:
                 return (SIDE_WALL_X - abs(player.car_data.position[0])) > self.dist_from_side_wall
