@@ -26,6 +26,7 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
 from my_stattrackers import GoalSpeedTop5perc
+from rlgym.utils.gamestates.physics_object import PhysicsObject
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -55,10 +56,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "walldash_run1.00"
+    run_id = "walldash_run1.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Walldash_Run1.00",
+                        name="Walldash_Run1.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -71,10 +72,11 @@ if __name__ == "__main__":
     redis.delete("worker-ids")
 
     stat_trackers = [
-        Speed(normalize=True), Touch(), EpisodeLength(), Boost(),
+        Speed(normalize=True), EpisodeLength(), Boost(),
         DistToBall(), CarOnGround(),
     ]
     state = random.getstate()
+    end_object = PhysicsObject()
     rollout_gen = RedisRolloutGenerator("Walldash",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True,
@@ -88,15 +90,20 @@ if __name__ == "__main__":
                                                                  add_handbrake=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_walldash.ZERO_SUM,
                                                               velocity_pb_w=0.02,
+                                                              vp_end_object_w=0.02,
                                                               boost_gain_w=0.35,
                                                               boost_spend_w=4,
                                                               punish_boost=True,
+                                                              touch_object_w=2.5,
                                                               touch_ball_w=2.5,
                                                               boost_remain_touch_w=2,
+                                                              boost_remain_touch_object_w=2,
                                                               final_reward_ball_dist_w=1,
+                                                              final_rwd_object_dist_w=1,
                                                               final_reward_boost_w=0.3,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
                                                               walldash_w=0.35,
+                                                              end_object=end_object,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -142,10 +149,10 @@ if __name__ == "__main__":
 
     )
 
-    alg.load("recovery_saves/Opti_1675569709.6808238/Opti_1630/checkpoint.pt")
+    # alg.load("recovery_saves/Opti_1675569709.6808238/Opti_1630/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
     # alg.freeze_policy(20)
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_ball_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="walldash_saves")
