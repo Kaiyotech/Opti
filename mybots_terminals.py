@@ -252,12 +252,13 @@ class ReachObject(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
-    def __init__(self, end_object: PhysicsObject):
+    def __init__(self, end_object: PhysicsObject, end_touched: dict):
         super().__init__()
+        self.end_touched = end_touched
         self.end_object = end_object
 
     def reset(self, initial_state: GameState):
-        pass
+        self.end_touched["Touched"] = False
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
@@ -265,7 +266,8 @@ class ReachObject(TerminalCondition):
         """
         for i, player in enumerate(current_state.players):
             pos_diff = self.end_object.position - player.car_data.position
-            if np.linalg.norm(pos_diff) < 75:  # reached the location
+            if np.linalg.norm(pos_diff) < 160:  # reached the location
+                self.end_touched["Touched"] = True
                 return True
 
 

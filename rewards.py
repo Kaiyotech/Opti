@@ -114,7 +114,9 @@ class ZeroSumReward(RewardFunction):
             final_rwd_object_dist_w=0,
             touch_object_w=0,
             boost_remain_touch_object_w=0,
+            end_touched: dict = None,
     ):
+        self.end_touched = end_touched
         self.boost_remain_touch_object_w = boost_remain_touch_object_w
         self.touch_object_w = touch_object_w
         self.final_rwd_object_dist_w = final_rwd_object_dist_w
@@ -660,7 +662,7 @@ class ZeroSumReward(RewardFunction):
             dist = np.linalg.norm(player.car_data.position - self.end_object.position) - 15
             dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_rwd_object_dist_w
             # end object touch
-            if dist < 100:
+            if self.end_touched["Touched"]:
                 touch_rew = self.touch_object_w
                 boost_touch_rew = player.boost_amount * self.boost_remain_touch_object_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
