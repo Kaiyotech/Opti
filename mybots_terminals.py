@@ -290,8 +290,9 @@ class ReachObject(TerminalCondition):
 
 class PlayerTouchGround(TerminalCondition):
 
-    def __init__(self, dist_from_side_wall: int = -50, end_object: PhysicsObject = None):
+    def __init__(self, dist_from_side_wall: int = -50, end_object: PhysicsObject = None, allow_boost_full_ground=False):
         super().__init__()
+        self.allow_boost_full_ground = allow_boost_full_ground
         self.end_object = end_object
         self.dist_from_side_wall = dist_from_side_wall
 
@@ -305,6 +306,8 @@ class PlayerTouchGround(TerminalCondition):
         dist_limit_x = self.dist_from_side_wall
         if self.end_object is not None and (
                 abs(current_state.ball.position[0]) == 3072 and abs(current_state.ball.position[1]) == 4096):
+            if self.allow_boost_full_ground:
+                return False
             dist_limit_x = 1300  # allow reaching boost
         elif self.end_object is not None and \
                 self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
