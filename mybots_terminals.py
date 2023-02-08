@@ -292,6 +292,6 @@ class PlayerTouchGround(TerminalCondition):
             return False
 
         for i, player in enumerate(current_state.players):
-            if player.on_ground and player.car_data.position[2] < 30:
+            if player.on_ground and player.car_data.position[2] < 22:
                 return (SIDE_WALL_X - abs(player.car_data.position[0])) > dist_limit_x
 

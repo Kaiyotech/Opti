@@ -56,10 +56,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "walldash_run2.00"
+    run_id = "walldash_run4.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Walldash_Run2.00",
+                        name="Walldash_Run4.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     ]
     state = random.getstate()
     end_object = PhysicsObject()
+    end_object = None  # TODO fix this
     rollout_gen = RedisRolloutGenerator("Walldash",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True,
@@ -90,14 +91,14 @@ if __name__ == "__main__":
                                                                  add_handbrake=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_walldash.ZERO_SUM,
                                                               velocity_pb_w=0.02,
-                                                              vp_end_object_w=0.02,
+                                                              # vp_end_object_w=0.02,
                                                               boost_gain_w=0.35,
                                                               boost_spend_w=4,
                                                               punish_boost=True,
-                                                              touch_object_w=3.5,
+                                                              # touch_object_w=3.5,
                                                               touch_ball_w=3.5,
                                                               boost_remain_touch_w=2,
-                                                              boost_remain_touch_object_w=2,
+                                                              # boost_remain_touch_object_w=2,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
                                                               walldash_w=1,
                                                               end_object=end_object,

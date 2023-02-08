@@ -607,7 +607,7 @@ class Curvedash(StateSetter):
         for car in state_wrapper.cars:
             if car.id == 1:
                 neg = self.rng.choice([-1, 1])
-                car.set_pos(neg * SIDE_WALL_X - 17,
+                car.set_pos(neg * (SIDE_WALL_X - 17),
                             ball_y - (neg * self.rng.uniform(0, 1000)),
                             self.rng.uniform(600, 1000))
                 car.set_rot((-90 + self.rng.uniform(-30, 30)) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
@@ -674,7 +674,7 @@ class Walldash(StateSetter):
             if car.id == 1:
                 neg = self.rng.choice([-1, 1])
                 if self.location is None:
-                    car.set_pos(neg * SIDE_WALL_X - 17,
+                    car.set_pos(neg * (SIDE_WALL_X - 17),
                                 ball_y - (ball_sign * self.rng.uniform(800, 1500)),
                                 self.rng.uniform(300, 1700))
                     car.set_rot(self.rng.uniform(-30, 30) * DEG_TO_RAD, 90 * DEG_TO_RAD, 90 * DEG_TO_RAD * neg)
@@ -682,7 +682,7 @@ class Walldash(StateSetter):
                     car.set_ang_vel(0, 0, 0)
                 elif self.location == "90":
                     #object_y = self.rng.choice([-1, 1])
-                    x = neg * SIDE_WALL_X - 17
+                    x = neg * (SIDE_WALL_X - 17)
                     y = self.rng.uniform(-3500, 3500)
                     car.set_pos(x,
                                 y,
@@ -695,7 +695,7 @@ class Walldash(StateSetter):
                     object_y = self.rng.choice([-1, 1])
                     object_pos_45 = self.rng.choice([False, True])
                     dist_yz = 2300
-                    x = neg * SIDE_WALL_X - 17
+                    x = neg * (SIDE_WALL_X - 17)
                     y = self.rng.uniform(-3500, 2000) * object_y
                     z = self.rng.uniform(300, 700) if object_pos_45 else self.rng.uniform(1350, 1750)
                     car.set_pos(x,
@@ -715,7 +715,7 @@ class Walldash(StateSetter):
                 elif self.location == "same_z":
                     object_y = self.rng.choice([-1, 1])
                     dist_yz = 2400
-                    x = neg * SIDE_WALL_X - 17
+                    x = neg * (SIDE_WALL_X - 17)
                     y = self.rng.uniform(-3500, 1500) * object_y
                     z = self.rng.uniform(300, 1600)
                     car.set_pos(x,
@@ -734,7 +734,7 @@ class Walldash(StateSetter):
                     dist_yz = 2400
                     if self.rng.uniform() > self.zero_ball_vel_weight:
                         zero_ball_vel = False
-                    ball_x = neg * SIDE_WALL_X - BALL_RADIUS
+                    ball_x = neg * (SIDE_WALL_X - BALL_RADIUS)
                     ball_y = self.rng.uniform(-1500, 3500) * object_y
                     ball_z = self.rng.uniform(300, 1700)
                     state_wrapper.ball.set_pos(ball_x, ball_y, ball_z)
@@ -746,7 +746,7 @@ class Walldash(StateSetter):
                                                                                              600),
                                                        self.ball_vel_mult * self.rng.uniform(-200, 200))
                     state_wrapper.ball.set_ang_vel(0, 0, 0)
-                    x = neg * SIDE_WALL_X - 17
+                    x = neg * (SIDE_WALL_X - 17)
                     y = ball_y - (dist_yz * object_y)
                     z = self.rng.uniform(300, 1600)
                     car.set_pos(x,
@@ -768,7 +768,7 @@ class Walldash(StateSetter):
                     state_wrapper.ball.set_pos(ball_x, ball_y, ball_z)
                     state_wrapper.ball.set_lin_vel(0, 0, 0)
                     state_wrapper.ball.set_ang_vel(0, 0, 0)
-                    x = neg * SIDE_WALL_X - 17
+                    x = neg * (SIDE_WALL_X - 17)
                     y = ball_y - (dist_yz * object_y)
                     z = self.rng.uniform(300, 1600)
                     car.set_pos(x,
