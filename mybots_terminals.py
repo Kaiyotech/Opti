@@ -9,13 +9,14 @@ def ball_towards_goal(ball, y_distance_check, allow_pinch_cont):
     x, y, z = ball.position
     vx, vy, vz = ball.linear_velocity
     y_distance = BACK_WALL_Y - y_distance_check
-    normal_check = y * vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > y_distance
+    normal_check = y * \
+        vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > y_distance
     if not allow_pinch_cont:
         return normal_check
     else:
-        pinch_check = (abs(x) > 3500 and x * vx > 0) or (abs(x) < 3800 and abs(y) > 4600 and y * vy > 0)
+        pinch_check = (abs(x) > 3500 and x * vx > 0) or (abs(x)
+                                                         < 3800 and abs(y) > 4600 and y * vy > 0)
         return normal_check or pinch_check
-
 
 
 class BallTouchGroundCondition(TerminalCondition):
@@ -77,6 +78,7 @@ class KickoffTrainer(TerminalCondition):
     """
     A condition that triggers half a second after first touch
     """
+
     def __init__(self, min_time_sec=0.5, tick_skip=8):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
@@ -101,7 +103,7 @@ class KickoffTrainer(TerminalCondition):
             return True
         elif (current_state.ball.position[1] > (BACK_WALL_Y - 2 * BALL_RADIUS) and
               current_state.ball.linear_velocity[1] < 0) or (current_state.ball.position[1] <
-              (-1 * BACK_WALL_Y + 2 * BALL_RADIUS) and current_state.ball.linear_velocity[1] > 0):
+                                                             (-1 * BACK_WALL_Y + 2 * BALL_RADIUS) and current_state.ball.linear_velocity[1] > 0):
             return True
         else:
             return False
@@ -111,6 +113,7 @@ class BallStopped(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
+
     def __init__(self, min_time_sec=5, tick_skip=8, max_time_sec=10_000_000):
         super().__init__()
         self.min_steps = min_time_sec * (120 // tick_skip)
@@ -146,6 +149,7 @@ class PlayerTwoTouch(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
+
     def __init__(self, time_to_arm=0.25, tick_skip=8):
         super().__init__()
         self.time_to_arm_steps = time_to_arm * (120 // tick_skip)
@@ -209,6 +213,7 @@ class AttackerTouchCloseGoal(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
+
     def __init__(self, distance=1000):
         super().__init__()
         self.toucher = -1
@@ -252,6 +257,7 @@ class ReachObject(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch
     """
+
     def __init__(self, end_object: PhysicsObject, end_touched: dict):
         super().__init__()
         self.end_touched = end_touched
@@ -265,8 +271,19 @@ class ReachObject(TerminalCondition):
         return True if a player reaches the objective
         """
         for i, player in enumerate(current_state.players):
-            pos_diff = self.end_object.position - player.car_data.position
-            if np.linalg.norm(pos_diff) < 160:  # reached the location
+            # Octane hitbox offset is np.array([13.88, 0, 20.75])
+            # Octane hitbox dimensions are np.array([118.01, 84.2, 36.16])
+            ball_local_pos = np.matmul(np.linalg.inv(player.car_data.rotation_mtx(
+            )), self.end_object.position - player.car_data.position) - np.array([13.88, 0, 20.75])
+            cp = np.copy(ball_local_pos)
+            car_half_extent = np.array([118.01, 84.2, 36.16]) / 2
+            for i in range(3):
+                cp[i] = min(car_half_extent[i], cp[i])
+                cp[i] = max(-car_half_extent[i], cp[i])
+            # ball collision radius is 93.15, car hitbox margin is 0.04, summing to 93.19
+            intersectionDist = 93.19
+            nv = ball_local_pos - cp
+            if np.dot(nv, nv) < intersectionDist ** 2:  # touched the objective
                 self.end_touched["Touched"] = True
                 return True
 
@@ -296,4 +313,3 @@ class PlayerTouchGround(TerminalCondition):
         for i, player in enumerate(current_state.players):
             if player.on_ground and player.car_data.position[2] < 22:
                 return (SIDE_WALL_X - abs(player.car_data.position[0])) > dist_limit_x
-
