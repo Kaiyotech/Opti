@@ -732,12 +732,22 @@ class ZeroSumReward(RewardFunction):
 
         if dash_timer > 0:
             dash_rew = (79 - dash_timer) / 40
+
             # vel pb
-            vel = player.car_data.linear_velocity
-            pos_diff = state.ball.position - player.car_data.position
-            norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
-            norm_vel = vel / CAR_MAX_SPEED
-            speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
+            if self.end_object is None or \
+                    self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+                vel = player.car_data.linear_velocity
+                pos_diff = state.ball.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
+
+            else:
+                vel = player.car_data.linear_velocity
+                pos_diff = self.end_object.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
 
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
                 return dash_rew * self.walldash_w * speed_rew
