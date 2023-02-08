@@ -25,20 +25,22 @@ set_num_threads(1)
 if __name__ == "__main__":
     frame_skip = Constants_walldash.FRAME_SKIP
     end_object = PhysicsObject()
-    end_object = None  # TODO fix this
+    # end_object = None
+    end_touched = {"Touched": False}
     rew = ZeroSumReward(zero_sum=Constants_walldash.ZERO_SUM,
                         velocity_pb_w=0.02,
-                        # vp_end_object_w=0.02,
+                        vp_end_object_w=0.02,
                         boost_gain_w=0.35,
                         boost_spend_w=4,
                         punish_boost=True,
-                        # touch_object_w=3.5,
+                        touch_object_w=3.5,
                         touch_ball_w=3.5,
                         boost_remain_touch_w=2,
-                        # boost_remain_touch_object_w=2,
+                        boost_remain_touch_object_w=2,
                         tick_skip=Constants_walldash.FRAME_SKIP,
                         walldash_w=1,
                         end_object=end_object,
+                        end_touched=end_touched,
                         )
 
     fps = 120 // frame_skip
@@ -92,7 +94,8 @@ if __name__ == "__main__":
              ),
             # (0.4, 0.25, 0.1, 0.15, 0.1)
             # (0.1, 0.4, 0.05, 0.45, 0)  # temp to learn walldash
-            (0.75, 0, 0, 0, 0.25)  # testing
+            # (0.75, 0, 0, 0, 0.25)  # testing
+            (0, 0.4, 0, 0.6, 0)  # testing
         ),
         obs_builder=CoyoteObsBuilder(expanding=True,
                                      tick_skip=Constants_walldash.FRAME_SKIP,
@@ -109,8 +112,8 @@ if __name__ == "__main__":
                              TimeoutCondition(fps * 20),
                              # TimeoutCondition(fps * 2),
                              BallTouchedCondition(),
-                             # ReachObject(end_object=end_object),
-                             # PlayerTouchGround(dist_from_side_wall=250, end_object=end_object),
+                             ReachObject(end_object=end_object, end_touched=end_touched),
+                             PlayerTouchGround(dist_from_side_wall=1300, end_object=end_object),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,

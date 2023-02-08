@@ -114,7 +114,9 @@ class ZeroSumReward(RewardFunction):
             final_rwd_object_dist_w=0,
             touch_object_w=0,
             boost_remain_touch_object_w=0,
+            end_touched: dict = None,
     ):
+        self.end_touched = end_touched
         self.boost_remain_touch_object_w = boost_remain_touch_object_w
         self.touch_object_w = touch_object_w
         self.final_rwd_object_dist_w = final_rwd_object_dist_w
@@ -660,7 +662,7 @@ class ZeroSumReward(RewardFunction):
             dist = np.linalg.norm(player.car_data.position - self.end_object.position) - 15
             dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_rwd_object_dist_w
             # end object touch
-            if dist < 100:
+            if self.end_touched["Touched"]:
                 touch_rew = self.touch_object_w
                 boost_touch_rew = player.boost_amount * self.boost_remain_touch_object_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
@@ -732,12 +734,22 @@ class ZeroSumReward(RewardFunction):
 
         if dash_timer > 0:
             dash_rew = (79 - dash_timer) / 40
+
             # vel pb
-            vel = player.car_data.linear_velocity
-            pos_diff = state.ball.position - player.car_data.position
-            norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
-            norm_vel = vel / CAR_MAX_SPEED
-            speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
+            if self.end_object is None or \
+                    self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+                vel = player.car_data.linear_velocity
+                pos_diff = state.ball.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
+
+            else:
+                vel = player.car_data.linear_velocity
+                pos_diff = self.end_object.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
 
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
                 return dash_rew * self.walldash_w * speed_rew
