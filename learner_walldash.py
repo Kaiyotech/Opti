@@ -56,10 +56,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "walldash_run6.00"
+    run_id = "walldash_run6.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Walldash_Run6.00",
+                        name="Walldash_Run6.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -91,17 +91,17 @@ if __name__ == "__main__":
                                                                  add_boosttime=True,
                                                                  add_handbrake=True),
                                         lambda: ZeroSumReward(zero_sum=Constants_walldash.ZERO_SUM,
-                                                              velocity_pb_w=0.02,
-                                                              vp_end_object_w=0.02,
+                                                              velocity_pb_w=0.01,
+                                                              vp_end_object_w=0.01,
                                                               # boost_gain_w=0.35,
                                                               # boost_spend_w=4,
                                                               # punish_boost=True,
-                                                              # touch_object_w=3.5,
-                                                              # touch_ball_w=3.5,
-                                                              # boost_remain_touch_w=2,
-                                                              # boost_remain_touch_object_w=2,
+                                                              touch_object_w=3.5,
+                                                              touch_ball_w=3.5,
+                                                              boost_remain_touch_w=2,
+                                                              boost_remain_touch_object_w=2,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
-                                                              walldash_w=1,
+                                                              walldash_w=0.25,
                                                               end_object=end_object,
                                                               end_touched=end_touched,
                                                               ),
@@ -149,10 +149,10 @@ if __name__ == "__main__":
 
     )
 
-    # alg.load("walldash_saves/Opti_1675874656.2110727/Opti_10/checkpoint.pt")
+    alg.load("walldash_saves/Opti_1675879042.6467128/Opti_70/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    # alg.freeze_policy(20)
+    alg.freeze_policy(20)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="walldash_saves")
