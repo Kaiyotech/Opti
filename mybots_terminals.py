@@ -273,7 +273,7 @@ class ReachObject(TerminalCondition):
         for i, player in enumerate(current_state.players):
             # Octane hitbox offset is np.array([13.88, 0, 20.75])
             # Octane hitbox dimensions are np.array([118.01, 84.2, 36.16])
-            ball_local_pos = np.matmul(np.linalg.inv(player.car_data.rotation_mtx(
+            ball_local_pos = np.matmul(np.transpose(player.car_data.rotation_mtx(
             )), self.end_object.position - player.car_data.position) - np.array([13.88, 0, 20.75])
             cp = np.copy(ball_local_pos)
             car_half_extent = np.array([118.01, 84.2, 36.16]) / 2
