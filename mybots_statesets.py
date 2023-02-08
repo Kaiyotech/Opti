@@ -758,7 +758,8 @@ class Walldash(StateSetter):
                                 90 * DEG_TO_RAD * neg)
                     speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
                     car.set_lin_vel(0, speed * object_y, 0)
-                    set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
+                    if self.end_object is not None:
+                        set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
                 elif self.location == "back_boost":
                     object_y = self.rng.choice([-1, 1])
                     dist_yz = 3000
@@ -780,7 +781,8 @@ class Walldash(StateSetter):
                                 90 * DEG_TO_RAD * neg)
                     speed = self.rng.uniform(self.min_car_vel, self.max_car_vel)
                     car.set_lin_vel(0, speed * object_y, 0)
-                    set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
+                    if self.end_object is not None:
+                        set_pos(end_object=self.end_object, x=-1, y=-1, z=-1)
             else:
                 values = mirror(state_wrapper.cars[0], ball_x, ball_y)
                 car.set_pos(*values.pos)
