@@ -37,9 +37,11 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_airtime=False,
                  add_boosttime=False,
                  dodge_deadzone=0.8,
+                 flip_dir=True,
                  end_object: PhysicsObject = None,
                  ):
         super().__init__()
+        self.flip_dir = flip_dir
         self.end_object = end_object
         assert add_boosttime == add_airtime == add_fliptime == add_jumptime == add_handbrake, "All timers must match"
         self.obs_info = obs_info
@@ -658,6 +660,8 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.jumptimes[cid], self.airtimes[cid], self.fliptimes[cid], self.handbrakes[cid],
                 self.flipdirs[cid][0], self.flipdirs[cid][1]
             )
+            if not self.flipdirs:
+                player_data = player_data[:-2]
         else:
             player_data = self.create_player_packet_njit(
                 player.inverted_car_data.position if inverted else player.car_data.position,

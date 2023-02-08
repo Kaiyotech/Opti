@@ -5,37 +5,38 @@ from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition
-from mybots_terminals import BallTouchGroundCondition
+from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+    BallTouchedCondition
+from mybots_terminals import BallTouchGroundCondition, PlayerTwoTouch, AttackerTouchCloseGoal, ReachObject
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
-import Constants_aerial
+from mybots_statesets import HalfFlip
+import Constants_half_flip
 import os
 
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_aerial.FRAME_SKIP
-    rew = ZeroSumReward(zero_sum=Constants_aerial.ZERO_SUM,
-                        goal_w=2,
-                        aerial_goal_w=5,
-                        double_tap_w=10,
-                        flip_reset_w=10,
-                        flip_reset_goal_w=20,
-                        punish_ceiling_pinch_w=0,
-                        punish_backboard_pinch_w=-1,
-                        concede_w=-10,
-                        velocity_bg_w=0.05,
-                        acel_ball_w=0.1,
-                        team_spirit=1,
-                        cons_air_touches_w=0.02,
-                        jump_touch_w=0.1,
-                        wall_touch_w=0.5,
+    frame_skip = Constants_half_flip.FRAME_SKIP
+    rew = ZeroSumReward(zero_sum=Constants_half_flip.ZERO_SUM,
+                        velocity_pb_w=0.01,
+                        boost_gain_w=0.35,
+                        boost_spend_w=3,
+                        punish_boost=True,
+                        touch_ball_w=2,
+                        boost_remain_touch_w=1.5,
+                        touch_grass_w=-0.01,
+                        supersonic_bonus_vpb_w=0,
+                        zero_touch_grass_if_ss=False,
+                        turtle_w=0,
+                        final_reward_ball_dist_w=1,
+                        final_reward_boost_w=0.2,
                         tick_skip=frame_skip
                         )
+
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -44,9 +45,10 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0
-    past_version_prob = 0
-    deterministic_streamer = True
+    past_version_prob = 0.1
+    deterministic_streamer = False
     force_old_deterministic = False
+    gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     team_size = 3
     dynamic_game = True
     host = "127.0.0.1"
@@ -66,19 +68,28 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
+            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
 
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="aerial"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_aerial.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=False),
+        state_setter=HalfFlip(zero_boost_weight=0.5, zero_ball_vel_weight=0.5, ball_vel_mult=2),
+        obs_builder=CoyoteObsBuilder(expanding=True,
+                                     tick_skip=Constants_half_flip.FRAME_SKIP,
+                                     team_size=3, extra_boost_info=False,
+                                     embed_players=False,
+                                     add_jumptime=True,
+                                     add_airtime=True,
+                                     add_fliptime=True,
+                                     add_boosttime=True,
+                                     add_handbrake=True,
+                                     flip_dir=False),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             BallTouchGroundCondition(min_time_sec=0,
-                                                      tick_skip=Constants_aerial.FRAME_SKIP,
-                                                      time_after_ground_sec=1),
+                             TimeoutCondition(fps * 100),
+                             # TimeoutCondition(fps * 2),
+                             BallTouchedCondition(),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -89,7 +100,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_aerial.DB_NUM,
+                  db=Constants_half_flip.DB_NUM,
                   )
 
     # remote Redis
@@ -100,7 +111,7 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=Constants_aerial.DB_NUM,
+                  db=Constants_half_flip.DB_NUM,
                   )
 
     RedisRolloutWorker(r, name, match,
@@ -112,11 +123,11 @@ if __name__ == "__main__":
                        send_obs=True,
                        auto_minimize=auto_minimize,
                        send_gamestates=send_gamestate,
-                       gamemode_weights={'1v1': 0.9, '2v2': 0.05, '3v3': 0.05},  # default 1/3
+                       gamemode_weights=gamemode_weights,  # default 1/3
                        streamer_mode=streamer_mode,
                        deterministic_streamer=deterministic_streamer,
                        force_old_deterministic=force_old_deterministic,
                        # testing
                        batch_mode=True,
-                       step_size=Constants_aerial.STEP_SIZE,
+                       step_size=Constants_half_flip.STEP_SIZE,
                        ).run()

@@ -115,7 +115,9 @@ class ZeroSumReward(RewardFunction):
             touch_object_w=0,
             boost_remain_touch_object_w=0,
             end_touched: dict = None,
+            punish_backboard_pinch_w=0,
     ):
+        self.punish_backboard_pinch_w = punish_backboard_pinch_w
         self.end_touched = end_touched
         self.boost_remain_touch_object_w = boost_remain_touch_object_w
         self.touch_object_w = touch_object_w
@@ -318,6 +320,13 @@ class ZeroSumReward(RewardFunction):
                 # anti-ceiling pinch
                 if state.ball.position[2] > CEILING_Z - 2 * BALL_RADIUS:
                     player_self_rewards += self.punish_ceiling_pinch_w
+
+                # anti-backboard pinch
+                dist_from_backboard = BACK_WALL_Y - abs(state.ball.position[1])
+                if (state.ball.position[2] > GOAL_HEIGHT + 1.5 * BALL_RADIUS or
+                    abs(state.ball.position[0]) > 900 + 1.5 * BALL_RADIUS) and \
+                        dist_from_backboard < 201:
+                    player_self_rewards += self.punish_backboard_pinch_w * ((200 - dist_from_backboard) / 200)
 
                 # cons air touches, max reward of 5, normalized to 1, initial reward 1.4, only starts at second touch
                 if state.ball.position[2] > 140 and not player.on_ground:

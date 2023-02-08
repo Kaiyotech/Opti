@@ -113,7 +113,7 @@ if __name__ == "__main__":
                              # TimeoutCondition(fps * 2),
                              BallTouchedCondition(),
                              ReachObject(end_object=end_object, end_touched=end_touched),
-                             PlayerTouchGround(dist_from_side_wall=50, end_object=end_object),
+                             PlayerTouchGround(dist_from_side_wall=100, end_object=end_object, allow_boost_full_ground=True),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,

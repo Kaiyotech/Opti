@@ -13,15 +13,19 @@ from CoyoteObs import CoyoteObsBuilder
 from CoyoteParser import CoyoteAction
 import numpy as np
 from rewards import ZeroSumReward
-import Constants_aerial
+import Constants_half_flip
+from agent import MaskIndices
 
 from utils.misc import count_parameters
+
+import random
 
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
+from my_stattrackers import GoalSpeedTop5perc
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -34,27 +38,27 @@ from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, Timeo
 set_num_threads(1)
 
 if __name__ == "__main__":
-    frame_skip = Constants_aerial.FRAME_SKIP
-    half_life_seconds = Constants_aerial.TIME_HORIZON
+    frame_skip = Constants_half_flip.FRAME_SKIP
+    half_life_seconds = Constants_half_flip.TIME_HORIZON
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
         actor_lr=1e-4,
         critic_lr=1e-4,
-        n_steps=Constants_aerial.STEP_SIZE,
-        batch_size=200_000,
-        minibatch_size=100_000,
+        n_steps=Constants_half_flip.STEP_SIZE,
+        batch_size=100_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
-        model_every=100,
+        model_every=1000,
         ent_coef=0.01,
     )
 
-    run_id = "aerial_run1.04"
+    run_id = "halfflip_run1.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Aerial_Run1.04",
+                        name="Halfflip_Run1.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -62,34 +66,40 @@ if __name__ == "__main__":
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         resume=True,
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_aerial.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_half_flip.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
-        Speed(normalize=True), Demos(), TimeoutRate(), Touch(), EpisodeLength(), Boost(), BehindBall(), TouchHeight(),
-        DistToBall(), AirTouch(), AirTouchHeight(), BallHeight(), BallSpeed(normalize=True), CarOnGround(),
-        GoalSpeed(), MaxGoalSpeed(),
+        Speed(normalize=True), Touch(), EpisodeLength(), Boost(),
+        DistToBall(), CarOnGround(),
     ]
-
-    rollout_gen = RedisRolloutGenerator("Opti_Aerial",
+    state = random.getstate()
+    rollout_gen = RedisRolloutGenerator("Halfflip",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_aerial.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False),
-                                        lambda: ZeroSumReward(zero_sum=Constants_aerial.ZERO_SUM,
-                                                              goal_w=2,
-                                                              aerial_goal_w=5,
-                                                              double_tap_w=10,
-                                                              flip_reset_w=10,
-                                                              flip_reset_goal_w=20,
-                                                              punish_ceiling_pinch_w=0,
-                                                              punish_backboard_pinch_w=-1,
-                                                              concede_w=-10,
-                                                              velocity_bg_w=0.05,
-                                                              acel_ball_w=0.1,
-                                                              team_spirit=1,
-                                                              cons_air_touches_w=0.02,
-                                                              jump_touch_w=0.1,
-                                                              wall_touch_w=0.5,
+                                        lambda: CoyoteObsBuilder(expanding=True,
+                                                                 tick_skip=Constants_half_flip.FRAME_SKIP,
+                                                                 team_size=3, extra_boost_info=False,
+                                                                 embed_players=False,
+                                                                 add_jumptime=True,
+                                                                 add_airtime=True,
+                                                                 add_fliptime=True,
+                                                                 add_boosttime=True,
+                                                                 add_handbrake=True,
+                                                                 flip_dir=False),
+                                        lambda: ZeroSumReward(zero_sum=Constants_half_flip.ZERO_SUM,
+                                                              velocity_pb_w=0.01,
+                                                              boost_gain_w=0.35,
+                                                              boost_spend_w=3,
+                                                              punish_boost=True,
+                                                              touch_ball_w=2,
+                                                              boost_remain_touch_w=1.5,
+                                                              touch_grass_w=-0.01,
+                                                              supersonic_bonus_vpb_w=0,
+                                                              zero_touch_grass_if_ss=False,
+                                                              turtle_w=0,
+                                                              final_reward_ball_dist_w=1,
+                                                              final_reward_boost_w=0.2,
                                                               tick_skip=frame_skip
                                                               ),
                                         lambda: CoyoteAction(),
@@ -102,12 +112,13 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                        Linear(512, 1))
+    critic = Sequential(Linear(227, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 128), LeakyReLU(),
+                        Linear(128, 1))
 
-    actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-                       Linear(512, 373))
+    actor = Sequential(Linear(227, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -132,12 +143,13 @@ if __name__ == "__main__":
         logger=logger,
         zero_grads_with_none=True,
         disable_gradient_logging=True,
+
     )
 
-    alg.load("aerial_saves/Opti_1671681782.906272/Opti_3160/checkpoint.pt")
+    alg.load("recovery_saves/Opti_1675223912.912102/Opti_430/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(100)
+    alg.freeze_policy(10)
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="aerial_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_ball_saves")
