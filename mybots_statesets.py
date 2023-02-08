@@ -21,12 +21,20 @@ def set_pos(end_object: PhysicsObject, x: float = None, y: float = None, z: floa
     :param y: Float indicating y position value.
     :param z: Float indicating z position value.
     """
+    if x is not None and y is not None and z is not None:
+        if x == y == z == -1:
+            end_object.position[0] = -1
+            end_object.position[1] = -1
+            end_object.position[2] = -1
+            return
+
     if x is not None:
-        end_object.position[0] = max(min(z, 2900), -2900)
+        end_object.position[0] = max(min(x, 4096), -4096)
     if y is not None:
-        end_object.position[1] = max(min(z, 3800), -3800)
+        end_object.position[1] = max(min(y, 5120), -5120)
     if z is not None:
         end_object.position[2] = max(min(z, 1725), 300)
+
 
 def random_valid_loc() -> np.ndarray:
     rng = np.random.default_rng()
