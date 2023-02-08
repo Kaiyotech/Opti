@@ -460,10 +460,7 @@ class ZeroSumReward(RewardFunction):
                 norm_vel = vel / CAR_MAX_SPEED
                 speed_rew = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.vp_end_object_w * speed_rew
-                # end object touch
-                if np.linalg.norm(pos_diff) < 15:
-                    player_rewards[i] += self.touch_object_w
-                    player_rewards[i] += player.boost_amount * self.boost_remain_touch_object_w
+
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
@@ -653,6 +650,8 @@ class ZeroSumReward(RewardFunction):
     def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
         reg_reward = self.get_reward(player, state, previous_action, previous_model_action)
         # if dist is 0, reward is 1
+        touch_rew = 0
+        boost_touch_rew = 0
         if self.end_object is None or\
                 self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
             dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
@@ -660,8 +659,12 @@ class ZeroSumReward(RewardFunction):
         else:
             dist = np.linalg.norm(player.car_data.position - self.end_object.position) - 15
             dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_rwd_object_dist_w
+            # end object touch
+            if dist < 100:
+                touch_rew = self.touch_object_w
+                boost_touch_rew = player.boost_amount * self.boost_remain_touch_object_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
-        return reg_reward + dist_rew + boost_rew
+        return reg_reward + dist_rew + boost_rew + touch_rew + boost_touch_rew
 
     def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray) -> float:
         cid = player.car_id
