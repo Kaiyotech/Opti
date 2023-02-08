@@ -265,7 +265,7 @@ class ReachObject(TerminalCondition):
         """
         for i, player in enumerate(current_state.players):
             pos_diff = self.end_object.position - player.car_data.position
-            if np.linalg.norm(pos_diff) < 15:  # reached the location
+            if np.linalg.norm(pos_diff) < 75:  # reached the location
                 return True
 
 

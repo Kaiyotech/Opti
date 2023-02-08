@@ -48,7 +48,7 @@ if __name__ == "__main__":
         critic_lr=1e-4,
         n_steps=Constants_walldash.STEP_SIZE,
         batch_size=100_000,
-        minibatch_size=100_000,
+        minibatch_size=None,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -56,10 +56,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "walldash_run1.02"
+    run_id = "walldash_run2.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Walldash_Run1.02",
+                        name="Walldash_Run2.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -94,15 +94,12 @@ if __name__ == "__main__":
                                                               boost_gain_w=0.35,
                                                               boost_spend_w=4,
                                                               punish_boost=True,
-                                                              touch_object_w=2.5,
-                                                              touch_ball_w=2.5,
+                                                              touch_object_w=3.5,
+                                                              touch_ball_w=3.5,
                                                               boost_remain_touch_w=2,
                                                               boost_remain_touch_object_w=2,
-                                                              final_reward_ball_dist_w=1,
-                                                              final_rwd_object_dist_w=1,
-                                                              final_reward_boost_w=0.3,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
-                                                              walldash_w=0.7,
+                                                              walldash_w=1.2,
                                                               end_object=end_object,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -149,10 +146,10 @@ if __name__ == "__main__":
 
     )
 
-    alg.load("recovery_saves/Opti_1675358986.0893235/Opti_20/checkpoint.pt")
+    # alg.load("recovery_saves/Opti_1675358986.0893235/Opti_20/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(20)
+    # alg.freeze_policy(20)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="walldash_saves")

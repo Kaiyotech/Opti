@@ -31,15 +31,12 @@ if __name__ == "__main__":
                         boost_gain_w=0.35,
                         boost_spend_w=4,
                         punish_boost=True,
-                        touch_object_w=2.5,
-                        touch_ball_w=2.5,
+                        touch_object_w=3.5,
+                        touch_ball_w=3.5,
                         boost_remain_touch_w=2,
                         boost_remain_touch_object_w=2,
-                        final_reward_ball_dist_w=1,
-                        final_rwd_object_dist_w=1,
-                        final_reward_boost_w=0.3,
                         tick_skip=Constants_walldash.FRAME_SKIP,
-                        walldash_w=0.35,
+                        walldash_w=1.2,
                         end_object=end_object,
                         )
 
@@ -81,18 +78,18 @@ if __name__ == "__main__":
         team_size=team_size,
         state_setter=WeightedSampleSetter(
                         (Walldash(location="back_boost", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                                  ball_vel_mult=2.5, min_car_vel=600, max_car_vel=1000),
                          Walldash(location="45", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                                  ball_vel_mult=2.5, min_car_vel=600, max_car_vel=1000),
                          Walldash(location="90", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                                  ball_vel_mult=2.5, min_car_vel=600, max_car_vel=1000),
                          Walldash(location="same_z", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                                  ball_vel_mult=2.5, min_car_vel=600, max_car_vel=1000),
                          Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7,
-                                  ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
+                                  ball_vel_mult=2.5, min_car_vel=600, max_car_vel=1000),
              ),
             # (0.4, 0.25, 0.1, 0.15, 0.1)
-            (0.1, 0.45, 0.1, 0.35, 0)  # temp to learn walldash
+            (0.1, 0.4, 0.05, 0.45, 0)  # temp to learn walldash
         ),
         obs_builder=CoyoteObsBuilder(expanding=True,
                                      tick_skip=Constants_walldash.FRAME_SKIP,
