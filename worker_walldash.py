@@ -38,7 +38,7 @@ if __name__ == "__main__":
                         boost_remain_touch_w=2,
                         boost_remain_touch_object_w=2,
                         tick_skip=Constants_walldash.FRAME_SKIP,
-                        walldash_w=0.25,
+                        walldash_w=0.175,
                         end_object=end_object,
                         end_touched=end_touched,
                         )

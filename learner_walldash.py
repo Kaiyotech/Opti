@@ -44,11 +44,11 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
-        critic_lr=1e-4,
+        actor_lr=2e-5,
+        critic_lr=2e-5,
         n_steps=Constants_walldash.STEP_SIZE,
-        batch_size=100_000,
-        minibatch_size=None,
+        batch_size=250_000,
+        minibatch_size=125_000,
         epochs=30,
         gamma=gamma,
         save_every=10,
@@ -101,7 +101,7 @@ if __name__ == "__main__":
                                                               boost_remain_touch_w=2,
                                                               boost_remain_touch_object_w=2,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
-                                                              walldash_w=0.25,
+                                                              walldash_w=0.175,
                                                               end_object=end_object,
                                                               end_touched=end_touched,
                                                               ),
