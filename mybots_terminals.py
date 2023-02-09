@@ -280,8 +280,8 @@ class ReachObject(TerminalCondition):
             for i in range(3):
                 cp[i] = min(car_half_extent[i], cp[i])
                 cp[i] = max(-car_half_extent[i], cp[i])
-            # ball collision radius is 93.15, car hitbox margin is 0.04, summing to 93.19
-            intersectionDist = 93.19
+            # ball collision radius is 93.15, car hitbox margin is 0.04, summing to 93.19 - change 95.15 per JPK
+            intersectionDist = 95.15
             nv = ball_local_pos - cp
             if np.dot(nv, nv) < intersectionDist ** 2:  # touched the objective
                 self.end_touched["Touched"] = True
