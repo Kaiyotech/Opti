@@ -792,6 +792,32 @@ class Walldash(StateSetter):
             car.boost = boost
 
 
+class LixSetter(StateSetter):
+    def __init__(self):
+        self.rng = np.random.default_rng()
+
+    def reset(self, state_wrapper: StateWrapper):
+        assert len(state_wrapper.cars) == 1
+        neg = self.rng.choice([-1, 1])
+
+        y = self.rng.uniform(-3000, 2000)
+        x = neg * (SIDE_WALL_X - self.rng.uniform(800, 1300))
+        z = 17
+        car = state_wrapper.cars[0]
+        car.set_pos(x,
+                    y,
+                    z,
+                    )
+        car.set_rot(0, ((180 if neg == -1 else 0) + (neg * self.rng.uniform(10, 35))) * DEG_TO_RAD, 0)
+        speed = self.rng.uniform(400, 1000)
+        car.set_lin_vel(speed * neg, 0, 0)
+        car.boost = self.rng.uniform(0.2, 1.000001)
+
+        state_wrapper.ball.set_pos(x + (neg * 150), y + 125, 94)
+        state_wrapper.ball.set_lin_vel(1600 * neg, 400, 0)
+        state_wrapper.ball.set_ang_vel(0, 0, 0)
+
+
 def mirror(car: CarWrapper, ball_x, ball_y):
     my_car = namedtuple('my_car', 'pos lin_vel rot ang_vel')
     if ball_x == ball_y == 0:
