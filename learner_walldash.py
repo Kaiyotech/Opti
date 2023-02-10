@@ -101,7 +101,7 @@ if __name__ == "__main__":
                                                               boost_remain_touch_w=2,
                                                               boost_remain_touch_object_w=2,
                                                               tick_skip=Constants_walldash.FRAME_SKIP,
-                                                              walldash_w=0.175,
+                                                              walldash_w=0.15,
                                                               end_object=end_object,
                                                               end_touched=end_touched,
                                                               ),
@@ -149,10 +149,10 @@ if __name__ == "__main__":
 
     )
 
-    alg.load("walldash_saves/Opti_1675879042.6467128/Opti_70/checkpoint.pt")
+    alg.load("walldash_saves/Opti_1675888625.8272996/Opti_1260/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(20)
+    alg.freeze_policy(50)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="walldash_saves")
