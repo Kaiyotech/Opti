@@ -92,7 +92,8 @@ if __name__ == "__main__":
              Walldash(location="ball", end_object=end_object, zero_boost_weight=0.7,
                       ball_vel_mult=2.5, min_car_vel=400, max_car_vel=800),
              ),
-            (0.35, 0.25, 0.1, 0.15, 0.15)
+            (0.30, 0.20, 0.325, 0.075, 0.1)
+            # (0.35, 0.25, 0.1, 0.15, 0.15)
             # (0.1, 0.4, 0.05, 0.45, 0)  # temp to learn walldash
             # (0.75, 0, 0, 0, 0.25)  # testing
             # (0, 0, 0, 1, 0)  # testing
