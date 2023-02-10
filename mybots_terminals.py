@@ -288,31 +288,25 @@ class ReachObject(TerminalCondition):
                 return True
 
 
-class PlayerTouchGround(TerminalCondition):
+class LixTrainer(TerminalCondition):
 
-    def __init__(self, dist_from_side_wall: int = -50, end_object: PhysicsObject = None, allow_boost_full_ground=False):
+    def __init__(self, tick_skip: int, dist_from_side_wall: int = -250, height: int = 1400, time_to_arm_sec: int = 3,
+                 ):
         super().__init__()
-        self.allow_boost_full_ground = allow_boost_full_ground
-        self.end_object = end_object
+        self.height = height
+        self.time_to_arm_steps = time_to_arm_sec * (120 // tick_skip)
         self.dist_from_side_wall = dist_from_side_wall
+        self.steps = 0
 
     def reset(self, initial_state: GameState):
-        pass
+        self.steps = 0
 
     def is_terminal(self, current_state: GameState) -> bool:
         """
-        return True if a player touches ground, with hacks for end object allowances
+        return True if a player has exceeded the allowances for a lix reset
         """
-        dist_limit_x = self.dist_from_side_wall
-        if self.end_object is not None and (
-                abs(current_state.ball.position[0]) == 3072 and abs(current_state.ball.position[1]) == 4096):
-            if self.allow_boost_full_ground:
-                return False
-            dist_limit_x = 1300  # allow reaching boost
-        elif self.end_object is not None and \
-                self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
-            return False
-
+        self.steps += 1
         for i, player in enumerate(current_state.players):
-            if player.on_ground and player.car_data.position[2] < 22:
-                return (SIDE_WALL_X - abs(player.car_data.position[0])) > dist_limit_x
+            return (((SIDE_WALL_X - abs(player.car_data.position[0])) > self.dist_from_side_wall) or
+                    player.car_data.position[2] > self.height) and self.steps > self.time_to_arm_steps
+

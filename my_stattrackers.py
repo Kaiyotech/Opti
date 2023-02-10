@@ -55,3 +55,34 @@ class GoalSpeedTop5perc(StatTracker):
         self.goal_speeds = self.goal_speeds[top_5:]
         total_speed = sum(self.goal_speeds)
         return total_speed / ((-1 * top_5) or 1)
+
+
+class FlipReset(StatTracker):
+    # slice it up into has-flip (or whichever is the infinite) and the on_ground
+    # do if diff if it goes from 0 to 1 has-flip, and that with not on-ground
+    # count those 1s
+
+    def __init__(self):
+        super().__init__("Flip_reset")
+        self.count = 0
+        self.flip_reset_count = 0
+
+    def reset(self):
+        self.count = 0
+        self.flip_reset_count = 0
+
+    def update(self, gamestates: np.ndarray, mask: np.ndarray):
+        if gamestates.ndim > 1 and len(gamestates) > 1:
+            end = gamestates[-2]
+            goal_speed = end[StateConstants.BALL_LINEAR_VELOCITY]
+            goal_speed = np.linalg.norm(goal_speed)
+
+            self.goal_speeds.append(goal_speed / 27.78)  # convert to km/h
+            self.count += 1
+
+    def get_stat(self):
+        self.goal_speeds.sort()
+        top_5 = int(-1 * self.count / 20) or -1
+        self.goal_speeds = self.goal_speeds[top_5:]
+        total_speed = sum(self.goal_speeds)
+        return total_speed / ((-1 * top_5) or 1)
