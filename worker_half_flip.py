@@ -28,13 +28,10 @@ if __name__ == "__main__":
                         punish_boost=True,
                         touch_ball_w=2,
                         boost_remain_touch_w=1.5,
-                        touch_grass_w=-0.01,
-                        supersonic_bonus_vpb_w=0,
-                        zero_touch_grass_if_ss=False,
-                        turtle_w=0,
+                        touch_grass_w=-0.005,
                         final_reward_ball_dist_w=1,
                         final_reward_boost_w=0.2,
-                        tick_skip=frame_skip
+                        tick_skip=frame_skip,
                         )
 
     fps = 120 // frame_skip
@@ -84,7 +81,7 @@ if __name__ == "__main__":
                                      add_fliptime=True,
                                      add_boosttime=True,
                                      add_handbrake=True,
-                                     flip_dir=False),
+                                     ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              TimeoutCondition(fps * 100),
