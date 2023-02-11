@@ -660,7 +660,7 @@ class CoyoteObsBuilder(ObsBuilder):
                 self.jumptimes[cid], self.airtimes[cid], self.fliptimes[cid], self.handbrakes[cid],
                 self.flipdirs[cid][0], self.flipdirs[cid][1]
             )
-            if not self.flipdirs:
+            if not self.flip_dir:
                 player_data = player_data[:-2]
         else:
             player_data = self.create_player_packet_njit(
