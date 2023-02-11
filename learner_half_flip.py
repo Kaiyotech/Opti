@@ -150,6 +150,6 @@ if __name__ == "__main__":
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(10)
+    alg.freeze_policy(20)
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="recovery_ball_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="half_flip_saves")
