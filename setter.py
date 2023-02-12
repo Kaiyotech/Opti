@@ -56,13 +56,13 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=True), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
-                            Wavedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
+                            # Wavedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
                             AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
-                            Curvedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
+                            # Curvedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
                             AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
-                        (0.1, 0.3, 0.10, 0.025, 0.025, 0.025, 0.025, 0.2, 0.2)
+                        (0.1, 0.3, 0.10, 0.125, 0.125, 0.025, 0.025, 0.1, 0.1)
                     )
                 )
         elif mode == "selector":
