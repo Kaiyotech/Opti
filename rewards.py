@@ -731,8 +731,11 @@ class ZeroSumReward(RewardFunction):
                         self.has_flippeds[cid] = True
                         flipdir = np.asarray(
                             [-prev_actions[2], prev_actions[3] + prev_actions[4]])
-                        self.flipdirs[cid] = list(
-                            flipdir / np.linalg.norm(flipdir))
+                        if np.any(flipdir):
+                            self.flipdirs[cid] = list(
+                                flipdir / np.linalg.norm(flipdir))
+                        else:
+                            self.flipdirs[cid] = [0,0]
                     else:
                         self.has_doublejumpeds[cid] = True
         if self.has_flippeds[cid]:

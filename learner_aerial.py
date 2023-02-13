@@ -8,7 +8,7 @@ from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
-from CoyoteObs import CoyoteObsBuilder
+from CoyoteObs import CoyoteObsBuilder_Legacy
 
 from CoyoteParser import CoyoteAction
 import numpy as np
@@ -20,7 +20,7 @@ from utils.misc import count_parameters
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
-    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed,\
+    BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
 
 # ideas for models:
@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "aerial_run1.05"
+    run_id = "aerial_run1.06"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Aerial_Run1.05",
+                        name="Aerial_Run1.06",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -62,7 +62,8 @@ if __name__ == "__main__":
                         settings=wandb.Settings(_disable_stats=True, _disable_meta=True),
                         resume=True,
                         )
-    redis = Redis(username="user1", password=os.environ["redis_user1_key"], db=Constants_aerial.DB_NUM)  # host="192.168.0.201",
+    redis = Redis(username="user1", password=os.environ["redis_user1_key"],
+                  db=Constants_aerial.DB_NUM)  # host="192.168.0.201",
     redis.delete("worker-ids")
 
     stat_trackers = [
@@ -73,8 +74,9 @@ if __name__ == "__main__":
 
     rollout_gen = RedisRolloutGenerator("Opti_Aerial",
                                         redis,
-                                        lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_aerial.FRAME_SKIP,
-                                                                 team_size=3, extra_boost_info=False),
+                                        lambda: CoyoteObsBuilder_Legacy(expanding=True,
+                                                                        tick_skip=Constants_aerial.FRAME_SKIP,
+                                                                        team_size=3, extra_boost_info=False),
                                         lambda: ZeroSumReward(zero_sum=Constants_aerial.ZERO_SUM,
                                                               goal_w=2,
                                                               aerial_goal_w=5,
@@ -134,7 +136,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("aerial_saves/Opti_1671597126.6443846/Opti_2890/checkpoint.pt")
+    alg.load("aerial_saves/Opti_1671681782.906272/Opti_3160/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
