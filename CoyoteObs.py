@@ -914,6 +914,7 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
                  zero_other_cars=False,
                  obs_info=None,
                  ):
+        """use this when it was trained before the NJIT changes around 1/12/2023"""
         super().__init__()
         self.obs_info = obs_info
         self.zero_other_cars = zero_other_cars
