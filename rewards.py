@@ -322,7 +322,8 @@ class ZeroSumReward(RewardFunction):
                     player_self_rewards += self.punish_ceiling_pinch_w
 
                 # anti-backboard pinch
-                dist_from_backboard = BACK_WALL_Y - abs(state.ball.position[1])
+                backboard_y = BACK_WALL_Y if player.team_num == 0 else -BACK_WALL_Y
+                dist_from_backboard = backboard_y - state.ball.position[1]
                 if (state.ball.position[2] > GOAL_HEIGHT + 1.5 * BALL_RADIUS or
                     abs(state.ball.position[0]) > 900 + 1.5 * BALL_RADIUS) and \
                         dist_from_backboard < 201:
