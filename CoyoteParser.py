@@ -518,6 +518,10 @@ class SelectorParser(ActionParser):
             zero_boost = bool(action[1])  # boost action 1 means no boost usage
             action = int(action[0])  # change ndarray [0.] to 0
             player = state.players[i]
+
+            # run timers for stateful obs for flips and such
+            self.obs_info.step(player, state, self.prev_actions[i])
+
             # override state for recovery
 
             newstate = state
