@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "aerial_run1.06"
+    run_id = "aerial_run1.07"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Aerial_Run1.06",
+                        name="Aerial_Run1.07",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -136,10 +136,10 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("aerial_saves/Opti_1671681782.906272/Opti_3160/checkpoint.pt")
+    alg.load("aerial_saves/Opti_1676311102.1543565/Opti_3530/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(100)
+    # alg.freeze_policy(100)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="aerial_saves")
