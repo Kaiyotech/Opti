@@ -8,7 +8,7 @@ from rlgym.utils import math
 from rlgym.utils.gamestates import PhysicsObject
 from rlgym.utils.action_parsers import ActionParser
 from rlgym.utils.gamestates import GameState, PlayerData
-from CoyoteObs import CoyoteObsBuilder
+from CoyoteObs import CoyoteObsBuilder, CoyoteObsBuilder_Legacy
 from selection_listener import SelectionListener
 
 
@@ -422,25 +422,25 @@ class SelectorParser(ActionParser):
         self.obs_info = obs_info
         super().__init__()
 
-        self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3)),
-                       (SubAgent("kickoff_2_jit.pt"), CoyoteObsBuilder(
+        self.models = [(SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3)),
+                       (SubAgent("kickoff_2_jit.pt"), CoyoteObsBuilder_Legacy(
                            expanding=True, tick_skip=4, team_size=3)),
                        (SubAgent("gp_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
                        (SubAgent("aerial_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("flick_1_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
                        (SubAgent("flick_2_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
                        (SubAgent("flipreset_1_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("flipreset_2_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("flipreset_3_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("pinch_jit.pt"),
-                        CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+                        CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
                        (SubAgent("recovery_jit.pt"),
                         CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                          only_closest_opp=True)),
