@@ -116,7 +116,12 @@ class ZeroSumReward(RewardFunction):
             boost_remain_touch_object_w=0,
             end_touched: dict = None,
             punish_backboard_pinch_w=0,
+            dash_limit_per_ep=100000000,
+            lix_reset_w=0,
     ):
+        self.lix_reset_w = lix_reset_w
+        self.dash_limit_per_ep = dash_limit_per_ep
+        self.dash_count = [0] * 6
         self.punish_backboard_pinch_w = punish_backboard_pinch_w
         self.end_touched = end_touched
         self.boost_remain_touch_object_w = boost_remain_touch_object_w
@@ -607,6 +612,7 @@ class ZeroSumReward(RewardFunction):
         self.exit_vel_save = [None] * 6
         self.previous_action = np.asarray([-1] * len(initial_state.players))
         self.last_action_change = np.asarray([0] * len(initial_state.players))
+        self.dash_count = [0] * 6
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
@@ -745,6 +751,8 @@ class ZeroSumReward(RewardFunction):
             self.fliptimes[cid] = min(
                 78, self.fliptimes[cid])
 
+        ret = 0
+
         if dash_timer > 0:
             dash_rew = (79 - dash_timer) / 40
 
@@ -765,7 +773,12 @@ class ZeroSumReward(RewardFunction):
                 speed_rew = max(float(np.dot(norm_pos_diff, norm_vel)), 0.025)
 
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
-                return dash_rew * self.walldash_w * speed_rew
+                self.dash_count[self.n] += 1
+                ret += dash_rew * self.walldash_w * speed_rew if self.dash_count[self.n] <= self.dash_limit_per_ep else 0
             elif player.car_data.position[2] <= 100:
-                return dash_rew * self.curve_wave_zap_dash_w * speed_rew
-        return 0.0
+                self.dash_count[self.n] += 1
+                ret += dash_rew * self.curve_wave_zap_dash_w * speed_rew  if self.dash_count[self.n] <= self.dash_limit_per_ep else 0
+
+        if not player.on_ground and self.airtimes[self.n] == 0 and not self.is_jumpings[self.n]:
+            ret += self.lix_reset_w
+        return ret
