@@ -24,9 +24,11 @@ if __name__ == "__main__":
                         velocity_pb_w=0.01,
                         wall_touch_w=0.5,
                         tick_skip=Constants_lix.FRAME_SKIP,
-                        curve_wave_zap_dash_w=0.35,
-                        walldash_w=0.35,
-                        flip_reset_w=5,
+                        # curve_wave_zap_dash_w=0.35,
+                        # walldash_w=0.35,
+                        flip_reset_w=0,
+                        # dash_limit_per_ep=1,
+                        lix_reset_w=5,
                         )
 
     fps = 120 // frame_skip
