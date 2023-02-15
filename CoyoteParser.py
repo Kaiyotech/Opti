@@ -342,52 +342,102 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     oppo_car.sort(key=lambda c: np.linalg.norm(
         c.position - player_car.position))
 
-    # Ball position first
-    ball_pos = np.asarray([0, 0, 0])
-    # 1500 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
-    if position_index < 18:
-        position_index = position_index - 10
-        angle_rad = position_index * np.pi / 4
-        fwd = np.asarray([0, 1])
-        fwd = fwd / np.linalg.norm(fwd)  # make unit
-        rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
-                              fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-        # distance of 1500 in rotated direction
-        forward_point = (1500 * rot_fwd) + player_car.position[:2]
-        forward_point[0] = np.clip(forward_point[0], -4096, 4096)
-        forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-        ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
-    elif position_index < 20:  # 18 and 19 are back left and back right boost
-        if position_index == 18:
-            ball_pos = np.asarray([3072, -4096, 40])
-        elif position_index == 19:
-            ball_pos = np.asarray([-3072, -4096, 40])
+    if ball_position is None:
+        # Ball position first
+        ball_pos = np.asarray([0, 0, 0])
+        # 2000 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
+        if position_index < 18:
+            position_index = position_index - 10
+            angle_rad = position_index * np.pi / 4
+            fwd = np.asarray([0, 1])
+            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+            # distance of 2000 in rotated direction
+            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+        elif position_index < 20:  # 18 and 19 are back left and back right boost
+            if position_index == 18:
+                ball_pos = np.asarray([3072, -4096, 40])
+            elif position_index == 19:
+                ball_pos = np.asarray([-3072, -4096, 40])
 
-    elif position_index == 20:  # 20 is closest opponent
-        ball_pos = oppo_car[0].position
-    elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
-        x_pos = 1000
-        if ball.position[0] >= 0:
-            x_pos = -1000
-        ball_pos = np.asarray([x_pos, -4800, 40])
-    elif position_index == 23:  # 23 is behind for half-flip, relative
-        pass
-    elif position_index == 24:  # 24 is forward, relative
-        pass
-    elif position_index == 26:  # same z
-        y_pos = 0  # TODO make this forward 2000 in direction facing
-        ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
-    elif position_index == 27:  # up 45
-        pass
-    elif position_index == 28:  # down 45
-        pass
-    elif position_index == 29:  # back boost this side
-        x_pos = 3072 if player_car.position[0] >= 0 else -3072
-        ball_pos = np.asarray([x_pos, -4096, 40])
+        elif position_index == 20:  # 20 is closest opponent
+            ball_pos = oppo_car[0].position
+        elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
+            x_pos = 1000
+            if ball.position[0] >= 0:
+                x_pos = -1000
+            ball_pos = np.asarray([x_pos, -4800, 40])
+        elif position_index == 23:  # 23 is behind for half-flip, relative
+            angle_rad = np.pi
+            fwd = np.asarray([0, 1])
+            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+            # distance of 2000 in rotated direction
+            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+        elif position_index == 24:  # 24 is forward, relative
+            angle_rad = 0
+            fwd = np.asarray([0, 1])
+            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+            # distance of 2000 in rotated direction
+            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+        elif position_index == 26:  # same z
+            fwd = player_car.forward()[1]  # vector in forward direction just y
+            if abs(fwd) == 0:
+                fwd = player_car.forward()[0]
+            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            # distance of 2000
+            y_pos = (2000 * fwd) + player_car.position[1]
+            y_pos = np.clip(y_pos, -5120, 5120)
+            ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
+        elif position_index == 27:  # up 45
+            # space until ceiling
+            z_space = max(1, 1750 - player_car.position[2])
+            length = z_space / 0.707
+            fwd = player_car.forward()[1]  # vector in forward direction just y
+            if abs(fwd) == 0:
+                fwd = player_car.forward()[0]
+            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            # distance of length to keep 45 degrees until ceiling/ground
+            y_pos = (0.707 * length * fwd) + player_car.position[1]
+            y_pos = np.clip(y_pos, -5120, 5120)
+            z_pos = (0.707 * length) + player_car.position[2]
+            z_pos = np.clip(z_pos, 300, 1750)
+            ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
+        elif position_index == 28:  # down 45
+            # space until ground
+            z_space = max(1, player_car.position[2] - 300)
+            length = z_space / 0.707
+            fwd = player_car.forward()[1]  # vector in forward direction just y
+            if abs(fwd) == 0:
+                fwd = player_car.forward()[0]
+            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            # distance of length to keep 45 degrees until ceiling/ground
+            y_pos = (0.707 * length * fwd) + player_car.position[1]
+            y_pos = np.clip(y_pos, -5120, 5120)
+            z_pos = player_car.position[2] - (0.707 * length)
+            z_pos = np.clip(z_pos, 300, 1750)
+            ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
+        elif position_index == 29:  # back boost this side
+            x_pos = 3072 if player_car.position[0] >= 0 else -3072
+            ball_pos = np.asarray([x_pos, -4096, 40])
 
     # override with passed in ball position
-    if ball_position is not None:
+    else:
         ball_pos = ball_position
+
     retstate.ball.position = ball_pos
     retstate.inverted_ball.position = ball_pos
 
@@ -516,7 +566,7 @@ class SelectorParser(ActionParser):
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # forward (for the speedflip)
+            (SubAgent("halfflip_jit.pt"),  # forward (for the speedflip), freeze, relative
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
@@ -596,7 +646,7 @@ class SelectorParser(ActionParser):
                     26 <= action <= 29:
                 newstate = override_abs_state(player, state, action)
 
-            if action == 23:  # freeze
+            if 23 <= action <= 24:  # freeze
                 if self.prev_model_actions[i] == action:  # action didn't change
                     newstate = override_abs_state(player, state, action, self.ball_position[i])
                 else:  # action submodel changed
