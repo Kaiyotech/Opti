@@ -108,24 +108,18 @@ class CoyoteObsBuilder(ObsBuilder):
         self.dodge_deadzone = dodge_deadzone
         self.any_timers = add_boosttime or add_jumptime or add_fliptime or add_airtime or add_handbrake
 
-        if add_boosttime:
-            self.boosttimes = [0] * 6
-        if add_jumptime:
-            self.jumptimes = [0] * 6
-        if add_fliptime:
-            self.fliptimes = [0] * 6
-            self.has_flippeds = [False] * 6
-            self.has_doublejumpeds = [False] * 6
-            self.flipdirs = [[0] * 2 for _ in range(6)]
-        if add_airtime:
-            self.airtimes = [0] * 6
-        if add_jumptime or add_fliptime or add_airtime:
-            self.on_grounds = [False] * 6
-            self.prev_prev_actions = [[0] * 8 for _ in range(6)]
-            self.is_jumpings = [False] * 6
-            self.has_jumpeds = [False] * 6
-        if add_handbrake:
-            self.handbrakes = [0] * 6
+        self.boosttimes = [0] * 6
+        self.jumptimes = [0] * 6
+        self.fliptimes = [0] * 6
+        self.has_flippeds = [False] * 6
+        self.has_doublejumpeds = [False] * 6
+        self.flipdirs = [[0] * 2 for _ in range(6)]
+        self.airtimes = [0] * 6
+        self.on_grounds = [False] * 6
+        self.prev_prev_actions = [[0] * 8 for _ in range(6)]
+        self.is_jumpings = [False] * 6
+        self.has_jumpeds = [False] * 6
+        self.handbrakes = [0] * 6
 
     def reset(self, initial_state: GameState):
         self.state = None
@@ -159,7 +153,6 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 self.env.update_settings(boost_consumption=1)
                 self.infinite_boost_episode = False
-
 
         if self.add_boosttime:
             self.boosttimes = np.zeros(
@@ -812,7 +805,7 @@ class CoyoteObsBuilder(ObsBuilder):
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
                   previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False,) -> Any:
 
-        if self.any_timers:
+        if self.any_timers and obs_info is None:  # if it's not None, this is handled in the obs_info step in the worker
             self._update_addl_timers(player, state, previous_action)
             self.prev_prev_actions[player.car_id] = previous_action  # noqa
 
@@ -825,6 +818,17 @@ class CoyoteObsBuilder(ObsBuilder):
             self.blue_obs = obs_info.blue_obs
             self.orange_obs = obs_info.orange_obs
             self.demo_timers = obs_info.demo_timers
+            self.boosttimes = obs_info.boosttimes
+            self.jumptimes = obs_info.jumptimes
+            self.fliptimes = obs_info.fliptimes
+            self.has_flippeds = obs_info.has_flippeds
+            self.has_doublejumpeds = obs_info.has_doublejumpeds
+            self.flipdirs = obs_info.flipdirs
+            self.airtimes = obs_info.airtimes
+            self.on_grounds = obs_info.on_grounds
+            self.is_jumpings = obs_info.is_jumpings
+            self.has_jumpeds = obs_info.has_jumpeds
+            self.handbrakes = obs_info.handbrakes
 
         if player.team_num == 1:
             inverted = True

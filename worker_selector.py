@@ -4,7 +4,7 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
-from rlgym.utils.gamestates import GameState
+from rlgym.utils.gamestates import GameState, PlayerData
 
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
@@ -40,6 +40,20 @@ class ObsInfo:
         self.BOOST_TIMER_STD = 10
         self.DEMO_TIMER_STD = 3
         self.time_interval = tick_skip / 120
+        self.dodge_deadzone = 0.8
+        self.any_timers = True
+        self.boosttimes = [0] * 6
+        self.jumptimes = [0] * 6
+        self.fliptimes = [0] * 6
+        self.has_flippeds = [False] * 6
+        self.has_doublejumpeds = [False] * 6
+        self.flipdirs = [[0] * 2 for _ in range(6)]
+        self.airtimes = [0] * 6
+        self.on_grounds = [False] * 6
+        self.prev_prev_actions = [[0] * 8 for _ in range(6)]
+        self.is_jumpings = [False] * 6
+        self.has_jumpeds = [False] * 6
+        self.handbrakes = [0] * 6
 
     def reset(self, initial_state: GameState):
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -47,6 +61,32 @@ class ObsInfo:
         self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
         self.blue_obs = []
         self.orange_obs = []
+
+        # timers
+        self.boosttimes = np.zeros(
+            max(p.car_id for p in initial_state.players) + 1)
+
+        self.jumptimes = np.zeros(
+            max(p.car_id for p in initial_state.players) + 1)
+
+        self.fliptimes = np.zeros(
+            max(p.car_id for p in initial_state.players) + 1)
+        self.has_flippeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+
+        self.airtimes = np.zeros(
+            max(p.car_id for p in initial_state.players) + 1)
+
+        self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+        self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        for p in initial_state.players:
+            self.on_grounds[p.car_id] = p.on_ground
+
+        self.handbrakes = np.zeros(
+            max(p.car_id for p in initial_state.players) + 1)
 
     def pre_step(self, state: GameState):
         # create player/team agnostic items (do these even exist?)
@@ -87,6 +127,93 @@ class ObsInfo:
                     self.demo_timers[cid] = 3
             else:  # Not demoed
                 self.demo_timers[cid] = 0
+
+    def step(self, player: PlayerData, state: GameState, previous_action: np.ndarray):
+        self._update_addl_timers(player, state, previous_action)
+        self.prev_prev_actions[player.car_id] = previous_action  # noqa
+
+    def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray):
+        cid = player.car_id
+
+        # if this player was not boosting last tick and their boosttime timer means they actually stopped boosting, set to 0
+        if prev_actions[6] == 0 and self.boosttimes[cid] == 12:
+            self.boosttimes[cid] = 0
+        # otherwise, just increment the boosttime
+        else:
+            self.boosttimes[cid] += self.time_interval * 120
+            self.boosttimes[cid] = min(12, self.boosttimes[cid])
+
+        # update jumptime
+        if self.on_grounds[cid] and not self.is_jumpings[cid]:
+            self.has_jumpeds[cid] = False
+
+        if self.is_jumpings[cid]:
+            # JUMP_MIN_TIME = 3 ticks
+            # JUMP_MAX_TIME = 24 ticks
+            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
+                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+        elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
+            self.is_jumpings[cid] = True
+            self.jumptimes[cid] = 0
+
+        if self.is_jumpings[cid]:
+            self.has_jumpeds[cid] = True
+            self.jumptimes[cid] += self.time_interval * 120
+            self.jumptimes[cid] = min(
+                24, self.jumptimes[cid])
+        else:
+            self.jumptimes[cid] = 0
+
+        # update airtime and fliptime
+        if player.on_ground:
+            self.has_doublejumpeds[cid] = False
+            self.has_flippeds[cid] = False
+            self.airtimes[cid] = 0
+            self.fliptimes[cid] = 0
+            self.flipdirs[cid] = [0, 0]
+            self.on_grounds[cid] = True
+        else:
+            if self.has_jumpeds[cid] and not self.is_jumpings[cid]:
+                self.airtimes[cid] += self.time_interval * 120
+                # DOUBLEJUMP_MAX_DELAY = 150 ticks
+                self.airtimes[cid] = min(
+                    150, self.airtimes[cid])
+            else:
+                self.airtimes[cid] = 0
+            if self.has_jumpeds[cid] and (prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0) and \
+                    self.airtimes[cid] < 150:
+                if not self.has_doublejumpeds[cid] and not self.has_flippeds[cid]:
+                    should_flip = max(max(abs(prev_actions[3]), abs(prev_actions[2])), abs(
+                        prev_actions[4])) >= self.dodge_deadzone
+                    if should_flip:
+                        self.fliptimes[cid] = 0
+                        self.has_flippeds[cid] = True
+                        flipdir = np.asarray(
+                            [-prev_actions[2], prev_actions[3] + prev_actions[4]])
+                        if np.any(flipdir):
+                            self.flipdirs[cid] = list(
+                                flipdir / np.linalg.norm(flipdir))
+                        else:
+                            self.flipdirs[cid] = [0,0]
+                    else:
+                        self.has_doublejumpeds[cid] = True
+        if self.has_flippeds[cid]:
+            self.fliptimes[cid] += self.time_interval * 120
+            # FLIP_TORQUE_TIME = 78 ticks
+            self.fliptimes[cid] = min(
+                78, self.fliptimes[cid])
+
+        # update handbrake
+        if prev_actions[7] == 1:
+            # POWERSLIDE_RISE_RATE = 5
+            self.handbrakes[cid] += 5 * self.time_interval
+            self.handbrakes[cid] = min(
+                1, self.handbrakes[cid])
+        else:
+            # POWERSLIDE_FALL_RATE = 2
+            self.handbrakes[cid] -= 2 * self.time_interval
+            self.handbrakes[cid] = max(
+                0, self.handbrakes[cid])
 
 
 class SelectionDispatcher(SelectionListener):

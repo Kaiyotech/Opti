@@ -25,7 +25,7 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
-from my_stattrackers import GoalSpeedTop5perc
+from my_stattrackers import GoalSpeedTop5perc, FlipReset
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "lix_run0.01"
+    run_id = "lix_run1.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Lix_Run0.01",
+                        name="Lix_Run1.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     redis.delete("worker-ids")
 
     stat_trackers = [
-        EpisodeLength(), Boost(),
+        EpisodeLength(), FlipReset(),
         DistToBall(), CarOnGround(),
     ]
     state = random.getstate()
@@ -103,29 +103,6 @@ if __name__ == "__main__":
                                         gamemodes=("1v0",),
                                         max_age=1,
                                         )
-
-    # critic = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-    #                     Linear(256, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
-    #                     Linear(128, 1))
-    #
-    # # mask_array = torch.zeros(222, dtype=torch.bool)
-    # # mask_array[47:222] = True
-    # # actor = Sequential(MaskIndices(mask_array), Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
-    # #                    Linear(128, 373))
-    #
-    # actor = Sequential(Linear(47, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
-    #                    Linear(256, 128), LeakyReLU(), Linear(128, 373))
-    #
-    # actor = DiscretePolicy(actor, (373,))
-
-    # critic = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-    #                     Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-    #                     Linear(512, 1))
-    #
-    # actor = Sequential(Linear(222, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
-    #                    Linear(512, 373))
-    #
-    # actor = DiscretePolicy(actor, (373,))
 
     critic = Sequential(Linear(229, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 128), LeakyReLU(),
