@@ -76,9 +76,9 @@ if __name__ == "__main__":
                                      add_fliptime=True,
                                      add_boosttime=True,
                                      add_handbrake=True),
-        action_parser=CoyoteAction("test_setter"),
+        action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             TimeoutCondition(fps * 10),
+                             TimeoutCondition(fps * 5),
                              # TimeoutCondition(fps * 2),
                              LixTrainer(tick_skip=frame_skip)
                              ],

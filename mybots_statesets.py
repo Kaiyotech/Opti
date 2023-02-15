@@ -813,7 +813,7 @@ class LixSetter(StateSetter):
         car.set_lin_vel(speed * neg, 0, 0)
         car.boost = self.rng.uniform(0.2, 1.000001)
 
-        state_wrapper.ball.set_pos(x + (neg * 150), y + 125, 94)
+        state_wrapper.ball.set_pos(x + (neg * 150), y + self.rng.uniform(75, 250), 94)
         state_wrapper.ball.set_lin_vel(1600 * neg, 400, 0)
         state_wrapper.ball.set_ang_vel(0, 0, 0)
 
