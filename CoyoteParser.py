@@ -325,7 +325,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 21
+    assert 10 <= position_index <= 21 or 23 <= position_index <= 24 or 26 <= position_index <= 29
 
     if player.team_num == 1:
         inverted = True
