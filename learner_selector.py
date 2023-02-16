@@ -5,7 +5,7 @@ from torch.nn import Linear, Sequential, LeakyReLU
 
 from redis import Redis
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import Opti
+from agent import OptiSelector
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -116,20 +116,23 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
     input_size = 426 + Constants_selector.STACK_SIZE
-    action_size = 23
+    action_size = 30
+    boost_size = 2
+    shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, action_size + 1))
+                       Linear(128, action_size + boost_size))
 
-    critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic)
+    critic = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
+                          shape=shape)
 
-    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
+    actor = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor, shape=shape)
 
-    actor = DiscretePolicy(actor, shape=(action_size, 1))
+    actor = DiscretePolicy(actor, shape=shape)
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
