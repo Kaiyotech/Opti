@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "aerial_run1.07"
+    run_id = "aerial_run1.08"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Aerial_Run1.07",
+                        name="Aerial_Run1.08",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -80,16 +80,17 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_aerial.ZERO_SUM,
                                                               goal_w=2,
                                                               aerial_goal_w=5,
-                                                              double_tap_w=10,
-                                                              flip_reset_w=10,
-                                                              flip_reset_goal_w=20,
+                                                              double_tap_w=20,
+                                                              flip_reset_w=2,
+                                                              prevent_chain_reset=True,
+                                                              flip_reset_goal_w=4,
                                                               punish_ceiling_pinch_w=0,
                                                               punish_backboard_pinch_w=-1,
                                                               concede_w=-10,
                                                               velocity_bg_w=0.05,
-                                                              acel_ball_w=0.1,
+                                                              acel_ball_w=0.2,
                                                               team_spirit=1,
-                                                              cons_air_touches_w=0.02,
+                                                              cons_air_touches_w=0.01,
                                                               jump_touch_w=0.1,
                                                               wall_touch_w=0.5,
                                                               tick_skip=frame_skip
@@ -136,10 +137,10 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("aerial_saves/Opti_1676311102.1543565/Opti_3530/checkpoint.pt")
+    alg.load("aerial_saves/Opti_1676493790.2287304/Opti_4370/checkpoint.pt")
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    # alg.freeze_policy(100)
+    alg.freeze_policy(30)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="aerial_saves")
