@@ -98,7 +98,23 @@ if model_type == "aerial":
 
 # actor for recovery
 if model_type == "recovery":
-    actor = Sequential(Linear(222, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+    actor = Sequential(Linear(229, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
+
+    actor = DiscretePolicy(actor, (373,))
+
+# actor for recovery
+if model_type == "halfflip":
+    actor = Sequential(Linear(229, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
+                       Linear(128, 128), LeakyReLU(),
+                       Linear(128, 373))
+
+    actor = DiscretePolicy(actor, (373,))
+
+# actor for recovery
+if model_type == "walldash":
+    actor = Sequential(Linear(229, 128), LeakyReLU(), Linear(128, 128), LeakyReLU(),
                        Linear(128, 128), LeakyReLU(),
                        Linear(128, 373))
 

@@ -325,7 +325,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 21
+    assert 10 <= position_index <= 21 or 23 <= position_index <= 24 or 26 <= position_index <= 29
 
     if player.team_num == 1:
         inverted = True
@@ -342,6 +342,8 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     oppo_car.sort(key=lambda c: np.linalg.norm(
         c.position - player_car.position))
 
+    recovery_distance = 3000
+
     if ball_position is None:
         # Ball position first
         ball_pos = np.asarray([0, 0, 0])
@@ -354,7 +356,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
-            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
@@ -378,7 +380,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
-            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
@@ -389,7 +391,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
-            forward_point = (2000 * rot_fwd) + player_car.position[:2]
+            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
@@ -399,7 +401,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
                 fwd = player_car.forward()[0]
             fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
             # distance of 2000
-            y_pos = (2000 * fwd) + player_car.position[1]
+            y_pos = (recovery_distance * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -5120, 5120)
             ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
         elif position_index == 27:  # up 45

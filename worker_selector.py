@@ -257,7 +257,9 @@ class SelectionDispatcher(SelectionListener):
         self.thread.join()
 
 if __name__ == "__main__":
+    frame_skip = Constants_selector.FRAME_SKIP
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
+                        tick_skip=frame_skip,
                         goal_w=5,
                         concede_w=-5,
                         team_spirit=1,
@@ -278,7 +280,6 @@ if __name__ == "__main__":
     # obs_output = np.zeros()
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP)
     parser = SelectorParser(obs_info=obs_info)
-    frame_skip = Constants_selector.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -375,6 +376,7 @@ if __name__ == "__main__":
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
+                                selector_skip_k=0.01,
                                 )
 
     worker.env._match._obs_builder.env = worker.env

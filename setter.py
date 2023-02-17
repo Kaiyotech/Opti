@@ -6,7 +6,7 @@ from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampl
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 from rlgym.utils.state_setters.random_state import RandomState
 from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, Wavedash, \
-    Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter
+    Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter, LixSetter
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -147,8 +147,9 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(WallDribble(), True, False, False),
                             AugmentSetter(RandomState(cars_on_ground=False), True, False, False),
                             AugmentSetter(ReplaySetter(double_tap_replays[i], random_boost=True, remove_defender_weight=0.1), True, False, False),
+                            AugmentSetter(GroundAirDribble(), True, False, False),
                         ),
-                        (0.05, 0.30, 0.20, 0.20, 0.10, 0.01, 0.14)
+                        (0.05, 0.20, 0.14, 0.15, 0.15, 0, 0.21, 0.1)
                     )
                 )
         elif mode == "pinch":

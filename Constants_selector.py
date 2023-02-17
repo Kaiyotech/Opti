@@ -31,4 +31,12 @@ SUB_MODEL_NAMES = [
     "recover_opponent",
     "recover_back_post",
     "recover_ball",
+    "halfflip_back",
+    "speedflip",
+    "halfflip_ball",
+    "walldash_straight",
+    "walldash_up",
+    "walldash_down",
+    "walldash_boost",
+    "walldash_ball",
 ]
