@@ -264,7 +264,7 @@ if __name__ == "__main__":
                         concede_w=-5,
                         team_spirit=1,
                         punish_action_change_w=0,
-                        decay_punish_action_change_w=-0.001,
+                        decay_punish_action_change_w=0,
                         flip_reset_w=2,
                         flip_reset_goal_w=5,
                         aerial_goal_w=2,
@@ -275,7 +275,7 @@ if __name__ == "__main__":
                         wall_touch_w=1,
                         exit_velocity_w=1,
                         velocity_pb_w=0.00,
-                        kickoff_w=0.005,
+                        kickoff_w=0.01,
                         )
     # obs_output = np.zeros()
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP)
@@ -339,8 +339,6 @@ if __name__ == "__main__":
         elif sys.argv[3] == 'STREAMER':
             setup_streamer()
 
-
-
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
@@ -369,14 +367,14 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.15, '2v2': 0.2, '3v3': 0.65},  # default 1/3
+                                gamemode_weights={'1v1': 0.35, '2v2': 0.2, '3v3': 0.45},  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.01,
+                                selector_skip_k=0.0045,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
