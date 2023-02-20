@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_7.00"
+    run_id = "selector_run_7.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_7.00",
+                        name="Selector_Run_7.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -117,7 +117,7 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
     input_size = 426 + Constants_selector.STACK_SIZE
-    action_size = 30
+    action_size = 31
     boost_size = 2
     shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),

@@ -46,7 +46,8 @@ class OptiSelector(nn.Module):  # takes an embedder and a network and runs the e
         main, cars = inp
         out = th.max(self.embedder(cars), -2)[0]
         result = self.net(th.cat((main, out), dim=1))
-        result = result.split(self.shape, 1)
+        if result.shape[1] != 1: # don't do critic
+            result = result.split(self.shape, 1)
         return result
 
 
