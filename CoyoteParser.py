@@ -342,7 +342,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     oppo_car.sort(key=lambda c: np.linalg.norm(
         c.position - player_car.position))
 
-    recovery_distance = 3000
+    recovery_distance = 2000
 
     if ball_position is None:
         # Ball position first
@@ -452,8 +452,8 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
     player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
-    # oppo_pos is 400 uu behind player
-    oppo_pos = player_car.position[:2] - 400 * player_car_ball_pos_vec
+    # oppo_pos is 200 uu behind player
+    oppo_pos = player_car.position[:2] - 200 * player_car_ball_pos_vec
     # Octane elevation at rest is 17.01uu
     oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01])
     oppo_yaw = np.arctan2(
