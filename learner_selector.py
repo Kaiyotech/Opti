@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_7.01"
+    run_id = "selector_run_7.02"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_7.01",
+                        name="Selector_Run_7.02",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                                               jump_touch_w=0.5,
                                                               wall_touch_w=1,
                                                               exit_velocity_w=1,
-                                                              velocity_pb_w=0.00,
+                                                              velocity_pb_w=0.005,
                                                               kickoff_w=0.01,
                                                               ),
                                         lambda: parser,
@@ -161,7 +161,8 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    # alg.load("Selector_saves/Opti_1673548000.4596217/Opti_2525/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1676920682.7990208/Opti_300/checkpoint.pt")
+
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
