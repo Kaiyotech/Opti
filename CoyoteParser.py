@@ -689,7 +689,7 @@ class SelectorParser(ActionParser):
 
 
 def check_terminal_selector(state: GameState, player: PlayerData) -> bool:
-    if np.linalg.norm(player.car_data.position - state.ball.position) < 200:
+    if np.linalg.norm(player.car_data.position - state.ball.position) < 300:
         return True
     return False
 
