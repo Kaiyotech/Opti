@@ -204,7 +204,7 @@ def override_state(player, state, position_index) -> GameState:
         fwd = player_car.forward()[:2]  # vector in forward direction just xy
         if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
             fwd = player_car.up()[:2]
-        fwd = fwd / np.linalg.norm(fwd)  # make unit
+        fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
         rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                               fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
         # distance of 1500 in rotated direction
@@ -237,7 +237,7 @@ def override_state(player, state, position_index) -> GameState:
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
-    player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
+    player_car_ball_pos_vec /= (np.linalg.norm(player_car_ball_pos_vec) + 1e-8)
     # oppo_pos is 400 uu behind player
     oppo_pos = player_car.position[:2] - 400 * player_car_ball_pos_vec
     # Octane elevation at rest is 17.01uu
@@ -352,7 +352,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             position_index = position_index - 10
             angle_rad = position_index * np.pi / 4
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
@@ -376,7 +376,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         elif position_index == 23:  # 23 is behind for half-flip, relative
             angle_rad = np.pi
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8) # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
@@ -387,7 +387,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         elif position_index == 24:  # 24 is forward, relative
             angle_rad = 0
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
@@ -399,7 +399,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of 2000
             y_pos = (recovery_distance * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -5120, 5120)
@@ -411,7 +411,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of length to keep 45 degrees until ceiling/ground
             y_pos = (0.707 * length * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -5120, 5120)
@@ -425,7 +425,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            fwd = fwd /(np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of length to keep 45 degrees until ceiling/ground
             y_pos = (0.707 * length * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -5120, 5120)
@@ -451,7 +451,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
-    player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
+    player_car_ball_pos_vec /= (np.linalg.norm(player_car_ball_pos_vec) + 1e-8)
     # oppo_pos is 200 uu behind player
     oppo_pos = player_car.position[:2] - 200 * player_car_ball_pos_vec
     # Octane elevation at rest is 17.01uu
