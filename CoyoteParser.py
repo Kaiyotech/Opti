@@ -325,7 +325,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 21 or 23 <= position_index <= 24 or 26 <= position_index <= 29
+    assert 10 <= position_index <= 30
 
     if player.team_num == 1:
         inverted = True
@@ -343,8 +343,8 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         c.position - player_car.position))
 
     recovery_distance = 3000
-
-    if ball_position is None:
+    # 22, 25, 30 are actual ball, just override player
+    if ball_position is None and (position_index != 22 and position_index != 25 and position_index != 30):
         # Ball position first
         ball_pos = np.asarray([0, 0, 0])
         # 2000 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
@@ -436,6 +436,10 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
 
+    # don't override ball, but do override cars
+    elif position_index == 22 or position_index == 25 or position_index == 30 and ball_position is None:
+        ball_pos = state.ball.position
+
     # override with passed in ball position
     else:
         ball_pos = ball_position
@@ -444,10 +448,11 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     retstate.inverted_ball.position = ball_pos
 
     # Ball velocity next
-    retstate.ball.linear_velocity = np.zeros(3)
-    retstate.inverted_ball.linear_velocity = np.zeros(3)
-    retstate.ball.angular_velocity = np.zeros(3)
-    retstate.inverted_ball.angular_velocity = np.zeros(3)
+    if position_index != 22 and position_index != 25 and position_index != 30:
+        retstate.ball.linear_velocity = np.zeros(3)
+        retstate.inverted_ball.linear_velocity = np.zeros(3)
+        retstate.ball.angular_velocity = np.zeros(3)
+        retstate.inverted_ball.angular_velocity = np.zeros(3)
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
@@ -491,6 +496,7 @@ class SelectorParser(ActionParser):
         self.ball_position = np.zeros([6, 3])
         # self.obs_output = obs_output
         self.obs_info = obs_info
+        self.force_selector_choice = None
         super().__init__()
 
         self.models = [
@@ -643,16 +649,18 @@ class SelectorParser(ActionParser):
             # override state for recovery
 
             newstate = state
-
-            if 10 <= action <= 21 or \
-                    23 <= action <= 24 or \
-                    26 <= action <= 29:
+            # 22, 25, 30 are actual ball, just override player
+            if 10 <= action <= 30:
                 newstate = override_abs_state(player, state, action)
+
+            if 10 <= action <= 30:
+                # if reaching the "ball" or ball soon, allow a new choice by selector
+                self.force_selector_choice[i] = check_terminal_selector(newstate, player)
 
             if 23 <= action <= 24:  # freeze
                 if self.prev_model_actions[i] == action:  # action didn't change
                     newstate = override_abs_state(player, state, action, self.ball_position[i])
-                else:  # action submodel changed
+                else:  # action submodel changed or reaching the objective
                     newstate = override_abs_state(player, state, action)
                     self.ball_position[i] = state.ball.position  # save new position
 
@@ -678,6 +686,12 @@ class SelectorParser(ActionParser):
 
     def register_selection_listener(self, listener: SelectionListener):
         self.selection_listener = listener
+
+
+def check_terminal_selector(state: GameState, player: PlayerData) -> bool:
+    if np.linalg.norm(player.car_data.position - state.ball.position) < 200:
+        return True
+    return False
 
 
 if __name__ == '__main__':

@@ -287,7 +287,7 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 0.01
+    evaluation_prob = 0.5  # 0.01
     past_version_prob = 0.1
     deterministic_streamer = False
     force_old_deterministic = False
@@ -378,5 +378,7 @@ if __name__ == "__main__":
                                 )
 
     worker.env._match._obs_builder.env = worker.env
+
+    parser.force_selector_choice = worker.force_selector_choice  # ugh. I hate myself.
 
     worker.run()
