@@ -39,8 +39,10 @@ class CoyoteObsBuilder(ObsBuilder):
                  dodge_deadzone=0.8,
                  flip_dir=True,
                  end_object: PhysicsObject = None,
+                 mask_aerial_opp=False,
                  ):
         super().__init__()
+        self.mask_aerial_opp = mask_aerial_opp
         self.flip_dir = flip_dir
         self.end_object = end_object
         assert add_boosttime == add_airtime == add_fliptime == add_jumptime == add_handbrake, "All timers must match"
@@ -696,6 +698,17 @@ class CoyoteObsBuilder(ObsBuilder):
             player.car_data.position))
             closest = tmp_oppo[0].car_id
 
+        if self.mask_aerial_opp:
+            tmp_oppo = [
+                p for p in state.players if p.team_num != player.team_num]
+
+            # player_pos = player.inverted_car_data.position if inverted else player.car_data.position
+            # if player_pos[1] <= 0: # closer to their own net
+            tmp_oppo.sort(
+                key=lambda p: np.linalg.norm(p.inverted_car_data.position if inverted else p.car_data.position
+                                                                                           - ball.position))
+            closest = tmp_oppo[0].car_id
+
         if self.override_cars:
             tmp_oppo = [
                 p for p in state.players if p.team_num != player.team_num]
@@ -740,7 +753,7 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 continue
 
-            if p.team_num == player.team_num and not self.only_closest_opp:
+            if p.team_num == player.team_num and not (self.only_closest_opp or self.mask_aerial_opp):
                 demo_timer = self.demo_timers[p.car_id] / self.DEMO_TIMER_STD
                 allies.append(self.create_car_packet_njit(
                     player.inverted_car_data.position if inverted else player.car_data.position,
@@ -755,7 +768,7 @@ class CoyoteObsBuilder(ObsBuilder):
                     p.boost_amount, p.on_ground, p.has_jump, p.has_flip, p.is_demoed,
                     demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD
                 ))
-            elif not self.only_closest_opp or closest == p.car_id:
+            elif not (self.only_closest_opp or self.mask_aerial_opp) or closest == p.car_id:
                 demo_timer = self.demo_timers[p.car_id] / self.DEMO_TIMER_STD
                 opponents.append(self.create_car_packet_njit(
                     player.inverted_car_data.position if inverted else player.car_data.position,
@@ -773,7 +786,7 @@ class CoyoteObsBuilder(ObsBuilder):
             else:
                 continue
 
-        if self.only_closest_opp:
+        if self.only_closest_opp or self.mask_aerial_opp:
             a_count = 0
             o_count = 1
 
@@ -917,14 +930,17 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
                  remove_other_cars=False,
                  zero_other_cars=False,
                  obs_info=None,
+                 mask_aerial_opp=False,
                  ):
         """use this when it was trained before the NJIT changes around 1/12/2023"""
         super().__init__()
+        self.mask_aerial_opp = mask_aerial_opp
         self.obs_info = obs_info
         self.zero_other_cars = zero_other_cars
         self.remove_other_cars = remove_other_cars
         self.expanding = expanding
         self.only_closest_opp = only_closest_opp
+        assert not (self.only_closest_opp and self.mask_aerial_opp)
         self.extra_boost_info = extra_boost_info
         self.POS_STD = 2300
         self.VEL_STD = 2300
@@ -1168,6 +1184,17 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
             player.car_data.position))
             closest = tmp_oppo[0].car_id
 
+        elif self.mask_aerial_opp:
+            tmp_oppo = [
+                p for p in state.players if p.team_num != player.team_num]
+
+            # player_pos = player.inverted_car_data.position if inverted else player.car_data.position
+            # if player_pos[1] <= 0: # closer to their own net
+            tmp_oppo.sort(
+                key=lambda p: np.linalg.norm(p.inverted_car_data.position if inverted else p.car_data.position
+                                                                                           - ball.position))
+            closest = tmp_oppo[0].car_id
+
         for p in state.players:
             if p.car_id == player.car_id or zero_other_players:
                 continue
@@ -1179,17 +1206,17 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
             else:
                 continue
 
-            if p.team_num == player.team_num and not self.only_closest_opp:
+            if p.team_num == player.team_num and not (self.only_closest_opp or self.mask_aerial_opp):
                 allies.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                               p.inverted_car_data if inverted else p.car_data, p, ball, p.team_num == player.team_num))
-            elif not self.only_closest_opp or closest == p.car_id:
+            elif not (self.only_closest_opp or self.mask_aerial_opp) or closest == p.car_id:
                 opponents.append(self.create_car_packet(player.inverted_car_data if inverted else player.car_data,
                                                         p.inverted_car_data if inverted else p.car_data, p, ball,
                                                         p.team_num == player.team_num))
             else:
                 continue
 
-        if self.only_closest_opp:
+        if self.only_closest_opp or self.mask_aerial_opp:
             a_count = 0
             o_count = 1
 

@@ -368,6 +368,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
 
         elif position_index == 20:  # 20 is closest opponent
             ball_pos = oppo_car[0].position
+            ball_pos[2] = 94
         elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
             x_pos = 1000
             if ball.position[0] >= 0:
@@ -436,9 +437,8 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
 
-    # don't override ball, but do override cars
-    elif position_index == 22 or position_index == 25 or position_index == 30 and ball_position is None:
-        ball_pos = state.ball.position
+    elif position_index == 22 or position_index == 25 or position_index == 30:
+        ball_pos = state.inverted_ball.position if inverted else state.ball.position
 
     # override with passed in ball position
     else:
@@ -453,6 +453,14 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         retstate.inverted_ball.linear_velocity = np.zeros(3)
         retstate.ball.angular_velocity = np.zeros(3)
         retstate.inverted_ball.angular_velocity = np.zeros(3)
+    elif position_index == 20:
+        retstate.ball.linear_velocity = oppo_car[0].linear_velocity
+        retstate.inverted_ball.linear_velocity = oppo_car[0].linear_velocity
+        retstate.ball.angular_velocity = oppo_car[0].angular_velocity
+        retstate.inverted_ball.angular_velocity = oppo_car[0].angular_velocity
+    else:
+        retstate.ball = state.ball
+        retstate.inverted_ball = state.inverted_ball
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
@@ -506,17 +514,17 @@ class SelectorParser(ActionParser):
             (SubAgent("gp_jit.pt"),
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("aerial_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
             (SubAgent("flick_1_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("flick_2_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("flipreset_1_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
             (SubAgent("flipreset_2_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
             (SubAgent("flipreset_3_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
             (SubAgent("pinch_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
             (SubAgent("recovery_jit.pt"),  # 10
@@ -689,7 +697,7 @@ class SelectorParser(ActionParser):
 
 
 def check_terminal_selector(state: GameState, player: PlayerData) -> bool:
-    if np.linalg.norm(player.car_data.position - state.ball.position) < 200:
+    if np.linalg.norm(player.car_data.position - state.ball.position) < 300:
         return True
     return False
 
