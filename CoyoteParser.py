@@ -368,6 +368,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
 
         elif position_index == 20:  # 20 is closest opponent
             ball_pos = oppo_car[0].position
+            ball_pos[2] = 94
         elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
             x_pos = 1000
             if ball.position[0] >= 0:
@@ -449,6 +450,11 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         retstate.inverted_ball.linear_velocity = np.zeros(3)
         retstate.ball.angular_velocity = np.zeros(3)
         retstate.inverted_ball.angular_velocity = np.zeros(3)
+    elif position_index == 20:
+        retstate.ball.linear_velocity = oppo_car[0].linear_velocity
+        retstate.inverted_ball.linear_velocity = oppo_car[0].linear_velocity
+        retstate.ball.angular_velocity = oppo_car[0].angular_velocity
+        retstate.inverted_ball.angular_velocity = oppo_car[0].angular_velocity
     else:
         retstate.ball = state.ball
         retstate.inverted_ball = state.inverted_ball
