@@ -379,4 +379,6 @@ if __name__ == "__main__":
 
     worker.env._match._obs_builder.env = worker.env
 
+    parser.force_selector_choice = worker.force_selector_choice  # ugh. I hate myself.
+
     worker.run()

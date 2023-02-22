@@ -204,7 +204,7 @@ def override_state(player, state, position_index) -> GameState:
         fwd = player_car.forward()[:2]  # vector in forward direction just xy
         if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
             fwd = player_car.up()[:2]
-        fwd = fwd / np.linalg.norm(fwd)  # make unit
+        fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
         rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                               fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
         # distance of 1500 in rotated direction
@@ -237,7 +237,7 @@ def override_state(player, state, position_index) -> GameState:
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
-    player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
+    player_car_ball_pos_vec /= (np.linalg.norm(player_car_ball_pos_vec) + 1e-8)
     # oppo_pos is 400 uu behind player
     oppo_pos = player_car.position[:2] - 400 * player_car_ball_pos_vec
     # Octane elevation at rest is 17.01uu
@@ -325,7 +325,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 21 or 23 <= position_index <= 24 or 26 <= position_index <= 29
+    assert 10 <= position_index <= 30
 
     if player.team_num == 1:
         inverted = True
@@ -342,9 +342,9 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     oppo_car.sort(key=lambda c: np.linalg.norm(
         c.position - player_car.position))
 
-    recovery_distance = 2000
-
-    if ball_position is None:
+    recovery_distance = 3000
+    # 22, 25, 30 are actual ball, just override player
+    if ball_position is None and (position_index != 22 and position_index != 25 and position_index != 30):
         # Ball position first
         ball_pos = np.asarray([0, 0, 0])
         # 2000 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
@@ -352,19 +352,19 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             position_index = position_index - 10
             angle_rad = position_index * np.pi / 4
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2000 in rotated direction
             forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
         elif position_index < 20:  # 18 and 19 are back left and back right boost
             if position_index == 18:
-                ball_pos = np.asarray([3072, -4096, 40])
+                ball_pos = np.asarray([3072, -4096, 94])
             elif position_index == 19:
-                ball_pos = np.asarray([-3072, -4096, 40])
+                ball_pos = np.asarray([-3072, -4096, 94])
 
         elif position_index == 20:  # 20 is closest opponent
             ball_pos = oppo_car[0].position
@@ -372,49 +372,49 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             x_pos = 1000
             if ball.position[0] >= 0:
                 x_pos = -1000
-            ball_pos = np.asarray([x_pos, -4800, 40])
+            ball_pos = np.asarray([x_pos, -4800, 94])
         elif position_index == 23:  # 23 is behind for half-flip, relative
             angle_rad = np.pi
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8) # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance of 2000 in rotated direction
-            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
+            # distance of 2500 in rotated direction
+            forward_point = (2500 * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
         elif position_index == 24:  # 24 is forward, relative
             angle_rad = 0
             fwd = np.asarray([0, 1])
-            fwd = fwd / np.linalg.norm(fwd)  # make unit
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance of 2000 in rotated direction
-            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
+            # distance of 2300 in rotated direction
+            forward_point = (2300 * rot_fwd) + player_car.position[:2]
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 40])
+            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
         elif position_index == 26:  # same z
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
-            # distance of 2000
-            y_pos = (recovery_distance * fwd) + player_car.position[1]
-            y_pos = np.clip(y_pos, -5120, 5120)
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
+            # distance of 1700
+            y_pos = (1700 * fwd) + player_car.position[1]
+            y_pos = np.clip(y_pos, -3900, 3900)
             ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
         elif position_index == 27:  # up 45
             # space until ceiling
-            z_space = max(1, 1750 - player_car.position[2])
+            z_space = max(1, 1700 - player_car.position[2])
             length = z_space / 0.707
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of length to keep 45 degrees until ceiling/ground
             y_pos = (0.707 * length * fwd) + player_car.position[1]
-            y_pos = np.clip(y_pos, -5120, 5120)
+            y_pos = np.clip(y_pos, -3900, 3900)
             z_pos = (0.707 * length) + player_car.position[2]
             z_pos = np.clip(z_pos, 300, 1750)
             ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
@@ -425,16 +425,20 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd / np.linalg.norm(fwd)  # make unit (just get sign basically)
+            fwd = fwd /(np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of length to keep 45 degrees until ceiling/ground
             y_pos = (0.707 * length * fwd) + player_car.position[1]
-            y_pos = np.clip(y_pos, -5120, 5120)
+            y_pos = np.clip(y_pos, -3900, 3900)
             z_pos = player_car.position[2] - (0.707 * length)
             z_pos = np.clip(z_pos, 300, 1750)
             ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
         elif position_index == 29:  # back boost this side
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
+
+    # don't override ball, but do override cars
+    elif position_index == 22 or position_index == 25 or position_index == 30 and ball_position is None:
+        ball_pos = state.ball.position
 
     # override with passed in ball position
     else:
@@ -444,34 +448,36 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     retstate.inverted_ball.position = ball_pos
 
     # Ball velocity next
-    retstate.ball.linear_velocity = np.zeros(3)
-    retstate.inverted_ball.linear_velocity = np.zeros(3)
-    retstate.ball.angular_velocity = np.zeros(3)
-    retstate.inverted_ball.angular_velocity = np.zeros(3)
+    if position_index != 22 and position_index != 25 and position_index != 30:
+        retstate.ball.linear_velocity = np.zeros(3)
+        retstate.inverted_ball.linear_velocity = np.zeros(3)
+        retstate.ball.angular_velocity = np.zeros(3)
+        retstate.inverted_ball.angular_velocity = np.zeros(3)
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
-    player_car_ball_pos_vec /= np.linalg.norm(player_car_ball_pos_vec)
+    player_car_ball_pos_vec /= (np.linalg.norm(player_car_ball_pos_vec) + 1e-8)
     # oppo_pos is 200 uu behind player
     oppo_pos = player_car.position[:2] - 200 * player_car_ball_pos_vec
-    # Octane elevation at rest is 17.01uu
-    oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01])
+    # ready to wavedash, so slightly up
+    oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 100])
     oppo_yaw = np.arctan2(
         player_car_ball_pos_vec[1], player_car_ball_pos_vec[0])
     oppo_rot_cy = np.cos(oppo_yaw)
     oppo_rot_sy = np.sin(oppo_yaw)
     oppo_rot = np.array(((oppo_rot_cy, -oppo_rot_sy, 0),
                          (oppo_rot_sy, oppo_rot_cy, 0), (0, 0, 1)))
-    # oppo_vel is max driving speed without boosting in direction of ball
-    oppo_vel = np.asarray([1410 * player_car_ball_pos_vec[0], 1410 * player_car_ball_pos_vec[1], 0])
+    # oppo_vel is same vel as player
+    oppo_vel = player_car.linear_velocity
     new_oppo_car_data = PhysicsObject(
         position=oppo_pos, quaternion=math.rotation_to_quaternion(oppo_rot), linear_velocity=oppo_vel)
     retstate.players[oppo_start].car_data = new_oppo_car_data
     retstate.players[oppo_start].inverted_car_data = new_oppo_car_data
+    retstate.players[oppo_start].boost_amount = 1  # give the opponent full boost
     # make other opponents so they are definitely farther away and the obs only takes closest
     # and dummies the rest
     for i in range(oppo_start + 1, oppo_stop):
-        oppo_pos = player_car.position[:2] - 2500 * player_car_ball_pos_vec
+        oppo_pos = player_car.position[:2] - 5000 * player_car_ball_pos_vec
         oppo_pos = np.asarray([oppo_pos[0], oppo_pos[1], 17.01 * i])
         retstate.players[i].car_data.position = oppo_pos
         retstate.players[i].inverted_car_data.position = oppo_pos
@@ -490,6 +496,7 @@ class SelectorParser(ActionParser):
         self.ball_position = np.zeros([6, 3])
         # self.obs_output = obs_output
         self.obs_info = obs_info
+        self.force_selector_choice = None
         super().__init__()
 
         self.models = [
@@ -642,16 +649,18 @@ class SelectorParser(ActionParser):
             # override state for recovery
 
             newstate = state
-
-            if 10 <= action <= 21 or \
-                    23 <= action <= 24 or \
-                    26 <= action <= 29:
+            # 22, 25, 30 are actual ball, just override player
+            if 10 <= action <= 30:
                 newstate = override_abs_state(player, state, action)
+
+            if 10 <= action <= 30:
+                # if reaching the "ball" or ball soon, allow a new choice by selector
+                self.force_selector_choice[i] = check_terminal_selector(newstate, player)
 
             if 23 <= action <= 24:  # freeze
                 if self.prev_model_actions[i] == action:  # action didn't change
                     newstate = override_abs_state(player, state, action, self.ball_position[i])
-                else:  # action submodel changed
+                else:  # action submodel changed or reaching the objective
                     newstate = override_abs_state(player, state, action)
                     self.ball_position[i] = state.ball.position  # save new position
 
@@ -677,6 +686,12 @@ class SelectorParser(ActionParser):
 
     def register_selection_listener(self, listener: SelectionListener):
         self.selection_listener = listener
+
+
+def check_terminal_selector(state: GameState, player: PlayerData) -> bool:
+    if np.linalg.norm(player.car_data.position - state.ball.position) < 200:
+        return True
+    return False
 
 
 if __name__ == '__main__':
