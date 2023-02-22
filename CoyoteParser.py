@@ -436,10 +436,6 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
 
-    # don't override ball, but do override cars
-    elif position_index == 22 or position_index == 25 or position_index == 30 and ball_position is None:
-        ball_pos = state.ball.position
-
     # override with passed in ball position
     else:
         ball_pos = ball_position
@@ -453,6 +449,9 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         retstate.inverted_ball.linear_velocity = np.zeros(3)
         retstate.ball.angular_velocity = np.zeros(3)
         retstate.inverted_ball.angular_velocity = np.zeros(3)
+    else:
+        retstate.ball = state.ball
+        retstate.inverted_ball = state.inverted_ball
 
     # Nearest player next
     player_car_ball_pos_vec = ball_pos[:2] - player_car.position[:2]
