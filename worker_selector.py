@@ -374,7 +374,7 @@ if __name__ == "__main__":
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0045,
+                                selector_skip_k=0.00045,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
