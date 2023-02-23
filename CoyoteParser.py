@@ -674,7 +674,7 @@ class SelectorParser(ActionParser):
 
             obs = self.models[action][1].build_obs(
                 player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost)
-            parse_action = self.models[action][0].act(obs)[0]
+            parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
             # self.prev_action[i] = np.asarray(parse_action)
