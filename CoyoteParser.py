@@ -381,8 +381,10 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             ball_pos = np.asarray([x_pos, -4800, 94])
         elif position_index == 23:  # 23 is behind for half-flip, relative
             angle_rad = np.pi
-            fwd = np.asarray([0, 1])
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8) # make unit
+            fwd = player_car.forward()[:2]  # vector in forward direction just xy
+            if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
+                fwd = player_car.up()[:2]
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
             # distance of 2500 in rotated direction
@@ -392,7 +394,9 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
         elif position_index == 24:  # 24 is forward, relative
             angle_rad = 0
-            fwd = np.asarray([0, 1])
+            fwd = player_car.forward()[:2]  # vector in forward direction just xy
+            if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
+                fwd = player_car.up()[:2]
             fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
