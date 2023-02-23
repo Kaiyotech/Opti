@@ -165,11 +165,16 @@ class CoyoteAction(ActionParser):
             if np.isnan(action).any():  # it's been padded, delete to go back to original
                 stripped_action = (
                     action[~np.isnan(action)]).squeeze().astype('int')
-                parsed_actions.append(self._lookup_table[stripped_action])
+
+                done_action = self._lookup_table[stripped_action]
+                if zero_boost:
+                    done_action[6] = 0
+                parsed_actions.append(done_action)
             else:
+                if zero_boost:
+                    action[6] = 0
                 parsed_actions.append(action)
-        if zero_boost:
-            parsed_actions[6] = 0
+
         return np.asarray(parsed_actions)
 
 
