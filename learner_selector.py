@@ -99,13 +99,13 @@ if __name__ == "__main__":
                                                               flip_reset_goal_w=5,
                                                               aerial_goal_w=2,
                                                               double_tap_w=4,
-                                                              punish_directional_changes=True,
-                                                              cons_air_touches_w=0.4,
-                                                              jump_touch_w=0.5,
-                                                              wall_touch_w=1,
+                                                              cons_air_touches_w=0.2,
+                                                              jump_touch_w=1,
+                                                              wall_touch_w=2.5,
                                                               exit_velocity_w=1,
                                                               velocity_pb_w=0.005,
-                                                              kickoff_w=0.01,
+                                                              kickoff_w=0.05,
+                                                              punish_dist_goal_score_w=-1,
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -161,11 +161,11 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    alg.load("Selector_saves/Opti_1677123320.2712631/Opti_2225/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1677183273.673882/Opti_3510/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(50)
+    alg.freeze_policy(100)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="Selector_saves")

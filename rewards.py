@@ -118,7 +118,9 @@ class ZeroSumReward(RewardFunction):
             punish_backboard_pinch_w=0,
             dash_limit_per_ep=100000000,
             lix_reset_w=0,
+            punish_dist_goal_score_w=0,
     ):
+        self.punish_dist_goal_score_w = punish_dist_goal_score_w
         self.lix_reset_w = lix_reset_w
         self.dash_limit_per_ep = dash_limit_per_ep
         self.dash_count = [0] * 6
@@ -547,6 +549,12 @@ class ZeroSumReward(RewardFunction):
                     if self.blue_touch_height > GOAL_HEIGHT:
                         player_rewards[self.blue_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[:mid] += self.team_spirit * goal_reward
+                    # punish orange for distance from ball when goal scored
+                    orange = slice(mid, None)
+                    goal_dist = norm(np.stack([p.car_data.position for p in state.players[orange]])
+                                     - self.last_state.ball.position, axis=-1)
+                    player_rewards[orange] += self.punish_dist_goal_score_w * (1 - np.exp(-goal_dist / CAR_MAX_SPEED))
+
                 elif self.orange_touch_timer < self.touch_timeout and self.zero_sum:
                     player_rewards[mid:] -= goal_reward
 
@@ -567,6 +575,11 @@ class ZeroSumReward(RewardFunction):
                     if self.orange_touch_height > GOAL_HEIGHT:
                         player_rewards[self.orange_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[mid:] += self.team_spirit * goal_reward
+                    # punish blue for distance from ball when goal scored
+                    blue = slice(None, mid)
+                    goal_dist = norm(np.stack([p.car_data.position for p in state.players[blue]])
+                                     - self.last_state.ball.position, axis=-1)
+                    player_rewards[blue] += self.punish_dist_goal_score_w * (1 - np.exp(-goal_dist / CAR_MAX_SPEED))
 
                 elif self.blue_touch_timer < self.touch_timeout and self.zero_sum:
                     player_rewards[:mid] -= goal_reward

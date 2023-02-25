@@ -22,6 +22,10 @@ import threading
 import json
 import os
 
+from pretrained_agents.necto.necto_v1 import NectoV1
+from pretrained_agents.nexto.nexto_v2 import NextoV2
+from pretrained_agents.KBB.kbb import KBB
+
 set_num_threads(1)
 
 
@@ -256,6 +260,7 @@ class SelectionDispatcher(SelectionListener):
         self.wake_event.set()
         self.thread.join()
 
+
 if __name__ == "__main__":
     frame_skip = Constants_selector.FRAME_SKIP
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
@@ -269,13 +274,13 @@ if __name__ == "__main__":
                         flip_reset_goal_w=5,
                         aerial_goal_w=2,
                         double_tap_w=4,
-                        punish_directional_changes=True,
-                        cons_air_touches_w=0.4,
-                        jump_touch_w=0.5,
-                        wall_touch_w=1,
+                        cons_air_touches_w=0.2,
+                        jump_touch_w=1,
+                        wall_touch_w=2.5,
                         exit_velocity_w=1,
                         velocity_pb_w=0.005,
-                        kickoff_w=0.01,
+                        kickoff_w=0.05,
+                        punish_dist_goal_score_w=-1,
                         )
     # obs_output = np.zeros()
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP)
@@ -358,6 +363,15 @@ if __name__ == "__main__":
         tick_skip=frame_skip,
     )
 
+    model_name = "necto-model-30Y.pt"
+    nectov1 = NectoV1(model_string=model_name, n_players=6)
+    model_name = "nexto-model.pt"
+    nexto = NextoV2(model_string=model_name, n_players=6)
+    model_name = "kbb.pt"
+    kbb = KBB(model_string=model_name)
+
+    pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02}
+
     worker = RedisRolloutWorker(r, name, match,
                                 past_version_prob=past_version_prob,
                                 sigma_target=2,
@@ -371,10 +385,11 @@ if __name__ == "__main__":
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
+                                pretrained_agents=None if streamer_mode else pretrained_agents,
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.00175,
+                                selector_skip_k=0.0073,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
