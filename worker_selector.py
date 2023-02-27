@@ -385,7 +385,7 @@ if __name__ == "__main__":
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
-                                pretrained_agents=None if streamer_mode else pretrained_agents,
+                                # pretrained_agents=None if streamer_mode else pretrained_agents,
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
