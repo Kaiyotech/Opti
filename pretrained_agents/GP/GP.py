@@ -15,7 +15,7 @@ class GP(HardcodedAgent):
         self.actor = torch.jit.load(os.path.join(cur_dir, '..\\..\\submodels', model_string))
         self.obs_builder = CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)
         self.previous_action = np.array([0, 0, 0, 0, 0, 0, 0, 0])
-        self._lookup_table = CoyoteAction.make_lookup_table()
+        self._lookup_table = CoyoteAction.make_lookup_table(None)
 
     def act(self, state: GameState, player_index: int):
         player = state.players[player_index]

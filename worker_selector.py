@@ -383,7 +383,8 @@ if __name__ == "__main__":
     model_name = "gp_jit.pt"
     gp = GP(model_string=model_name)
 
-    pretrained_agents = {nectov1: 0.015, nexto: 0.015, kbb: 0.015, gp: 0.015}
+    pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02, gp: 0}
+    # pretrained_agents = {nectov1: 0.1, nexto: 0.1, kbb: 0.1, gp: 0.1}
 
     worker = RedisRolloutWorker(r, name, match,
                                 past_version_prob=past_version_prob,
