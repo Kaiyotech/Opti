@@ -40,8 +40,11 @@ class CoyoteObsBuilder(ObsBuilder):
                  flip_dir=True,
                  end_object: PhysicsObject = None,
                  mask_aerial_opp=False,
+                 selector_infinite_boost=None,
                  ):
         super().__init__()
+        assert not(selector_infinite_boost is not None and not selector)
+        self.selector_infinite_boost = selector_infinite_boost
         self.mask_aerial_opp = mask_aerial_opp
         self.flip_dir = flip_dir
         self.end_object = end_object
@@ -152,9 +155,13 @@ class CoyoteObsBuilder(ObsBuilder):
             if random.random() <= self.infinite_boost_odds:
                 self.env.update_settings(boost_consumption=0)
                 self.infinite_boost_episode = True
+                if self.selector_infinite_boost is not None:
+                    self.selector_infinite_boost["infinite_boost"] = True
             else:
                 self.env.update_settings(boost_consumption=1)
                 self.infinite_boost_episode = False
+                if self.selector_infinite_boost is not None:
+                    self.selector_infinite_boost["infinite_boost"] = False
 
         if self.add_boosttime:
             self.boosttimes = np.zeros(

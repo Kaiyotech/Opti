@@ -25,13 +25,14 @@ import os
 from pretrained_agents.necto.necto_v1 import NectoV1
 from pretrained_agents.nexto.nexto_v2 import NextoV2
 from pretrained_agents.KBB.kbb import KBB
+from pretrained_agents.GP.GP import GP
 
 set_num_threads(1)
 
 
 class ObsInfo:
     """keeps track of duplicate obs information"""
-    def __init__(self, tick_skip) -> None:
+    def __init__(self, tick_skip, selector_infinite_boost: dict) -> None:
         from rlgym.utils.common_values import BOOST_LOCATIONS
         self.boost_locations = np.array(BOOST_LOCATIONS)
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -58,6 +59,7 @@ class ObsInfo:
         self.is_jumpings = [False] * 6
         self.has_jumpeds = [False] * 6
         self.handbrakes = [0] * 6
+        self.selector_infinite_boost = selector_infinite_boost
 
     def reset(self, initial_state: GameState):
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -98,6 +100,13 @@ class ObsInfo:
         # create team specific things
         self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
         self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
+        inf_boost = self.selector_infinite_boost["infinite_boost"]
+        if inf_boost:
+            for player in state.players:
+                player.boost_amount = 1
+        else:
+            for player in state.players:
+                player.boost_amount /= 1
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
@@ -283,7 +292,8 @@ if __name__ == "__main__":
                         punish_dist_goal_score_w=-1,
                         )
     # obs_output = np.zeros()
-    obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP)
+    selector_infinite_boost = {"infinite_boost": False}
+    obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost)
     parser = SelectorParser(obs_info=obs_info)
     fps = 120 // frame_skip
     name = "Default"
@@ -293,12 +303,12 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.01
-    past_version_prob = 0.1
+    past_version_prob = 0.05
     deterministic_streamer = False
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0
+    infinite_boost_odds = 0.15
     host = "127.0.0.1"
 
     if len(sys.argv) > 1:
@@ -334,7 +344,7 @@ if __name__ == "__main__":
         evaluation_prob = 0
         game_speed = 1
         auto_minimize = False
-        infinite_boost_odds = 0
+        infinite_boost_odds = 0.15
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
 
@@ -353,6 +363,7 @@ if __name__ == "__main__":
                                      extra_boost_info=True, embed_players=True,
                                      stack_size=Constants_selector.STACK_SIZE,
                                      action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True,
+                                     selector_infinite_boost=selector_infinite_boost,
                                      ),
         action_parser=parser,
         terminal_conditions=[GoalScoredCondition(),
@@ -369,8 +380,10 @@ if __name__ == "__main__":
     nexto = NextoV2(model_string=model_name, n_players=6)
     model_name = "kbb.pt"
     kbb = KBB(model_string=model_name)
+    model_name = "gp_jit.pt"
+    gp = GP(model_string=model_name)
 
-    pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02}
+    pretrained_agents = {nectov1: 0.015, nexto: 0.015, kbb: 0.015, gp: 0.015}
 
     worker = RedisRolloutWorker(r, name, match,
                                 past_version_prob=past_version_prob,
@@ -385,7 +398,7 @@ if __name__ == "__main__":
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
-                                # pretrained_agents=None if streamer_mode else pretrained_agents,
+                                pretrained_agents=None if streamer_mode else pretrained_agents,
                                 # testing
                                 batch_mode=False,
                                 step_size=Constants_selector.STEP_SIZE,
