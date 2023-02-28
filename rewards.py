@@ -137,7 +137,7 @@ class ZeroSumReward(RewardFunction):
         self.walldash_w = walldash_w
         # self.dash_w = dash_w
         self.dodge_deadzone = dodge_deadzone
-        self.punish_bad_spacing_w = punish_bad_spacing_w
+        self.punish_bad_spacing_w = punish_bad_spacing_w * (tick_skip / 8)
         self.forward_ctrl_w = forward_ctrl_w
         self.final_reward_boost_w = final_reward_boost_w
         self.punish_directional_changes = punish_directional_changes
