@@ -39,7 +39,7 @@ if __name__ == "__main__":
                         wall_touch_w=2.75,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
-                        tick_skip=4,  # this is wrong but it has to be done for now
+                        tick_skip=Constants_gp.FRAME_SKIP,  # this is wrong but it has to be done for now
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     model_name = "kbb.pt"
     kbb = KBB(model_string=model_name)
 
-    pretrained_agents = {nectov1: 0.01, nexto: 0.02, kbb: 0.02}
+    pretrained_agents = {nectov1: 0, nexto: 0.05, kbb: 0.05}
     # pretrained_agents = None
 
     worker = RedisRolloutWorker(r, name, match,
@@ -132,7 +132,7 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.20, '2v2': 0.35, '3v3': 0.45},  # default 1/3
+                                gamemode_weights={'1v1': 0.30, '2v2': 0.25, '3v3': 0.45},  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
