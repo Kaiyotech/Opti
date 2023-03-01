@@ -12,6 +12,7 @@ from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
+from mybots_statesets import EndKickoff
 import Constants_gp
 import os
 
@@ -140,6 +141,7 @@ if __name__ == "__main__":
                                 batch_mode=batch_mode,
                                 step_size=Constants_gp.STEP_SIZE,
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
+                                eval_setter=EndKickoff(),
                                 )
 
     worker.env._match._obs_builder.env = worker.env
