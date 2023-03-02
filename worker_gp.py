@@ -12,6 +12,7 @@ from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
+from mybots_statesets import EndKickoff
 import Constants_gp
 import os
 
@@ -30,7 +31,8 @@ if __name__ == "__main__":
                         velocity_pb_w=0,
                         boost_gain_w=0.45,
                         punish_boost=True,
-                        # boost_spend_w=2.25,
+                        use_boost_punish_formula=False,
+                        boost_spend_w=0.25,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
@@ -39,7 +41,7 @@ if __name__ == "__main__":
                         wall_touch_w=2.75,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
-                        tick_skip=Constants_gp.FRAME_SKIP,  # this is wrong but it has to be done for now
+                        tick_skip=Constants_gp.FRAME_SKIP,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     batch_mode = True
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.1
+    infinite_boost_odds = 0
     host = "127.0.0.1"
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -75,7 +77,7 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
-            infinite_boost_odds = 0.1
+            infinite_boost_odds = 0
 
     match = Match(
         game_speed=game_speed,
@@ -140,6 +142,7 @@ if __name__ == "__main__":
                                 batch_mode=batch_mode,
                                 step_size=Constants_gp.STEP_SIZE,
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
+                                eval_setter=EndKickoff(),
                                 )
 
     worker.env._match._obs_builder.env = worker.env

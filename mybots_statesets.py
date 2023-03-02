@@ -128,6 +128,34 @@ class GroundAirDribble(StateSetter):
                 car.boost = 0.33
 
 
+class EndKickoff(StateSetter):
+    def reset(self, state_wrapper: StateWrapper):
+        blue_cars = [car for car in state_wrapper.cars if car.team_num == 0]
+        orange_cars = [car for car in state_wrapper.cars if car.team_num == 1]
+        for i, car in enumerate(blue_cars):
+            if i == 0:
+                car.set_pos(0, -300, 90)
+                car.set_rot(0, np.pi / 2, 0)
+                car.set_lin_vel(0, CAR_MAX_SPEED * 0.85, 0)
+            elif i == 1:
+                car.set_pos(0, -4608)
+                car.set_rot(0, np.pi / 2)
+            elif i == 2:
+                car.set_pos(-2048, -2560, 17)
+                car.set_rot(0, np.pi / 4, 0)
+        for i, car in enumerate(orange_cars):
+            if i == 0:
+                car.set_pos(0, 300, 90)
+                car.set_rot(0, -np.pi / 2, 0)
+                car.set_lin_vel(0, -CAR_MAX_SPEED * 0.85, 0)
+            elif i == 1:
+                car.set_pos(0, 4608)
+                car.set_rot(0, -np.pi / 2)
+            elif i == 2:
+                car.set_pos(2048, 2560, 17)
+                car.set_rot(0, -np.pi * 0.75, 0)
+
+
 class WallDribble(StateSetter):
     def __init__(
             self,
