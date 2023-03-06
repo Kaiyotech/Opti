@@ -32,7 +32,7 @@ if __name__ == "__main__":
                         boost_gain_w=0.45,
                         punish_boost=True,
                         use_boost_punish_formula=False,
-                        boost_spend_w=0.25,
+                        boost_spend_w=-0.25,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
