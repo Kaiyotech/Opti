@@ -11,6 +11,7 @@ from numpy.linalg import norm
 from typing import Tuple, List
 from rlgym.utils.common_values import BOOST_LOCATIONS
 
+
 def _closest_to_ball(state: GameState) -> Tuple[int, int]:
     # returns [blue_closest, orange_closest]
     length = len(state.players)
@@ -121,6 +122,10 @@ class ZeroSumReward(RewardFunction):
             lix_reset_w=0,
             punish_dist_goal_score_w=0,
     ):
+        assert punish_dist_goal_score_w <= 0 and punish_dist_goal_score_w <= 0 and \
+               punish_backboard_pinch_w <= 0 and punish_ceiling_pinch_w <= 0 and punish_action_change_w <= 0 and \
+               punish_bad_spacing_w <= 0 and boost_spend_w <= 0 and punish_car_ceiling_w <= 0 and  \
+               punish_low_touch_w <= 0 and turtle_w <= 0 and concede_w <= 0 and got_demoed_w <= 0
         self.punish_dist_goal_score_w = punish_dist_goal_score_w
         self.lix_reset_w = lix_reset_w
         self.dash_limit_per_ep = dash_limit_per_ep
@@ -354,9 +359,12 @@ class ZeroSumReward(RewardFunction):
             # not touched
             else:
                 if last.ball_touched:
-                    self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(last.car_data.forward()[:-1] + 1e-8)
-                    self.exit_vel_save[i] = state.ball.linear_velocity[:-1] / np.linalg.norm(state.ball.linear_velocity[:-1] + 1e-8)
-                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[i] and self.last_touch_car == i:
+                    self.launch_angle_car[i] = last.car_data.forward()[:-1] / np.linalg.norm(
+                        last.car_data.forward()[:-1] + 1e-8)
+                    self.exit_vel_save[i] = state.ball.linear_velocity[:-1] / np.linalg.norm(
+                        state.ball.linear_velocity[:-1] + 1e-8)
+                if self.kickoff_timer - self.last_touch_time > self.exit_vel_arm_time_steps and not self.exit_rewarded[
+                    i] and self.last_touch_car == i:
                     self.exit_rewarded[i] = True
                     # rewards 1 for a 120 kph flick (3332 uu/s), 11 for a 6000 uu/s (max speed)
                     req_reset = 1
@@ -373,8 +381,9 @@ class ZeroSumReward(RewardFunction):
                         angle = min(np.arccos(dot_product), 0.785) / 0.785
                         if np.isnan(angle):  # rare enough to just avoid in the data
                             angle = 0
-                        ang_mult = self.exit_velocity_w * max(angle, 0.1)  #  0.1 is a small mult to still reward 0 angle
-                    vel_mult = self.exit_velocity_w * 0.5 * ((xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
+                        ang_mult = self.exit_velocity_w * max(angle, 0.1)  # 0.1 is a small mult to still reward 0 angle
+                    vel_mult = self.exit_velocity_w * 0.5 * (
+                                (xy_norm_ball_vel ** 5) / (3332 ** 5) + ((xy_norm_ball_vel ** 2) / (3332 ** 2)))
                     player_rewards[i] += vel_mult * req_reset * ang_mult
 
             # ball got too low, don't credit bounces
@@ -424,7 +433,7 @@ class ZeroSumReward(RewardFunction):
 
             # turtle
             if abs(player.car_data.roll()) > 3 and player.car_data.position[2] < 55 and \
-                np.linalg.norm(player.car_data.angular_velocity) < 5 and abs(last.car_data.roll()) > 3 and \
+                    np.linalg.norm(player.car_data.angular_velocity) < 5 and abs(last.car_data.roll()) > 3 and \
                     last.car_data.position[2] < 55:
                 player_self_rewards[i] += self.turtle_w
 
@@ -454,7 +463,8 @@ class ZeroSumReward(RewardFunction):
                 player_rewards[i] += self.demo_w
 
             # vel pb
-            if self.end_object is None or self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
+            if self.end_object is None or self.end_object.position[0] == self.end_object.position[1] == \
+                    self.end_object.position[2] == -1:
                 vel = player.car_data.linear_velocity
                 pos_diff = state.ball.position - player.car_data.position
                 norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
@@ -475,14 +485,13 @@ class ZeroSumReward(RewardFunction):
 
             # vel player to end object
             if self.end_object is not None and not (self.end_object.position[0] == self.end_object.position[1] ==
-                    self.end_object.position[2] == -1):
+                                                    self.end_object.position[2] == -1):
                 vel = player.car_data.linear_velocity
                 pos_diff = self.end_object.position - player.car_data.position
                 norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
                 norm_vel = vel / CAR_MAX_SPEED
                 speed_rew = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.vp_end_object_w * speed_rew
-
 
             # flip reset helper
             if self.flip_reset_help_w != 0:
@@ -546,7 +555,8 @@ class ZeroSumReward(RewardFunction):
                 if self.blue_touch_timer < self.touch_timeout:
                     player_rewards[self.blue_toucher] += (1 - self.team_spirit) * goal_reward
                     if self.got_reset[self.blue_toucher]:
-                        player_rewards[self.blue_toucher] += self.flip_reset_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
+                        player_rewards[self.blue_toucher] += self.flip_reset_goal_w * (
+                                    goal_speed / (CAR_MAX_SPEED * 1.25))
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.blue_toucher] += self.double_tap_w
                     if self.blue_touch_height > GOAL_HEIGHT:
@@ -572,11 +582,13 @@ class ZeroSumReward(RewardFunction):
                 if self.orange_touch_timer < self.touch_timeout:
                     player_rewards[self.orange_toucher] += (1 - self.team_spirit) * goal_reward
                     if self.got_reset[self.orange_toucher]:
-                        player_rewards[self.orange_toucher] += self.flip_reset_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
+                        player_rewards[self.orange_toucher] += self.flip_reset_goal_w * (
+                                    goal_speed / (CAR_MAX_SPEED * 1.25))
                     if self.backboard_bounce and not self.floor_bounce:
                         player_rewards[self.orange_toucher] += self.double_tap_w
                     if self.orange_touch_height > GOAL_HEIGHT:
-                        player_rewards[self.orange_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
+                        player_rewards[self.orange_toucher] += self.aerial_goal_w * (
+                                    goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[mid:] += self.team_spirit * goal_reward
                     # punish blue for distance from ball when goal scored
                     blue = slice(None, mid)
@@ -652,12 +664,13 @@ class ZeroSumReward(RewardFunction):
             for p in initial_state.players:
                 self.on_grounds[p.car_id] = p.on_ground
 
-    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
+    def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
+                   previous_model_action: np.ndarray) -> float:
         rew = self.rewards[self.n]
 
         if self.previous_action[self.n] != -1 and self.previous_action[self.n] != previous_model_action[0] and not \
                 (10 <= previous_model_action[0] < 18 and 10 <= self.previous_action[self.n] < 18 and not
-                 self.punish_directional_changes):
+                self.punish_directional_changes):
             rew += self.punish_action_change_w
             step_since_change = self.kickoff_timer - self.last_action_change[self.n]
             rew += self.decay_punish_action_change_w * max(0, (1 - ((step_since_change - 1) ** 1.75) / (14 ** 1.75)))
@@ -681,12 +694,13 @@ class ZeroSumReward(RewardFunction):
         self.n += 1
         return float(rew)
 
-    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray, previous_model_action: np.ndarray) -> float:
+    def get_final_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
+                         previous_model_action: np.ndarray) -> float:
         reg_reward = self.get_reward(player, state, previous_action, previous_model_action)
         # if dist is 0, reward is 1
         touch_rew = 0
         boost_touch_rew = 0
-        if self.end_object is None or\
+        if self.end_object is None or \
                 self.end_object.position[0] == self.end_object.position[1] == self.end_object.position[2] == -1:
             dist = np.linalg.norm(player.car_data.position - state.ball.position) - BALL_RADIUS
             dist_rew = float(np.exp(-1 * dist / CAR_MAX_SPEED)) * self.final_reward_ball_dist_w
@@ -758,7 +772,7 @@ class ZeroSumReward(RewardFunction):
                             self.flipdirs[cid] = list(
                                 flipdir / np.linalg.norm(flipdir))
                         else:
-                            self.flipdirs[cid] = [0,0]
+                            self.flipdirs[cid] = [0, 0]
                     else:
                         self.has_doublejumpeds[cid] = True
         if self.has_flippeds[cid]:
@@ -790,10 +804,12 @@ class ZeroSumReward(RewardFunction):
 
             if player.car_data.position[2] > 100:  # wall curve is 256, but curvedashes end their torque very close to 0
                 self.dash_count[self.n] += 1
-                ret += dash_rew * self.walldash_w * speed_rew if self.dash_count[self.n] <= self.dash_limit_per_ep else 0
+                ret += dash_rew * self.walldash_w * speed_rew if self.dash_count[
+                                                                     self.n] <= self.dash_limit_per_ep else 0
             elif player.car_data.position[2] <= 100:
                 self.dash_count[self.n] += 1
-                ret += dash_rew * self.curve_wave_zap_dash_w * speed_rew  if self.dash_count[self.n] <= self.dash_limit_per_ep else 0
+                ret += dash_rew * self.curve_wave_zap_dash_w * speed_rew if self.dash_count[
+                                                                                self.n] <= self.dash_limit_per_ep else 0
 
         if not player.on_ground and self.airtimes[self.n] == 0 and not self.is_jumpings[self.n]:
             ret += self.lix_reset_w
