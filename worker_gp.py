@@ -143,6 +143,7 @@ if __name__ == "__main__":
                                 step_size=Constants_gp.STEP_SIZE,
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
                                 eval_setter=EndKickoff(),
+                                full_team_evaluations=True,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
