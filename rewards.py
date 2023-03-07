@@ -57,7 +57,7 @@ class ZeroSumReward(RewardFunction):
             touch_grass_w=0,  # -0.005,
             acel_ball_w=0,  # 1.5,
             boost_gain_w=0,  # 1.5,
-            boost_spend_w=1.5,  # 1.5 is default
+            boost_spend_w=-1.5,  # 1.5 is default
             punish_boost=False,  # punish once they start wasting and understand the game a bit
             use_boost_punish_formula=True,
             jump_touch_w=0,  # 3,
