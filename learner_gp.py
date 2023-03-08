@@ -54,10 +54,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.16"
+    run_id = "gp_run3.17"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.16",
+                        name="GP_Run3.17",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -84,7 +84,7 @@ if __name__ == "__main__":
                                                               goal_w=10,
                                                               concede_w=-10,
                                                               # double_tap_w=5,
-                                                              velocity_bg_w=0.075,
+                                                              velocity_bg_w=0.075 / 2,  # fix for the tick skip change
                                                               velocity_pb_w=0,
                                                               boost_gain_w=0.45,
                                                               punish_boost=True,
@@ -94,8 +94,8 @@ if __name__ == "__main__":
                                                               acel_ball_w=1,
                                                               team_spirit=1,
                                                               # cons_air_touches_w=2,
-                                                              jump_touch_w=1.5,
-                                                              wall_touch_w=2.75,
+                                                              jump_touch_w=4,
+                                                              wall_touch_w=4,
                                                               touch_grass_w=0,
                                                               punish_bad_spacing_w=-0.1,
                                                               tick_skip=Constants_gp.FRAME_SKIP,
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1678031575.9927633/Opti_21760/checkpoint.pt")
+    alg.load("GP_saves/Opti_1676259919.0145712/Opti_19470/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
