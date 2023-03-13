@@ -32,15 +32,16 @@ if __name__ == "__main__":
                         boost_gain_w=0.45,
                         punish_boost=True,
                         use_boost_punish_formula=False,
-                        boost_spend_w=-0.25,
+                        boost_spend_w=-0.5,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=4,
-                        wall_touch_w=4,
+                        wall_touch_w=8,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
+                        handbrake_ctrl_w=-0.01,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
