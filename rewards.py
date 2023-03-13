@@ -83,6 +83,7 @@ class ZeroSumReward(RewardFunction):
             kickoff_vpb_after_0_w=0,
             dribble_w=0,
             forward_ctrl_w=0,
+            handbrake_ctrl_w=0,
             exit_velocity_w=0,
             exit_vel_angle_w=0,
             req_reset_exit_vel=False,
@@ -122,6 +123,7 @@ class ZeroSumReward(RewardFunction):
             lix_reset_w=0,
             punish_dist_goal_score_w=0,
     ):
+        self.handbrake_ctrl_w = handbrake_ctrl_w
         assert punish_dist_goal_score_w <= 0 and punish_dist_goal_score_w <= 0 and \
                punish_backboard_pinch_w <= 0 and punish_ceiling_pinch_w <= 0 and punish_action_change_w <= 0 and \
                punish_bad_spacing_w <= 0 and boost_spend_w <= 0 and punish_car_ceiling_w <= 0 and  \
@@ -680,6 +682,10 @@ class ZeroSumReward(RewardFunction):
         # forward on stick
         if previous_action[2] == 1 and previous_action[3] == 0 and not player.on_ground:
             rew += self.forward_ctrl_w
+
+        # handbrake
+        if previous_action[7] == 1 and player.on_ground:
+            rew += self.handbrake_ctrl_w
 
         # dash timers
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:

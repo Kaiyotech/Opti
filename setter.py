@@ -62,7 +62,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(replays[i], random_boost=True), True, False, False),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
-                        (0.1, 0.3, 0.10, 0.125, 0.125, 0.025, 0.025, 0.1, 0.1)
+                        (0.05, 0.2, 0.1, 0.1, 0.55, 0, 0, 0, 0)
                     )
                 )
         elif mode == "selector":
