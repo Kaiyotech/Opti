@@ -98,7 +98,7 @@ if __name__ == "__main__":
                                                               wall_touch_w=8,
                                                               touch_grass_w=0,
                                                               punish_bad_spacing_w=-0.1,
-                                                              handbrake_ctrl_w=-0.01,
+                                                              handbrake_ctrl_w=-0.001,
                                                               tick_skip=Constants_gp.FRAME_SKIP,
                                                               ),
                                         lambda: CoyoteAction(),
@@ -151,11 +151,11 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1678367784.769107/Opti_21500/checkpoint.pt")
+    alg.load("GP_saves/Opti_1678731400.6030638/Opti_21840/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(100)
+    # alg.freeze_policy(100)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="GP_saves")

@@ -41,7 +41,7 @@ if __name__ == "__main__":
                         wall_touch_w=8,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
-                        handbrake_ctrl_w=-0.01,
+                        handbrake_ctrl_w=-0.001,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
