@@ -32,7 +32,9 @@ if __name__ == "__main__":
                         boost_gain_w=0.45,
                         punish_boost=True,
                         use_boost_punish_formula=False,
-                        boost_spend_w=-0.5,
+                        boost_spend_w=-0.7,
+                        boost_gain_small_w=0.9,
+                        punish_low_boost_w=-0.01,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
@@ -61,11 +63,13 @@ if __name__ == "__main__":
     dynamic_game = True
     infinite_boost_odds = 0
     host = "127.0.0.1"
+    epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
     if len(sys.argv) > 1:
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
             local = False
             batch_mode = False
+            epic_rl_exe_path = None
     if len(sys.argv) > 2:
         name = sys.argv[2]
     # if len(sys.argv) > 3 and not dynamic_game:
@@ -145,6 +149,7 @@ if __name__ == "__main__":
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
                                 eval_setter=EndKickoff(),
                                 full_team_evaluations=True,
+                                epic_rl_exe_path=epic_rl_exe_path
                                 )
 
     worker.env._match._obs_builder.env = worker.env

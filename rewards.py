@@ -60,6 +60,8 @@ class ZeroSumReward(RewardFunction):
             boost_spend_w=-1.5,  # 1.5 is default
             punish_boost=False,  # punish once they start wasting and understand the game a bit
             use_boost_punish_formula=True,
+            boost_gain_small_w=0,
+            punish_low_boost_w=0,
             jump_touch_w=0,  # 3,
             cons_air_touches_w=0,  # 6,
             wall_touch_w=0,  # 0.25,
@@ -123,11 +125,12 @@ class ZeroSumReward(RewardFunction):
             lix_reset_w=0,
             punish_dist_goal_score_w=0,
     ):
-        self.handbrake_ctrl_w = handbrake_ctrl_w
         assert punish_dist_goal_score_w <= 0 and punish_dist_goal_score_w <= 0 and \
                punish_backboard_pinch_w <= 0 and punish_ceiling_pinch_w <= 0 and punish_action_change_w <= 0 and \
                punish_bad_spacing_w <= 0 and boost_spend_w <= 0 and punish_car_ceiling_w <= 0 and  \
-               punish_low_touch_w <= 0 and turtle_w <= 0 and concede_w <= 0 and got_demoed_w <= 0
+               punish_low_touch_w <= 0 and turtle_w <= 0 and concede_w <= 0 and got_demoed_w <= 0 and \
+               punish_low_boost_w <= 0
+        self.handbrake_ctrl_w = handbrake_ctrl_w
         self.punish_dist_goal_score_w = punish_dist_goal_score_w
         self.lix_reset_w = lix_reset_w
         self.dash_limit_per_ep = dash_limit_per_ep
@@ -176,6 +179,8 @@ class ZeroSumReward(RewardFunction):
             self.boost_spend_w = boost_spend_w
         else:
             self.boost_spend_w = 0
+        self.boost_gain_small_w = boost_gain_small_w
+        self.punish_low_boost_w = punish_low_boost_w
         self.jump_touch_w = jump_touch_w
         self.cons_air_touches_w = cons_air_touches_w
         self.wall_touch_w = wall_touch_w
@@ -421,8 +426,13 @@ class ZeroSumReward(RewardFunction):
                 boost_diff = player.boost_amount - last.boost_amount
                 if boost_diff > 0:
                     player_rewards[i] += self.boost_gain_w * boost_diff
+                    if boost_diff == 12 and last.boost_amount < 88:
+                        player_rewards[i] += self.boost_gain_small_w * boost_diff
                 else:
                     player_rewards[i] += self.boost_spend_w * boost_diff
+
+            if player.boost_amount <= 20:
+                player_self_rewards[i] += self.punish_low_boost_w * (((20 - player.boost_amount) / 12) / (20 / 12)) ** 2
 
             # touch_grass
             if player.on_ground and player.car_data.position[2] < 25:
