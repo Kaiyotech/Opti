@@ -180,7 +180,7 @@ class ZeroSumReward(RewardFunction):
         else:
             self.boost_spend_w = 0
         self.boost_gain_small_w = boost_gain_small_w
-        self.punish_low_boost_w = punish_low_boost_w
+        self.punish_low_boost_w = punish_low_boost_w * (tick_skip / 8)
         self.jump_touch_w = jump_touch_w
         self.cons_air_touches_w = cons_air_touches_w
         self.wall_touch_w = wall_touch_w

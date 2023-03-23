@@ -34,7 +34,7 @@ if __name__ == "__main__":
                         use_boost_punish_formula=False,
                         boost_spend_w=-0.7,
                         boost_gain_small_w=0.9,
-                        punish_low_boost_w=-0.01,
+                        punish_low_boost_w=-0.05,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
