@@ -426,13 +426,13 @@ class ZeroSumReward(RewardFunction):
                 boost_diff = player.boost_amount - last.boost_amount
                 if boost_diff > 0:
                     player_rewards[i] += self.boost_gain_w * boost_diff
-                    if boost_diff == 12 and last.boost_amount < 88:
+                    if player.boost_amount < 0.98 and last.boost_amount < 0.88:
                         player_rewards[i] += self.boost_gain_small_w * boost_diff
                 else:
                     player_rewards[i] += self.boost_spend_w * boost_diff
 
-            if player.boost_amount <= 20:
-                player_self_rewards[i] += self.punish_low_boost_w * (((20 - player.boost_amount) / 12) / (20 / 12)) ** 2
+            if player.boost_amount <= 0.20:
+                player_self_rewards[i] += self.punish_low_boost_w * ((0.20 - player.boost_amount) / 0.20) ** 2
 
             # touch_grass
             if player.on_ground and player.car_data.position[2] < 25:
