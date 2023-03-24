@@ -125,8 +125,8 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  #db=Constants_gp.DB_NUM,
-                  db=5,
+                  db=Constants_gp.DB_NUM,
+                  # db=5,
                   )
 
     # remote Redis
