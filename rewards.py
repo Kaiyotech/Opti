@@ -272,7 +272,8 @@ class ZeroSumReward(RewardFunction):
             self.orange_touch_timer += 1
             self.kickoff_timer += 1
             # for double tap
-            if state.ball.position[2] < BALL_RADIUS * 2 and state.last_touch == -1:
+            if state.ball.position[2] < BALL_RADIUS * 2 and 0.55 * self.last_state.ball.linear_velocity[2] \
+                    < state.ball.linear_velocity[2] > 0.65 * self.last_state.ball.linear_velocity[2]:
                 self.floor_bounce = True
             elif 0.55 * self.last_state.ball.linear_velocity[1] < state.ball.linear_velocity[1] > 0.65 * \
                     self.last_state.ball.linear_velocity[1] and \

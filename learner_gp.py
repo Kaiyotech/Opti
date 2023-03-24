@@ -86,12 +86,12 @@ if __name__ == "__main__":
                                                               # double_tap_w=5,
                                                               velocity_bg_w=0.075 / 2,  # fix for the tick skip change
                                                               velocity_pb_w=0,
-                                                              boost_gain_w=0.45,
+                                                              boost_gain_w=0.25,
                                                               punish_boost=True,
                                                               use_boost_punish_formula=False,
                                                               boost_spend_w=-0.7,
-                                                              boost_gain_small_w=0.9,
-                                                              punish_low_boost_w=-0.01,
+                                                              boost_gain_small_w=0.4,
+                                                              punish_low_boost_w=-0.035,
                                                               demo_w=0.5,
                                                               acel_ball_w=1,
                                                               team_spirit=1,
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1678999325.3022435/Opti_24190/checkpoint.pt")
+    alg.load("GP_saves/Opti_1679580003.2886896/Opti_24720/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
