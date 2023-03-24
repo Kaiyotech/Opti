@@ -4,7 +4,7 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
-from rlgym_sim.envs import Match as Sim_Match
+# from rlgym_sim.envs import Match as Sim_Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
@@ -102,22 +102,23 @@ if __name__ == "__main__":
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
-    ) if not simulator else Sim_Match(
-        game_speed=game_speed,
-        spawn_opponents=True,
-        team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True,
-                                     infinite_boost_odds=infinite_boost_odds),
-        action_parser=CoyoteAction(),
-        terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
-                             TimeoutCondition(fps * 300),
-                             ],
-        reward_function=rew,
-        tick_skip=frame_skip,
     )
+    # ) if not simulator else Sim_Match(
+        # game_speed=game_speed,
+        # spawn_opponents=True,
+        # team_size=team_size,
+        # state_setter=CoyoteSetter(mode="normal"),
+        # obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
+                                     # extra_boost_info=True, embed_players=True,
+                                     # infinite_boost_odds=infinite_boost_odds),
+        # action_parser=CoyoteAction(),
+        # terminal_conditions=[GoalScoredCondition(),
+                             # NoTouchTimeoutCondition(fps * 15),
+                             # TimeoutCondition(fps * 300),
+                             # ],
+        # reward_function=rew,
+        # tick_skip=frame_skip,
+    # )
 
     # local Redis
     if local:
