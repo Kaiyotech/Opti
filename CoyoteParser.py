@@ -152,7 +152,7 @@ class CoyoteAction(ActionParser):
         parsed_actions = []
         for action in actions:
             # test
-            # parsed_actions.append([0, 0, 0, 0, 0, 0, 0, 0])
+            # parsed_actions.append([, 0, 0, 0, 0, 0, 1, 0])
             # continue
             # support reconstruction
             if action.size != 8:

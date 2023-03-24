@@ -195,7 +195,10 @@ class CoyoteObsBuilder(ObsBuilder):
                 max(p.car_id for p in initial_state.players) + 1)
 
     def pre_step(self, state: GameState):
-        self.state = state
+        # dist = state.ball.position - state.players[0].car_data.position
+        # dist_norm = np.linalg.norm(dist)
+        # print(f"{state.ball.position} \t {state.players[0].car_data.position} \t dist={dist} \t norm={dist_norm} \t {np.linalg.norm(state.players[0].car_data.linear_velocity)}")
+        # self.state = state
         # create player/team agnostic items (do these even exist?)
         self._update_timers(state)
         # create team specific things

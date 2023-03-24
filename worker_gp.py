@@ -4,6 +4,7 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
+from rlgym_sim.envs import Match as Sim_Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
@@ -29,12 +30,12 @@ if __name__ == "__main__":
                         # double_tap_w=5,
                         velocity_bg_w=0.075 / 2,  # fix for the tick skip change
                         velocity_pb_w=0,
-                        boost_gain_w=0.45,
+                        boost_gain_w=0.25,
                         punish_boost=True,
                         use_boost_punish_formula=False,
                         boost_spend_w=-0.7,
-                        boost_gain_small_w=0.9,
-                        punish_low_boost_w=-0.05,
+                        boost_gain_small_w=0.4,
+                        punish_low_boost_w=-0.035,
                         demo_w=0.5,
                         acel_ball_w=1,
                         team_spirit=1,
@@ -58,6 +59,7 @@ if __name__ == "__main__":
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
+    simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
@@ -83,8 +85,24 @@ if __name__ == "__main__":
             game_speed = 1
             auto_minimize = False
             infinite_boost_odds = 0
+            simulator = False
 
     match = Match(
+        game_speed=game_speed,
+        spawn_opponents=True,
+        team_size=team_size,
+        state_setter=CoyoteSetter(mode="normal"),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
+                                     extra_boost_info=True, embed_players=True,
+                                     infinite_boost_odds=infinite_boost_odds),
+        action_parser=CoyoteAction(),
+        terminal_conditions=[GoalScoredCondition(),
+                             NoTouchTimeoutCondition(fps * 15),
+                             TimeoutCondition(fps * 300),
+                             ],
+        reward_function=rew,
+        tick_skip=frame_skip,
+    ) if not simulator else Sim_Match(
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
@@ -106,7 +124,8 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_gp.DB_NUM,
+                  #db=Constants_gp.DB_NUM,
+                  db=5,
                   )
 
     # remote Redis
@@ -149,7 +168,8 @@ if __name__ == "__main__":
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
                                 eval_setter=EndKickoff(),
                                 full_team_evaluations=True,
-                                epic_rl_exe_path=epic_rl_exe_path
+                                epic_rl_exe_path=epic_rl_exe_path,
+                                # simulator=simulator
                                 )
 
     worker.env._match._obs_builder.env = worker.env
