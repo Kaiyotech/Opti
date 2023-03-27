@@ -156,6 +156,33 @@ class EndKickoff(StateSetter):
                 car.set_rot(0, -np.pi * 0.75, 0)
 
 
+class TestStates(StateSetter):
+    def __init__(self):
+        self.resets = 0
+
+    def reset(self, state_wrapper: StateWrapper):
+        for i, car in enumerate(state_wrapper.cars):
+            neg = i % 2 == 0
+            neg = -1 if neg else 1
+            desired_car_pos = [i * 100 * neg, i * 100 * neg, (i * 100) + 17]  # x, y, z
+            desired_pitch = 60 * i * DEG_TO_RAD
+            desired_yaw = 60 * i * DEG_TO_RAD
+            desired_roll = 30 * i * DEG_TO_RAD
+            desired_rotation = [desired_pitch, desired_yaw, desired_roll]
+
+            car.set_pos(*desired_car_pos)
+            car.set_rot(*desired_rotation)
+            car.boost = i * 10
+
+            car.set_lin_vel(100 * i, 200 * i * neg, 0)
+            car.set_ang_vel(-0.5 * i, 0.5 * i, 0.5 * i)
+
+        state_wrapper.ball.set_pos(x=250 * self.resets, y=250 * self.resets,
+                                   z=100 * self.resets)
+        state_wrapper.ball.set_lin_vel(100, 200, 50)
+        state_wrapper.ball.set_ang_vel(0, 0, 0)
+        self.resets += 1
+
 class WallDribble(StateSetter):
     def __init__(
             self,

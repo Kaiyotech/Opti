@@ -4,7 +4,6 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
-# from rlgym_sim.envs import Match as Sim_Match
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
@@ -59,7 +58,9 @@ if __name__ == "__main__":
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
-    simulator = True
+    simulator = False
+    if simulator:
+        from rlgym_sim.envs import Match as Sim_Match
     batch_mode = True
     team_size = 3
     dynamic_game = True
@@ -102,23 +103,22 @@ if __name__ == "__main__":
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
+    ) if not simulator else Sim_Match(
+        game_speed=game_speed,
+        spawn_opponents=True,
+        team_size=team_size,
+        state_setter=CoyoteSetter(mode="normal"),
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
+                                     extra_boost_info=True, embed_players=True,
+                                     infinite_boost_odds=infinite_boost_odds),
+        action_parser=CoyoteAction(),
+        terminal_conditions=[GoalScoredCondition(),
+                             NoTouchTimeoutCondition(fps * 15),
+                             TimeoutCondition(fps * 300),
+                             ],
+        reward_function=rew,
+        tick_skip=frame_skip,
     )
-    # ) if not simulator else Sim_Match(
-        # game_speed=game_speed,
-        # spawn_opponents=True,
-        # team_size=team_size,
-        # state_setter=CoyoteSetter(mode="normal"),
-        # obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     # extra_boost_info=True, embed_players=True,
-                                     # infinite_boost_odds=infinite_boost_odds),
-        # action_parser=CoyoteAction(),
-        # terminal_conditions=[GoalScoredCondition(),
-                             # NoTouchTimeoutCondition(fps * 15),
-                             # TimeoutCondition(fps * 300),
-                             # ],
-        # reward_function=rew,
-        # tick_skip=frame_skip,
-    # )
 
     # local Redis
     if local:
@@ -126,7 +126,6 @@ if __name__ == "__main__":
                   username="user1",
                   password=os.environ["redis_user1_key"],
                   db=Constants_gp.DB_NUM,
-                  # db=5,
                   )
 
     # remote Redis
@@ -170,7 +169,7 @@ if __name__ == "__main__":
                                 eval_setter=EndKickoff(),
                                 full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
-                                # simulator=simulator
+                                simulator=simulator
                                 )
 
     worker.env._match._obs_builder.env = worker.env
