@@ -1,7 +1,7 @@
 import sys
 from redis import Redis
-from redis.retry import Retry
-from redis.backoff import ExponentialBackoff
+from redis.retry import Retry  # noqa
+from redis.backoff import ExponentialBackoff  # noqa
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from CoyoteObs import CoyoteObsBuilder
@@ -58,7 +58,8 @@ if __name__ == "__main__":
     past_version_prob = 0.1
     deterministic_streamer = True
     force_old_deterministic = False
-    simulator = False
+    visualize = False
+    simulator = True
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
     batch_mode = True
@@ -172,6 +173,12 @@ if __name__ == "__main__":
                                 simulator=simulator
                                 )
 
-    worker.env._match._obs_builder.env = worker.env
+    worker.env._match._obs_builder.env = worker.env  # noqa
+    if simulator and visualize:
+        from rocketsimvisualizer import VisualizerThread
+        arena = worker.env._game.arena  # noqa
+        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
+                             overwrite_controls=False)  # noqa
+        v.start()
 
     worker.run()
