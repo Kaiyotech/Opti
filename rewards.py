@@ -124,6 +124,7 @@ class ZeroSumReward(RewardFunction):
             dash_limit_per_ep=100000000,
             lix_reset_w=0,
             punish_dist_goal_score_w=0,
+            flatten_wall_height=False
     ):
         assert punish_dist_goal_score_w <= 0 and punish_dist_goal_score_w <= 0 and \
                punish_backboard_pinch_w <= 0 and punish_ceiling_pinch_w <= 0 and punish_action_change_w <= 0 and \
@@ -131,6 +132,7 @@ class ZeroSumReward(RewardFunction):
                punish_low_touch_w <= 0 and turtle_w <= 0 and concede_w <= 0 and got_demoed_w <= 0 and \
                punish_low_boost_w <= 0
         self.handbrake_ctrl_w = handbrake_ctrl_w
+        self.flatten_wall_height=flatten_wall_height
         self.punish_dist_goal_score_w = punish_dist_goal_score_w
         self.lix_reset_w = lix_reset_w
         self.dash_limit_per_ep = dash_limit_per_ep
@@ -334,7 +336,10 @@ class ZeroSumReward(RewardFunction):
                 # wall touch
                 min_height = 500
                 if player.on_ground and state.ball.position[2] > min_height:
-                    player_self_rewards[i] += self.wall_touch_w * (state.ball.position[2] - min_height) / rnge
+                    coef_1 = 0.5 if self.flatten_wall_height else 0
+                    coef_2 = 1.5 if self.flatten_wall_height else 1
+                    player_self_rewards[i] += self.wall_touch_w * (coef_1 + state.ball.position[2] - min_height) / \
+                                              (coef_2 * rnge)
 
                 # ground/kuxir/team pinch training
                 if state.ball.position[2] < 250:
