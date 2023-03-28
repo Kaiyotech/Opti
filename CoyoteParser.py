@@ -170,9 +170,12 @@ class CoyoteAction(ActionParser):
                 if zero_boost:
                     done_action[6] = 0
                 parsed_actions.append(done_action)
-            else:
+            elif action.shape[0] == 1:
+                action = self._lookup_table[action[0].astype('int')]
                 if zero_boost:
                     action[6] = 0
+                parsed_actions.append(action)
+            else:
                 parsed_actions.append(action)
 
         return np.asarray(parsed_actions)
