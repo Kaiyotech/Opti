@@ -155,12 +155,12 @@ class CoyoteAction(ActionParser):
             # parsed_actions.append([, 0, 0, 0, 0, 0, 1, 0])
             # continue
             # support reconstruction
-            if action.size != 8:
-                if action.shape == 0:
-                    action = np.expand_dims(action, axis=0)
-                # to allow different action spaces, pad out short ones (assume later unpadding in parser)
-                action = np.pad(action.astype(
-                    'float64'), (0, 8 - action.size), 'constant', constant_values=np.NAN)
+            # if action.size != 8:
+            #     if action.shape == 0:
+            #         action = np.expand_dims(action, axis=0)
+            #     # to allow different action spaces, pad out short ones (assume later unpadding in parser)
+            #     action = np.pad(action.astype(
+            #         'float64'), (0, 8 - action.size), 'constant', constant_values=np.NAN)
 
             if np.isnan(action).any():  # it's been padded, delete to go back to original
                 stripped_action = (
