@@ -66,7 +66,7 @@ if __name__ == "__main__":
         from rlgym_sim.envs import Match as Sim_Match
     batch_mode = True
     team_size = 3
-    dynamic_game = True
+    dynamic_game = False if visualize else True
     infinite_boost_odds = 0
     host = "127.0.0.1"
     epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
@@ -172,14 +172,15 @@ if __name__ == "__main__":
                                 eval_setter=EndKickoff(),
                                 full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
-                                simulator=simulator
+                                simulator=simulator,
+                                visualize=visualize,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa
     if simulator and visualize:
         from rocketsimvisualizer import VisualizerThread
         arena = worker.env._game.arena  # noqa
-        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
+        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=True,  # noqa
                              overwrite_controls=False)  # noqa
         v.start()
 
