@@ -61,7 +61,7 @@ if __name__ == "__main__":
     deterministic_streamer = True
     force_old_deterministic = False
     visualize = False
-    simulator = True
+    simulator = False
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
     batch_mode = True
@@ -90,6 +90,9 @@ if __name__ == "__main__":
             auto_minimize = False
             infinite_boost_odds = 0
             simulator = False
+        elif sys.argv[3] == 'VISUALIZE':
+            visualize = True
+
 
     match = Match(
         game_speed=game_speed,
@@ -173,14 +176,14 @@ if __name__ == "__main__":
                                 full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
-                                visualize=visualize,
+                                visualize=False,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa
     if simulator and visualize:
         from rocketsimvisualizer import VisualizerThread
         arena = worker.env._game.arena  # noqa
-        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=True,  # noqa
+        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
                              overwrite_controls=False)  # noqa
         v.start()
 
