@@ -61,7 +61,7 @@ if __name__ == "__main__":
     deterministic_streamer = True
     force_old_deterministic = False
     visualize = False
-    simulator = True
+    simulator = False
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
     batch_mode = True
