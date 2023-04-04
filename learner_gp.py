@@ -54,10 +54,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.27"
+    run_id = "gp_run3.28"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.27",
+                        name="GP_Run3.28",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("GP_saves/Opti_1680301129.8671355/Opti_27960/checkpoint.pt")
+    alg.load("GP_saves/Opti_1680316648.1199474/Opti_29430/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
