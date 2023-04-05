@@ -101,7 +101,7 @@ class GroundAirDribble(StateSetter):
 
         car_attack.set_pos(*desired_car_pos)
         car_attack.set_rot(*desired_rotation)
-        car_attack.boost = 100
+        car_attack.boost = 1
 
         car_attack.set_lin_vel(250 * x_choice, 900 * orange_fix, 0)
         car_attack.set_ang_vel(0, 0, 0)
@@ -177,7 +177,7 @@ class TestStates(StateSetter):
 
             car.set_pos(*desired_car_pos)
             car.set_rot(*desired_rotation)
-            car.boost = i * 10
+            car.boost = i * .10
 
             car.set_lin_vel(100 * i, 200 * i * neg, 0)
             car.set_ang_vel(-0.5 * i, 0.5 * i, 0.5 * i)
