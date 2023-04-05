@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
-    from rlgym.utils.reward_functions import RewardFunction
+
+from rlgym.utils.reward_functions import RewardFunction
 
 from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
     CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y, SIDE_WALL_X, BOOST_LOCATIONS
@@ -269,27 +270,26 @@ class ZeroSumReward(RewardFunction):
             self.has_jumpeds = [False] * 6
 
     def pre_step(self, state: GameState):
-        if state != self.current_state:
-            self.last_state = self.current_state
-            self.current_state = state
-            self.n = 0
-            self.blue_touch_timer += 1
-            self.orange_touch_timer += 1
-            self.kickoff_timer += 1
-            # for double tap
-            if state.ball.position[2] < BALL_RADIUS * 2 and 0.55 * self.last_state.ball.linear_velocity[2] \
-                    < state.ball.linear_velocity[2] > 0.65 * self.last_state.ball.linear_velocity[2]:
-                self.floor_bounce = True
-            elif 0.55 * self.last_state.ball.linear_velocity[1] < state.ball.linear_velocity[1] > 0.65 * \
-                    self.last_state.ball.linear_velocity[1] and \
-                    abs(state.ball.position[1]) > 4900 and state.ball.position[2] > 500:
-                self.backboard_bounce = True
-            # for aerial
-            # player who last touched is now on the ground, don't allow jumping back up to continue "dribble"
-            if self.blue_touch_timer < self.orange_touch_timer and state.players[self.blue_toucher].on_ground:
-                self.cons_touches = 0
-            elif self.orange_touch_timer < self.blue_touch_timer and state.players[self.orange_toucher].on_ground:
-                self.cons_touches = 0
+        self.last_state = self.current_state
+        self.current_state = state
+        self.n = 0
+        self.blue_touch_timer += 1
+        self.orange_touch_timer += 1
+        self.kickoff_timer += 1
+        # for double tap
+        if state.ball.position[2] < BALL_RADIUS * 2 and 0.55 * self.last_state.ball.linear_velocity[2] \
+                < state.ball.linear_velocity[2] > 0.65 * self.last_state.ball.linear_velocity[2]:
+            self.floor_bounce = True
+        elif 0.55 * self.last_state.ball.linear_velocity[1] < state.ball.linear_velocity[1] > 0.65 * \
+                self.last_state.ball.linear_velocity[1] and \
+                abs(state.ball.position[1]) > 4900 and state.ball.position[2] > 500:
+            self.backboard_bounce = True
+        # for aerial
+        # player who last touched is now on the ground, don't allow jumping back up to continue "dribble"
+        if self.blue_touch_timer < self.orange_touch_timer and state.players[self.blue_toucher].on_ground:
+            self.cons_touches = 0
+        elif self.orange_touch_timer < self.blue_touch_timer and state.players[self.orange_toucher].on_ground:
+            self.cons_touches = 0
         # Calculate rewards
         player_rewards = np.zeros(len(state.players))
         player_self_rewards = np.zeros(len(state.players))
@@ -666,24 +666,21 @@ class ZeroSumReward(RewardFunction):
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
 
-            self.jumptimes = np.zeros(
-                max(p.car_id for p in initial_state.players) + 1)
+            self.jumptimes = np.zeros(len(initial_state.players))
 
-            self.fliptimes = np.zeros(
-                max(p.car_id for p in initial_state.players) + 1)
-            self.has_flippeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-            self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-            self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+            self.fliptimes = np.zeros(len(initial_state.players))
+            self.has_flippeds = [False] * len(initial_state.players)
+            self.has_doublejumpeds = [False] * len(initial_state.players)
+            self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players))]
 
-            self.airtimes = np.zeros(
-                max(p.car_id for p in initial_state.players) + 1)
+            self.airtimes = np.zeros(len(initial_state.players))
 
-            self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
-            self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
-            self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-            self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-            for p in initial_state.players:
-                self.on_grounds[p.car_id] = p.on_ground
+            self.prev_prev_actions = [[0] * 8 for _ in range(len(initial_state.players))]
+            self.is_jumpings = [False] * len(initial_state.players)
+            self.has_jumpeds = [False] * len(initial_state.players)
+            self.on_grounds = [False] * len(initial_state.players)
+            for i, p in enumerate(initial_state.players):
+                self.on_grounds[i] = p.on_ground
 
     def get_reward(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
                    previous_model_action: np.ndarray) -> float:
@@ -740,7 +737,7 @@ class ZeroSumReward(RewardFunction):
         return reg_reward + dist_rew + boost_rew + touch_rew + boost_touch_rew
 
     def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray) -> float:
-        cid = player.car_id
+        cid = self.n
         dash_timer = -1
 
         # update jumptime

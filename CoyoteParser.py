@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rlgym.utils.gamestates import PhysicsObject
-    from rlgym.utils.action_parsers import ActionParser
     from rlgym.utils.gamestates import GameState, PlayerData
 
+from rlgym.utils.action_parsers import ActionParser
 import copy
 from typing import Any
 

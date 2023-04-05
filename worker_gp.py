@@ -59,7 +59,7 @@ if __name__ == "__main__":
     deterministic_streamer = True
     force_old_deterministic = False
     visualize = False
-    simulator = False
+    simulator = True
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
         from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
