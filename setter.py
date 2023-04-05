@@ -1,16 +1,27 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rlgym.utils.state_setters import StateWrapper
+
 from rocket_learn.utils.dynamic_gamemode_setter import DynamicGMSetter
-from rlgym.utils.state_setters import StateWrapper
-from rlgym.utils.state_setters import DefaultState
+
 from rlgym_tools.extra_state_setters.replay_setter import ReplaySetter
 from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampleSetter
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
-from rlgym.utils.state_setters.random_state import RandomState
+
 from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, Wavedash, \
     Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter, LixSetter
 
 
 class CoyoteSetter(DynamicGMSetter):
-    def __init__(self, mode, end_object_choice=None):
+    def __init__(self, mode, end_object_choice=None, simulator=False):
+        if simulator:
+            from rlgym_sim.utils.state_setters import DefaultState
+            from rlgym_sim.utils.state_setters.random_state import RandomState
+        else:
+            from rlgym.utils.state_setters import DefaultState
+            from rlgym.utils.state_setters.random_state import RandomState
         self.setters = []  # [1v1, 2v2, 3v3]
         replays = ["replays/ssl_1v1.npy", "replays/ssl_2v2.npy", "replays/ssl_3v3.npy"]
         aerial_replays = ["replays/aerial_1v1.npy", "replays/aerial_2v2.npy", "replays/aerial_3v3.npy"]

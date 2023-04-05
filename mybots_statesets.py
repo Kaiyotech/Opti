@@ -1,14 +1,18 @@
-from typing import Type
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from rlgym.utils.state_setters import StateSetter
-from rlgym.utils.state_setters import StateWrapper
+if TYPE_CHECKING:
+    from rlgym.utils.state_setters import StateSetter
+    from rlgym.utils.state_setters import StateWrapper
+    from rlgym.utils.state_setters.state_wrapper import CarWrapper
+    from rlgym.utils.gamestates.physics_object import PhysicsObject
+
 from rlgym.utils.common_values import BLUE_TEAM, ORANGE_TEAM, CEILING_Z, GOAL_HEIGHT, \
     SIDE_WALL_X, BACK_WALL_Y, CAR_MAX_SPEED, CAR_MAX_ANG_VEL, BALL_RADIUS, BOOST_LOCATIONS
 import numpy as np
 from numpy import random as rand
-from rlgym.utils.state_setters.state_wrapper import CarWrapper
+
 from collections import namedtuple
-from rlgym.utils.gamestates.physics_object import PhysicsObject
 
 DEG_TO_RAD = 3.14159265 / 180
 

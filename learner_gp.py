@@ -23,8 +23,6 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
-from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
-from rlgym.utils.reward_functions.combined_reward import CombinedReward
 
 # ideas for models:
 # get to ball as fast as possible, sometimes with no boost, rewards exist

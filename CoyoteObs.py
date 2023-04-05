@@ -1,3 +1,11 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rlgym.gym import Gym
+    from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
+    from rlgym.utils.obs_builders import ObsBuilder
+
 import copy
 import math
 import random
@@ -7,19 +15,13 @@ from typing import Any, List
 
 from gym import Space
 from gym.spaces import Tuple, Box
-from rlgym.gym import Gym
-from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
-from rlgym.utils.obs_builders import ObsBuilder
+
 from rlgym.utils.common_values import BOOST_LOCATIONS
-import torch
 
 from numba import njit
-import scipy
 
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
-
-
 class CoyoteObsBuilder(ObsBuilder):
     def __init__(self, tick_skip=8, team_size=3, expanding: bool = True, extra_boost_info: bool = True,
                  embed_players=False, stack_size=0, action_parser=None, env: Gym = None, infinite_boost_odds=0,

@@ -3,10 +3,8 @@ from redis import Redis
 from redis.retry import Retry  # noqa
 from redis.backoff import ExponentialBackoff  # noqa
 from redis.exceptions import ConnectionError, TimeoutError
-from rlgym.envs import Match
+
 from CoyoteObs import CoyoteObsBuilder
-from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
-    NoTouchTimeoutCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
@@ -64,9 +62,15 @@ if __name__ == "__main__":
     simulator = False
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
+        from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
+    else:
+        from rlgym.envs import Match
+        from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
     batch_mode = True
     team_size = 3
-    dynamic_game = False if visualize else True
+    dynamic_game = True
     infinite_boost_odds = 0
     host = "127.0.0.1"
     epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
@@ -93,12 +97,11 @@ if __name__ == "__main__":
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
 
-
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal"),
+        state_setter=CoyoteSetter(mode="normal", simulator=False),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),
@@ -113,7 +116,7 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal"),
+        state_setter=CoyoteSetter(mode="normal", simulator=True),
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),

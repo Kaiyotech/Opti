@@ -1,15 +1,18 @@
-from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
-    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y, SIDE_WALL_X
-import numpy as np
-from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
-from rlgym.utils.reward_functions import RewardFunction
-from rlgym.utils.math import cosine_similarity
-from Constants_kickoff import FRAME_SKIP
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
+    from rlgym.utils.reward_functions import RewardFunction
+
+from rlgym.utils.common_values import BLUE_TEAM, BLUE_GOAL_BACK, ORANGE_GOAL_BACK, ORANGE_TEAM, BALL_MAX_SPEED, \
+    CAR_MAX_SPEED, BALL_RADIUS, GOAL_HEIGHT, CEILING_Z, BACK_NET_Y, BACK_WALL_Y, SIDE_WALL_X, BOOST_LOCATIONS
+from rlgym.utils.math import cosine_similarity
+
+import numpy as np
 from numpy.linalg import norm
 
 from typing import Tuple, List
-from rlgym.utils.common_values import BOOST_LOCATIONS
 
 
 def _closest_to_ball(state: GameState) -> Tuple[int, int]:

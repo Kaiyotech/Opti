@@ -1,13 +1,20 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rlgym.utils.gamestates import PhysicsObject
+    from rlgym.utils.action_parsers import ActionParser
+    from rlgym.utils.gamestates import GameState, PlayerData
+
 import copy
 from typing import Any
 
 import gym.spaces
 import numpy as np
 from gym.spaces import Discrete
+
 from rlgym.utils import math
-from rlgym.utils.gamestates import PhysicsObject
-from rlgym.utils.action_parsers import ActionParser
-from rlgym.utils.gamestates import GameState, PlayerData
+
 from CoyoteObs import CoyoteObsBuilder, CoyoteObsBuilder_Legacy
 from selection_listener import SelectionListener
 
