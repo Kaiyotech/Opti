@@ -113,7 +113,6 @@ if __name__ == "__main__":
         reward_function=rew,
         tick_skip=frame_skip,
     ) if not simulator else Sim_Match(
-        game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
         state_setter=CoyoteSetter(mode="normal", simulator=True),
