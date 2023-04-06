@@ -60,14 +60,6 @@ if __name__ == "__main__":
     force_old_deterministic = False
     visualize = False
     simulator = True
-    if simulator:
-        from rlgym_sim.envs import Match as Sim_Match
-        from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
-            NoTouchTimeoutCondition
-    else:
-        from rlgym.envs import Match
-        from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
-            NoTouchTimeoutCondition
     batch_mode = True
     team_size = 3
     dynamic_game = True
@@ -96,6 +88,15 @@ if __name__ == "__main__":
             simulator = False
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
+            
+    if simulator:
+        from rlgym_sim.envs import Match as Sim_Match
+        from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
+    else:
+        from rlgym.envs import Match
+        from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
 
     match = Match(
         game_speed=game_speed,
