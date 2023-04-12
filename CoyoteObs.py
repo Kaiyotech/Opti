@@ -21,6 +21,38 @@ from rlgym.utils.common_values import BOOST_LOCATIONS
 
 from numba import njit
 
+def print_state(state: GameState):
+    print("State:")
+    print(f"Score is {state.blue_score} - {state.orange_score}")
+    print(f"Ball Info:")
+    print(f"ang_vel: {state.ball.angular_velocity}")
+    print(f"lin_vel: {state.ball.linear_velocity}")
+    print(f"position: {state.ball.position}")
+    print(f"qaut: {state.ball.quaternion}")
+    print(f"Inv Ball Info:")
+    print(f"ang_vel: {state.inverted_ball.angular_velocity}")
+    print(f"lin_vel: {state.inverted_ball.linear_velocity}")
+    print(f"position: {state.inverted_ball.position}")
+    print(f"qaut: {state.inverted_ball.quaternion}")
+    print(f"Boost_pads: {state.boost_pads}")
+    print(f"inv_boost_pads: {state.inverted_boost_pads}")
+    print("Player Info:")
+    for player in state.players:
+        print(player)
+        print(f"car_data:")
+        print(f"ang_vel: {player.car_data.angular_velocity}")
+        print(f"lin_vel: {player.car_data.linear_velocity}")
+        print(f"pos: {player.car_data.position}")
+        print(f"quat: {player.car_data.quaternion}")
+        print(f"inv_car_data:")
+        print(f"ang_vel: {player.inverted_car_data.angular_velocity}")
+        print(f"lin_vel: {player.inverted_car_data.linear_velocity}")
+        print(f"pos: {player.inverted_car_data.position}")
+        print(f"quat: {player.inverted_car_data.quaternion}")
+    print()
+    print()
+    print()
+
 
 # inspiration from Raptor (Impossibum) and Necto (Rolv/Soren)
 class CoyoteObsBuilder(ObsBuilder):
@@ -902,12 +934,14 @@ class CoyoteObsBuilder(ObsBuilder):
             # TODO remove this *****
             to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])
-            sum_1 = np.sum(to_ret[0])
-            sum_2 = np.sum(to_ret[1])
-            if np.isnan(sum_1) or np.isnan(sum_2):
-                print(f"There is a nan in the obs. {to_ret} - state is {state}")
-            if np.isinf(sum_1) or np.isinf(sum_2):
-                print(f"There is an inf in the obs. {to_ret} - state is {state}")
+            if any(np.isnan(to_ret[0])) or any(np.isnan(to_ret[1])):
+                print(f"There is a nan in the obs. {to_ret}")
+                print_state(state)
+                exit()
+            if any(np.isinf(to_ret[0])) or any(np.isinf(to_ret[1])):
+                print(f"There is an inf in the obs. {to_ret}")
+                print_state(state)
+                exit()
             return to_ret
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])

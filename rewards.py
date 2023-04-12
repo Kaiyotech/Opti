@@ -15,6 +15,9 @@ from numpy.linalg import norm
 
 from typing import Tuple, List
 
+# TODO remove this
+from CoyoteObs import print_state
+
 
 def _closest_to_ball(state: GameState) -> Tuple[int, int]:
     # returns [blue_closest, orange_closest]
@@ -629,6 +632,36 @@ class ZeroSumReward(RewardFunction):
             blue_mean = np.mean(player_rewards[:mid])
             player_rewards[:mid] -= orange_mean
             player_rewards[mid:] -= blue_mean
+
+        # TODO: remove this
+        if any(np.isnan(player_rewards)):
+            print(f"There is a nan in the rewwards. {player_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if any(np.isnan(player_self_rewards)):
+            print(f"There is a nan in the self-rewwards. {player_self_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if any(np.isinf(player_rewards)):
+            print(f"There is a inf in the rewwards. {player_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if any(np.isinf(player_self_rewards)):
+            print(f"There is a inf in the self-rewwards. {player_self_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
 
         self.last_state = state
         self.rewards = player_rewards + player_self_rewards
