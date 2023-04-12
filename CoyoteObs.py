@@ -934,11 +934,11 @@ class CoyoteObsBuilder(ObsBuilder):
             # TODO remove this *****
             to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])
-            if any(np.isnan(to_ret[0])) or any(np.isnan(to_ret[1])):
+            if np.isnan(to_ret[0]).any() or np.isnan(to_ret[1]).any():
                 print(f"There is a nan in the obs. {to_ret}")
                 print_state(state)
                 exit()
-            if any(np.isinf(to_ret[0])) or any(np.isinf(to_ret[1])):
+            if np.isinf(to_ret[0]).any() or np.isinf(to_ret[1]).any():
                 print(f"There is an inf in the obs. {to_ret}")
                 print_state(state)
                 exit()
