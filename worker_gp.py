@@ -6,6 +6,8 @@ from redis.exceptions import ConnectionError, TimeoutError
 
 from CoyoteObs import CoyoteObsBuilder
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
+from rocket_learn.matchmaker.matchmaker import Matchmaker
+from rocket_learn.agent.types import PretrainedAgent
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
@@ -55,7 +57,8 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.02
-    past_version_prob = 0.1
+    past_version_prob = 0.5
+    non_latest_version_prob = [0.8, 0.09, 0.075, 0.035]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
     visualize = False
@@ -86,6 +89,7 @@ if __name__ == "__main__":
             auto_minimize = False
             infinite_boost_odds = 0
             simulator = False
+            past_version_prob = 0
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
             
@@ -155,11 +159,18 @@ if __name__ == "__main__":
     model_name = "kbb.pt"
     kbb = KBB(model_string=model_name)
 
-    pretrained_agents = {nectov1: 0, nexto: 0.05, kbb: 0.05}
+    # pretrained_agents = {nectov1: 0, nexto: 0.05, kbb: 0.05}
+    # pretrained_agents = {nexto: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="Nexto"),
+    #                      kbb: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="KBB")}
     # pretrained_agents = None
+    pretrained_agents = Constants_gp.pretrained_agents
+
+    matchmaker = Matchmaker(sigma_target=2, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
+                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=streamer_mode,
+                            non_latest_version_prob=non_latest_version_prob)
 
     worker = RedisRolloutWorker(r, name, match,
-                                past_version_prob=past_version_prob,
+                                matchmaker=matchmaker,
                                 sigma_target=2,
                                 evaluation_prob=evaluation_prob,
                                 force_paging=False,
@@ -176,7 +187,6 @@ if __name__ == "__main__":
                                 step_size=Constants_gp.STEP_SIZE,
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
                                 eval_setter=EndKickoff(),
-                                full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
                                 visualize=False,

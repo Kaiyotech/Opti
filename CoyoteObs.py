@@ -899,6 +899,16 @@ class CoyoteObsBuilder(ObsBuilder):
             # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
+            # TODO remove this *****
+            to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
+                   np.asarray([players_data])
+            sum_1 = np.sum(to_ret[0])
+            sum_2 = np.sum(to_ret[1])
+            if np.isnan(sum_1) or np.isnan(sum_2):
+                print(f"There is a nan in the obs. {to_ret} - state is {state}")
+            if np.isinf(sum_1) or np.isinf(sum_2):
+                print(f"There is an inf in the obs. {to_ret} - state is {state}")
+            return to_ret
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])
             # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
@@ -1312,12 +1322,7 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
             # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            # TODO remove this *****
-            to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
-                   np.asarray([players_data])
-            if np.isnan(np.sum(to_ret[0])) or np.isnan(np.sum(to_ret[1])):
-                print(f"There is a nan in the obs. {to_ret} - state is {state}")
-            return to_ret
+
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])
             # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])
