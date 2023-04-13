@@ -52,10 +52,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.40"
+    run_id = "gp_run3.42"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.40",
+                        name="GP_Run3.42",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -111,7 +111,8 @@ if __name__ == "__main__":
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
-                                        pretrained_agents=Constants_gp.pretrained_agents,
+                                        # pretrained_agents=Constants_gp.pretrained_agents,
+                                        min_sigma=0.5
                                         )
 
     critic = Sequential(Linear(426, 512), LeakyReLU(), Linear(512, 512), LeakyReLU(),
