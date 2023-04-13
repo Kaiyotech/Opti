@@ -170,8 +170,8 @@ if __name__ == "__main__":
     #                         non_latest_version_prob=non_latest_version_prob)
 
     worker = RedisRolloutWorker(r, name, match,
-                                # matchmaker=matchmaker,
-                                sigma_target=0.75,
+                                past_version_prob=past_version_prob,
+                                sigma_target=2,
                                 evaluation_prob=evaluation_prob,
                                 force_paging=False,
                                 dynamic_gm=dynamic_game,
@@ -187,6 +187,7 @@ if __name__ == "__main__":
                                 step_size=Constants_gp.STEP_SIZE,
                                 pretrained_agents=None if streamer_mode else pretrained_agents,
                                 eval_setter=EndKickoff(),
+                                full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
                                 visualize=False,
