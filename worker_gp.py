@@ -6,8 +6,8 @@ from redis.exceptions import ConnectionError, TimeoutError
 
 from CoyoteObs import CoyoteObsBuilder
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
-from rocket_learn.matchmaker.matchmaker import Matchmaker
-from rocket_learn.agent.types import PretrainedAgent
+# from rocket_learn.matchmaker.matchmaker import Matchmaker
+# from rocket_learn.agent.types import PretrainedAgent
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
