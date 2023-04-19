@@ -106,8 +106,8 @@ if __name__ == "__main__":
             past_version_prob = 0
 
             pretrained_agents = {
-                nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-                kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+                nexto: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+                kbb: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
             }
 
             non_latest_version_prob = [0, 1, 0, 0]
@@ -116,7 +116,10 @@ if __name__ == "__main__":
                                     past_version_prob=past_version_prob,
                                     full_team_trainings=1, full_team_evaluations=1,
                                     force_non_latest_orange=streamer_mode,
-                                    non_latest_version_prob=non_latest_version_prob)
+                                    non_latest_version_prob=non_latest_version_prob,
+                                    showmatch=True,
+                                    orange_agent_text_file='orange_stream_file.txt'
+                                    )
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
