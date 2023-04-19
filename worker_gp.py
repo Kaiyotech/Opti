@@ -69,6 +69,20 @@ if __name__ == "__main__":
     infinite_boost_odds = 0
     host = "127.0.0.1"
     epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
+
+    model_name = "necto-model-30Y.pt"
+    nectov1 = NectoV1(model_string=model_name, n_players=6)
+    model_name = "nexto-model.pt"
+    nexto = NextoV2(model_string=model_name, n_players=6)
+    model_name = "kbb.pt"
+    kbb = KBB(model_string=model_name)
+
+    pretrained_agents = Constants_gp.pretrained_agents
+
+    matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
+                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=streamer_mode,
+                            non_latest_version_prob=non_latest_version_prob)
+
     if len(sys.argv) > 1:
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
@@ -90,6 +104,20 @@ if __name__ == "__main__":
             infinite_boost_odds = 0
             simulator = False
             past_version_prob = 0
+
+            pretrained_agents = {
+                nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+                kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+            }
+
+            non_latest_version_prob = [0, 1, 0, 0]
+
+            matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
+                                    past_version_prob=past_version_prob,
+                                    full_team_trainings=1, full_team_evaluations=1,
+                                    force_non_latest_orange=streamer_mode,
+                                    non_latest_version_prob=non_latest_version_prob)
+
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
             
@@ -152,22 +180,11 @@ if __name__ == "__main__":
                   db=Constants_gp.DB_NUM,
                   )
 
-    model_name = "necto-model-30Y.pt"
-    nectov1 = NectoV1(model_string=model_name, n_players=6)
-    model_name = "nexto-model.pt"
-    nexto = NextoV2(model_string=model_name, n_players=6)
-    model_name = "kbb.pt"
-    kbb = KBB(model_string=model_name)
 
     # pretrained_agents = {nectov1: 0, nexto: 0.05, kbb: 0.05}
     # pretrained_agents = {nexto: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="Nexto"),
     #                      kbb: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="KBB")}
     # pretrained_agents = None
-    pretrained_agents = Constants_gp.pretrained_agents
-
-    matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
-                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=streamer_mode,
-                            non_latest_version_prob=non_latest_version_prob)
 
     worker = RedisRolloutWorker(r, name, match,
                                 matchmaker=matchmaker,
@@ -185,7 +202,7 @@ if __name__ == "__main__":
                                 # testing
                                 batch_mode=batch_mode,
                                 step_size=Constants_gp.STEP_SIZE,
-                                pretrained_agents=None if streamer_mode else pretrained_agents,
+                                pretrained_agents=pretrained_agents,
                                 eval_setter=EndKickoff(),
                                 # full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
