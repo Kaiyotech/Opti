@@ -61,12 +61,14 @@ if __name__ == "__main__":
     non_latest_version_prob = [0.8, 0.09, 0.075, 0.035]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
+    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
     visualize = False
     simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0
+    setter = CoyoteSetter(mode="normal", simulator=False)
     host = "127.0.0.1"
     epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
@@ -120,6 +122,10 @@ if __name__ == "__main__":
                                     showmatch=True,
                                     orange_agent_text_file='orange_stream_file.txt'
                                     )
+                                    
+            gamemode_weights = {'1v1': 0, '2v2': 0, '3v3': 1}     
+
+            setter = EndKickoff()
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
@@ -137,7 +143,7 @@ if __name__ == "__main__":
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal", simulator=False),
+        state_setter=setter,
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),
@@ -151,7 +157,7 @@ if __name__ == "__main__":
     ) if not simulator else Sim_Match(
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="normal", simulator=True),
+        state_setter=setter,
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),
@@ -198,7 +204,7 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.30, '2v2': 0.25, '3v3': 0.45},  # default 1/3
+                                gamemode_weights=gamemode_weights,  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
