@@ -58,7 +58,7 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0.02
     past_version_prob = 0.5  # 0.1
-    non_latest_version_prob = [0.8, 0.09, 0.075, 0.035]  # this includes past_version and pretrained
+    non_latest_version_prob = [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
     gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
