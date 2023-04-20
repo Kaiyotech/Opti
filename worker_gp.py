@@ -217,6 +217,7 @@ if __name__ == "__main__":
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
                                 visualize=False,
+                                live_progress=False,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa
