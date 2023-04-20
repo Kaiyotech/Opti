@@ -82,7 +82,7 @@ if __name__ == "__main__":
     pretrained_agents = Constants_gp.pretrained_agents
 
     matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
-                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=streamer_mode,
+                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
     if len(sys.argv) > 1:
