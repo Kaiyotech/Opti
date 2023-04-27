@@ -3,7 +3,11 @@ import sys
 from redis import Redis
 import os
 import torch
-# import jit_maker
+import pickle
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+import agent  # for pickle
 
 filename = sys.argv[1]
 db_num = sys.argv[2]
@@ -14,8 +18,8 @@ r = Redis(host="127.0.0.1",
           password=os.environ["redis_user1_key"],
           db=int(db_num),
           )
-
-model = _unserialize_model(r.hget(OPPONENT_MODELS, version))
+model_ser = r.hget(OPPONENT_MODELS, version)
+model = pickle.loads(model_ser)
 model.eval()
 
 test_input_embed = (torch.Tensor(1, 251), torch.Tensor(1, 5, 35))
