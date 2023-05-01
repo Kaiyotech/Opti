@@ -70,7 +70,7 @@ if __name__ == "__main__":
     infinite_boost_odds = 0
     setter = CoyoteSetter(mode="normal", simulator=False)
     host = "127.0.0.1"
-    epic_rl_exe_path = "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
+    epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
     model_name = "necto-model-30Y.pt"
     nectov1 = NectoV1(model_string=model_name, n_players=6)
@@ -111,6 +111,7 @@ if __name__ == "__main__":
                 nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
                 kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
             }
+
             non_latest_version_prob = [0, 1, 0, 0]
 
             matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
@@ -122,7 +123,7 @@ if __name__ == "__main__":
                                     orange_agent_text_file='orange_stream_file.txt'
                                     )
                                     
-            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}     
+            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
 
             setter = EndKickoff()
 
