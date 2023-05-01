@@ -14,11 +14,12 @@ import copy
 
 
 class NextoV2(HardcodedAgent):
-    def __init__(self, model_string, n_players):
+    def __init__(self, model_string, n_players, tick_skip_skip=2):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         self.actor = torch.jit.load(os.path.join(cur_dir, model_string))
         self.obs_builder = Nexto_V2_ObsBuilder(n_players=n_players)
         self.previous_action = np.array([0, 0, 0, 0, 0, 0, 0, 0])
+        self.tick_skip_skip = tick_skip_skip
 
         self._lookup_table = self.make_lookup_table()
 
