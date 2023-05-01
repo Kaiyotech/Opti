@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     pretrained_agents = Constants_gp.pretrained_agents
 
-    matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
+    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
@@ -111,7 +111,6 @@ if __name__ == "__main__":
                 nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
                 kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
             }
-
             non_latest_version_prob = [0, 1, 0, 0]
 
             matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
@@ -123,7 +122,7 @@ if __name__ == "__main__":
                                     orange_agent_text_file='orange_stream_file.txt'
                                     )
                                     
-            gamemode_weights = {'1v1': 0, '2v2': 0, '3v3': 1}     
+            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}     
 
             setter = EndKickoff()
 
