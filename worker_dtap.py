@@ -13,7 +13,8 @@ from rewards import ZeroSumReward
 from torch import set_num_threads
 from setter import CoyoteSetter
 from mybots_statesets import EndKickoff
-import Constants_gp
+from mybots_terminals import BallTouchGroundCondition
+import Constants_dtap
 import os
 
 from pretrained_agents.necto.necto_v1 import NectoV1
@@ -23,32 +24,18 @@ from pretrained_agents.KBB.kbb import KBB
 set_num_threads(1)
 
 if __name__ == "__main__":
-    rew = ZeroSumReward(zero_sum=Constants_gp.ZERO_SUM,
-                        goal_w=10,
+    rew = ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                         concede_w=-10,
-                        # double_tap_w=5,
-                        velocity_bg_w=0.075 / 2,  # fix for the tick skip change
-                        velocity_pb_w=0,
-                        boost_gain_w=0.15,
-                        punish_boost=True,
-                        use_boost_punish_formula=False,
-                        boost_spend_w=-0.45,
-                        boost_gain_small_w=0.25,
-                        punish_low_boost_w=-0.02,
-                        demo_w=0.5,
+                        double_tap_w=10,
+                        velocity_bg_w=0.05,  # fix for the tick skip change
+                        velocity_pb_w=0.0075,
                         acel_ball_w=1,
-                        team_spirit=1,
-                        # cons_air_touches_w=2,
-                        jump_touch_w=4,
+                        jump_touch_w=1,
                         wall_touch_w=2.5,
-                        touch_grass_w=0,
-                        punish_bad_spacing_w=-0.1,
-                        handbrake_ctrl_w=-0.005,
-                        tick_skip=Constants_gp.FRAME_SKIP,
+                        tick_skip=Constants_dtap.FRAME_SKIP,
                         flatten_wall_height=True,
-                        slow_w=-0.001,
                         )
-    frame_skip = Constants_gp.FRAME_SKIP
+    frame_skip = Constants_dtap.FRAME_SKIP
     fps = 120 // frame_skip
     name = "Default"
     send_gamestate = False
@@ -56,32 +43,23 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 0.02
+    evaluation_prob = 0
     past_version_prob = 0  # 0.5  # 0.1
     non_latest_version_prob = [1, 0, 0, 0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
-    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
+    gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
     visualize = False
-    simulator = False
+    simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0
-    setter = CoyoteSetter(mode="normal", simulator=False)
+    infinite_boost_odds = 0.2
+    setter = CoyoteSetter(mode="doubletap", simulator=False)
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
-    model_name = "necto-model-30Y.pt"
-    nectov1 = NectoV1(model_string=model_name, n_players=6)
-    model_name = "nexto-model.pt"
-    nexto = NextoV2(model_string=model_name, n_players=6)
-    model_name = "kbb.pt"
-    kbb = KBB(model_string=model_name)
-
-    pretrained_agents = Constants_gp.pretrained_agents
-
-    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
+    matchmaker = Matchmaker(sigma_target=0.5, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
@@ -89,7 +67,7 @@ if __name__ == "__main__":
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
             local = False
-            batch_mode = True
+            batch_mode = False
             epic_rl_exe_path = None
     if len(sys.argv) > 2:
         name = sys.argv[2]
@@ -103,29 +81,11 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
-            infinite_boost_odds = 0
+            infinite_boost_odds = 0.2
             simulator = False
             past_version_prob = 0
-
-            pretrained_agents = {
-                nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-                kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
-            }
-
-            non_latest_version_prob = [0, 1, 0, 0]
-
-            matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
-                                    past_version_prob=past_version_prob,
-                                    full_team_trainings=1, full_team_evaluations=1,
-                                    force_non_latest_orange=streamer_mode,
-                                    non_latest_version_prob=non_latest_version_prob,
-                                    showmatch=True,
-                                    orange_agent_text_file='orange_stream_file.txt'
-                                    )
                                     
-            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
-
-            setter = EndKickoff()
+            gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
@@ -144,13 +104,18 @@ if __name__ == "__main__":
         spawn_opponents=True,
         team_size=team_size,
         state_setter=setter,
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True,
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
+                                     extra_boost_info=False, embed_players=False,
                                      infinite_boost_odds=infinite_boost_odds),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
-                             TimeoutCondition(fps * 300),
+                             BallTouchGroundCondition(min_time_sec=1,
+                                                      time_to_arm_sec=3,  # allow it to roll from ground or pop
+                                                      tick_skip=Constants_dtap.FRAME_SKIP,
+                                                      time_after_ground_sec=1,
+                                                      min_height=110,
+                                                      check_towards_goal=True),
+                             TimeoutCondition(fps * 50),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -158,13 +123,18 @@ if __name__ == "__main__":
         spawn_opponents=True,
         team_size=team_size,
         state_setter=setter,
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_gp.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True,
+        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
+                                     extra_boost_info=False, embed_players=False,
                                      infinite_boost_odds=infinite_boost_odds),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
-                             TimeoutCondition(fps * 300),
+                             BallTouchGroundCondition(min_time_sec=1,
+                                                      time_to_arm_sec=3,  # allow it to roll from ground or pop
+                                                      tick_skip=Constants_dtap.FRAME_SKIP,
+                                                      time_after_ground_sec=1,
+                                                      min_height=110,
+                                                      check_towards_goal=True),
+                             TimeoutCondition(fps * 50),
                              ],
         reward_function=rew,
         tick_skip=frame_skip,
@@ -175,7 +145,7 @@ if __name__ == "__main__":
         r = Redis(host=host,
                   username="user1",
                   password=os.environ["redis_user1_key"],
-                  db=Constants_gp.DB_NUM,
+                  db=Constants_dtap.DB_NUM,
                   )
 
     # remote Redis
@@ -186,14 +156,8 @@ if __name__ == "__main__":
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
                   retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
-                  db=Constants_gp.DB_NUM,
+                  db=Constants_dtap.DB_NUM,
                   )
-
-
-    # pretrained_agents = {nectov1: 0, nexto: 0.05, kbb: 0.05}
-    # pretrained_agents = {nexto: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="Nexto"),
-    #                      kbb: PretrainedAgent(prob=0.5, eval=True, p_deterministic_training=1., key="KBB")}
-    # pretrained_agents = None
 
     worker = RedisRolloutWorker(r, name, match,
                                 matchmaker=matchmaker,
@@ -210,13 +174,11 @@ if __name__ == "__main__":
                                 force_old_deterministic=force_old_deterministic,
                                 # testing
                                 batch_mode=batch_mode,
-                                step_size=Constants_gp.STEP_SIZE,
-                                pretrained_agents=pretrained_agents,
-                                eval_setter=EndKickoff(),
+                                step_size=Constants_dtap.STEP_SIZE,
                                 # full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
-                                visualize=False,
+                                visualize=visualize,
                                 live_progress=False,
                                 )
 

@@ -40,7 +40,8 @@ class CoyoteSetter(DynamicGMSetter):
         team_pinch_replays = ["replays/pinch_1v1.npy", "replays/team_pinch_2v2.npy", "replays/team_pinch_3v3.npy"]
         full_pinch_replays = ["replays/pinch_1v1.npy", "replays/pinch_2v2.npy", "replays/pinch_3v3.npy"]
         pinch_replays = ["replays/full_pinch_1v1.npy", "replays/full_pinch_2v2.npy", "replays/full_pinch_3v3.npy"]
-        double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy"]
+        double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy",
+                              "replays/double_tap_1v0.npy"]
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                   "replays/ground_dribble_3v3.npy"]
         demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
@@ -249,6 +250,13 @@ class CoyoteSetter(DynamicGMSetter):
                     )
                 )
 
+        elif mode == "doubletap":
+            for i in range(3):
+                self.setters.append(
+                        (ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0.2, random_boost=True), True,
+                         False, False)
+                )
+
         elif mode == "recovery_ball":
             for i in range(3):
                 self.setters.append(
@@ -298,4 +306,5 @@ class CoyoteSetter(DynamicGMSetter):
         #     self.end_object_tracker[0] += 1
         #     if self.end_object_tracker[0] == 7:
         #         self.end_object_tracker[0] = 0
-        self.setters[(len(state_wrapper.cars) // 2) - 1].reset(state_wrapper)
+        index = 3 if len(state_wrapper.cars) == 1 else (len(state_wrapper.cars) // 2) - 1
+        self.setters[index].reset(state_wrapper)
