@@ -5,7 +5,6 @@ from torch.nn import Linear, Sequential, LeakyReLU
 
 from redis import Redis
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import Opti
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -77,7 +76,13 @@ if __name__ == "__main__":
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
-                                                                 embed_players=False),
+                                                                 embed_players=False,
+                                                                 add_jumptime=True,
+                                                                 add_airtime=True,
+                                                                 add_fliptime=True,
+                                                                 add_boosttime=True,
+                                                                 add_handbrake=True,
+                                                                 ),
                                         lambda: ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                                                               concede_w=-10,
                                                               double_tap_w=10,
@@ -95,7 +100,7 @@ if __name__ == "__main__":
                                         logger=logger,
                                         clear=False,
                                         stat_trackers=stat_trackers,
-                                        # gamemodes=("1v1", "2v2", "3v3"),
+                                        gamemodes=("1v0", "1v1"),
                                         max_age=1,
                                         )
 

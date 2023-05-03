@@ -6,8 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 
 from CoyoteObs import CoyoteObsBuilder
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
-from rocket_learn.matchmaker.matchmaker import Matchmaker
-from rocket_learn.agent.types import PretrainedAgent
+from my_matchmaker import MatchmakerWith1v0
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
@@ -59,9 +58,7 @@ if __name__ == "__main__":
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
-    matchmaker = Matchmaker(sigma_target=0.5, past_version_prob=past_version_prob,
-                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
-                            non_latest_version_prob=non_latest_version_prob)
+    matchmaker = MatchmakerWith1v0()
 
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -106,7 +103,13 @@ if __name__ == "__main__":
         state_setter=setter,
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False, embed_players=False,
-                                     infinite_boost_odds=infinite_boost_odds),
+                                     infinite_boost_odds=infinite_boost_odds,
+                                     add_jumptime=True,
+                                     add_airtime=True,
+                                     add_fliptime=True,
+                                     add_boosttime=True,
+                                     add_handbrake=True,
+                                     ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=1,
@@ -125,7 +128,13 @@ if __name__ == "__main__":
         state_setter=setter,
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False, embed_players=False,
-                                     infinite_boost_odds=infinite_boost_odds),
+                                     infinite_boost_odds=infinite_boost_odds,
+                                     add_jumptime=True,
+                                     add_airtime=True,
+                                     add_fliptime=True,
+                                     add_boosttime=True,
+                                     add_handbrake=True,
+                                     ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=1,
@@ -137,7 +146,6 @@ if __name__ == "__main__":
                              TimeoutCondition(fps * 50),
                              ],
         reward_function=rew,
-        tick_skip=frame_skip,
     )
 
     # local Redis
@@ -180,6 +188,7 @@ if __name__ == "__main__":
                                 simulator=simulator,
                                 visualize=visualize,
                                 live_progress=False,
+                                tick_skip=Constants_dtap.FRAME_SKIP
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa
