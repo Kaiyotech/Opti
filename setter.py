@@ -42,6 +42,8 @@ class CoyoteSetter(DynamicGMSetter):
         pinch_replays = ["replays/full_pinch_1v1.npy", "replays/full_pinch_2v2.npy", "replays/full_pinch_3v3.npy"]
         double_tap_replays = ["replays/double_tap_1v1.npy", "replays/double_tap_2v2.npy", "replays/double_tap_3v3.npy",
                               "replays/double_tap_1v0.npy"]
+        easy_double_tap_replays = ["replays/easy_double_tap_1v1.npy", "replays/easy_double_tap_1v1.npy",
+                                   "replays/easy_double_tap_1v1.npy", "replays/easy_double_tap_1v0.npy"]
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                   "replays/ground_dribble_3v3.npy"]
         demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
@@ -253,9 +255,14 @@ class CoyoteSetter(DynamicGMSetter):
         elif mode == "doubletap":
             for i in range(4):
                 self.setters.append(
-                        AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0.2,
-                                                   random_boost=True),
-                        True, False, False)
+                    WeightedSampleSetter(
+                        (AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0.2,
+                                                   random_boost=True, print_choice=True),
+                        True, False, False),
+                         AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0.2,
+                                                    random_boost=True, print_choice=True),
+                                       True, False, False),
+                         ), (0, 1))
                 )
 
         elif mode == "recovery_ball":

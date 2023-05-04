@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "dtap_run1.00"
+    run_id = "dtap_run1.02"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Dtap_Run1.00",
+                        name="Dtap_Run1.02",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -86,11 +86,11 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                                                               concede_w=-10,
                                                               double_tap_w=10,
-                                                              velocity_bg_w=0.05,  # fix for the tick skip change
-                                                              velocity_pb_w=0.0075,
-                                                              acel_ball_w=1,
-                                                              jump_touch_w=1,
-                                                              wall_touch_w=2.5,
+                                                              velocity_bg_w=0.03,  # fix for the tick skip change
+                                                              velocity_pb_w=0.002,
+                                                              acel_ball_w=0.25,
+                                                              jump_touch_w=0.5,
+                                                              wall_touch_w=0.5,
                                                               tick_skip=Constants_dtap.FRAME_SKIP,
                                                               flatten_wall_height=True,
                                                               ),
@@ -142,6 +142,6 @@ if __name__ == "__main__":
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    # alg.freeze_policy(100)
+    alg.freeze_policy(50)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="Dtap_saves")

@@ -54,7 +54,6 @@ if __name__ == "__main__":
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0.2
-    setter = CoyoteSetter(mode="doubletap", simulator=False)
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
@@ -95,6 +94,8 @@ if __name__ == "__main__":
         from rlgym.envs import Match
         from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
             NoTouchTimeoutCondition
+
+    setter = CoyoteSetter(mode="doubletap", simulator=simulator)
 
     match = Match(
         game_speed=game_speed,
@@ -138,9 +139,9 @@ if __name__ == "__main__":
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
                              BallTouchGroundCondition(min_time_sec=1,
-                                                      time_to_arm_sec=3,  # allow it to roll from ground or pop
+                                                      time_to_arm_sec=2,  # allow it to roll from ground or pop
                                                       tick_skip=Constants_dtap.FRAME_SKIP,
-                                                      time_after_ground_sec=1,
+                                                      time_after_ground_sec=0.5,
                                                       min_height=110,
                                                       check_towards_goal=True),
                              TimeoutCondition(fps * 50),
