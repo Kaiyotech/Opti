@@ -63,6 +63,7 @@ class TestObs(ObsBuilder):
         self.steps = 0
         self.actions = deque(maxlen=50)
 
+
     def reset(self, initial_state: GameState):
         self.states.clear()
         self.actions.clear()
@@ -111,23 +112,24 @@ class TestObs(ObsBuilder):
         # obs = obs.flatten()
         # obs = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
         obs = np.concatenate(obs)
-        if np.isnan(obs).any():
-            self.actions.reverse()
-            self.states.reverse()
-            print(f"There is a nan in the obs. Printing states")
-            print(f" {self.steps} since reset")
-            i = 0
-            for each_state in self.states:
-                print(i)
-                i += 1
-                print_state(each_state)
-            print("printing actions")
-            i = 0
-            for each_action in self.actions:
-                print(i)
-                i += 1
-                print(each_action)
-            exit()
+        # if np.isnan(obs).any():
+        #     # self.actions.reverse()
+        #     # self.states.reverse()
+        #     print(f"There is a nan in the obs. Printing states")
+        #     input()
+            # print(f" {self.steps} since reset")
+            # i = 0
+            # for each_state in self.states:
+            #     print(i)
+            #     i += 1
+            #     print_state(each_state)
+            # print("printing actions")
+            # i = 0
+            # for each_action in self.actions:
+            #     print(i)
+            #     i += 1
+            #     print(each_action)
+            # exit()
         return obs
 
     def _add_player_to_obs(self, obs: List, player: PlayerData, inverted: bool):
