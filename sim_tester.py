@@ -9,7 +9,7 @@ from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCond
 
 bad_list = []
 index = {}
-setter = AugmentSetter(ReplaySetter("replays/easy_double_tap_1v1.npy", defender_front_goal_weight=0.2,
+setter = AugmentSetter(ReplaySetter("replays/double_tap_1v1.npy", defender_front_goal_weight=0,
                                     random_boost=True, print_choice=True, override=None, index=index),
                        True, False, False)
 parser = CoyoteAction()
