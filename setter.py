@@ -256,10 +256,10 @@ class CoyoteSetter(DynamicGMSetter):
             for i in range(4):
                 self.setters.append(
                     WeightedSampleSetter(
-                        (AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0.2,
+                        (AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0,
                                                    random_boost=True, print_choice=True),
                         True, False, False),
-                         AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0.2,
+                         AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0,
                                                     random_boost=True, print_choice=True),
                                        True, False, False),
                          ), (0.2, 0.8))

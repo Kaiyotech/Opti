@@ -12,6 +12,7 @@ index = {}
 setter = AugmentSetter(ReplaySetter("replays/double_tap_1v1.npy", defender_front_goal_weight=0,
                                     random_boost=True, print_choice=True, override=None, index=index),
                        True, False, False)
+# setter = ReplaySetter("replays/bad_1v1_doubletap_state.npy")
 parser = CoyoteAction()
 obs = TestObs()
 reward = TestReward()
@@ -36,14 +37,15 @@ while True:
     done = False
     steps = 0
     while not done:
-        actions = np.asarray((np.asarray([0]), np.asarray([np.random.randint(0, 373)])))
+        #actions = np.asarray((np.asarray([0]), np.asarray([np.random.randint(0, 373)])))
         # actions = np.asarray(np.asarray([0],))
+        actions = np.asarray((np.asarray([0]), np.asarray([0])))
         new_obs, reward, done, state = env.step(actions)
         obs = new_obs
         if np.isnan(obs).any():
             # self.actions.reverse()
             # self.states.reverse()
-            print(f"There is a nan in the obs. Printing states")
+            print(f"There is a nan in the obs. Printing states after {steps} steps")
             if index[0] not in bad_list:
                 bad_list.append(index[0])
             # input()
@@ -51,6 +53,6 @@ while True:
         steps += 1
     total_steps += steps
     print(bad_list)
-    # print(f"completed {steps} steps. Starting new episode. Done {total_steps} total steps")
+    print(f"completed {steps} steps. Starting new episode. Done {total_steps} total steps")
 
 
