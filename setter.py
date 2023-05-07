@@ -46,7 +46,7 @@ class CoyoteSetter(DynamicGMSetter):
                                    "replays/easy_double_tap_1v1.npy", "replays/easy_double_tap_1v0.npy"]
         ground_dribble_replays = ["replays/ground_dribble_1v1.npy", "replays/ground_dribble_2v2.npy",
                                   "replays/ground_dribble_3v3.npy"]
-        demo_replays = ["replays/demos_1v1.npy", "replays/demos_2v2.npy", "replays/demos_3v3.npy"]
+        demo_replays = ["replays/demo_1v1.npy", "replays/demo_2v2.npy", "replays/demo_3v3.npy"]
         low_recovery_replays = ["replays/low_recovery_1v1.npy", "replays/low_recovery_1v1.npy",
                                 "replays/low_recovery_1v1.npy"]
         high_recovery_replays = ["replays/high_recovery_1v1.npy", "replays/high_recovery_1v1.npy",
