@@ -14,15 +14,17 @@ from setter import CoyoteSetter
 import Constants_demo
 import os
 
-
 set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_demo.ZERO_SUM,
-                        demo_w=1,
-                        got_demoed_w=-1,
-                        goal_w=1,
-                        concede_w=-1,
+                        demo_w=3,
+                        got_demoed_w=-3,
+                        goal_w=5,
+                        concede_w=-5,
+                        velocity_pb_w=0.01,
+                        velocity_bg_w=0.05,
+                        velocity_po_w=0.02,
                         tick_skip=Constants_demo.FRAME_SKIP,
                         )
     frame_skip = Constants_demo.FRAME_SKIP
