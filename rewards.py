@@ -132,8 +132,12 @@ class ZeroSumReward(RewardFunction):
             lix_reset_w=0,
             punish_dist_goal_score_w=0,
             velocity_po_w=0,
+            vel_po_mult_neg=1,
+            vel_po_mult_ss=1,
             flatten_wall_height=False
     ):
+        self.vel_po_mult_ss = vel_po_mult_ss
+        self.vel_po_mult_neg = vel_po_mult_neg
         self.velocity_po_w = velocity_po_w
         assert punish_dist_goal_score_w <= 0 and punish_dist_goal_score_w <= 0 and \
                punish_backboard_pinch_w <= 0 and punish_ceiling_pinch_w <= 0 and punish_action_change_w <= 0 and \
@@ -489,21 +493,26 @@ class ZeroSumReward(RewardFunction):
                 player_rewards[i] += self.demo_w
 
             # velocity to closest opponent
-            if i < mid:
-                start = mid
-                stop = mid * 2
-            else:
-                start = 0
-                stop = mid
-            tmp_oppo = state.players[start:stop]
-            tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
-            closest = tmp_oppo[0]
-            vel = player.car_data.linear_velocity
-            pos_diff = closest.car_data.position - player.car_data.position
-            norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
-            norm_vel = vel / CAR_MAX_SPEED
-            speed_rew = float(np.dot(norm_pos_diff, norm_vel))
-            player_rewards[i] += self.velocity_po_w * speed_rew
+            if self.velocity_po_w != 0:
+                if i < mid:
+                    start = mid
+                    stop = mid * 2
+                else:
+                    start = 0
+                    stop = mid
+                tmp_oppo = state.players[start:stop]
+                tmp_oppo.sort(key=lambda p: np.linalg.norm(p.car_data.position - player.car_data.position))
+                closest = tmp_oppo[0]
+                vel = player.car_data.linear_velocity
+                pos_diff = closest.car_data.position - player.car_data.position
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / CAR_MAX_SPEED
+                speed_rew = float(np.dot(norm_pos_diff, norm_vel))
+                if np.linalg.norm(vel) >= 2190:
+                    speed_rew *= self.vel_po_mult_ss
+                if speed_rew <= 0:
+                    speed_rew *= self.vel_po_mult_neg
+                player_rewards[i] += self.velocity_po_w * speed_rew
 
             # vel pb
             if self.end_object is None or self.end_object.position[0] == self.end_object.position[1] == \

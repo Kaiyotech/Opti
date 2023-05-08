@@ -24,7 +24,9 @@ if __name__ == "__main__":
                         concede_w=-5,
                         velocity_pb_w=0.01,
                         velocity_bg_w=0.05,
-                        velocity_po_w=0.02,
+                        velocity_po_w=0.001,
+                        vel_po_mult_ss=10,
+                        vel_po_mult_neg=0.01,
                         tick_skip=Constants_demo.FRAME_SKIP,
                         )
     frame_skip = Constants_demo.FRAME_SKIP
