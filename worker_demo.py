@@ -6,7 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 
 from CoyoteObs import CoyoteObsBuilder
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
-from my_matchmaker import MatchmakerSimple
+from my_matchmaker import MatchmakerFullVPretrained
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
@@ -43,7 +43,7 @@ if __name__ == "__main__":
                                0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
-    gamemode_weights = {'1v1': 0.4, '2v2': 0.35, '3v3': 0.25}
+    gamemode_weights = {'1v1': 0.8, '2v2': 0.1, '3v3': 0.1}
     visualize = False
     simulator = True
     batch_mode = True
@@ -53,7 +53,9 @@ if __name__ == "__main__":
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
-    matchmaker = MatchmakerSimple()
+    pretrained_agents = Constants_demo.pretrained_agents
+
+    matchmaker = MatchmakerFullVPretrained(pretrained_agents=pretrained_agents)
 
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -161,7 +163,8 @@ if __name__ == "__main__":
                                 simulator=simulator,
                                 visualize=visualize,
                                 live_progress=False,
-                                tick_skip=Constants_demo.FRAME_SKIP
+                                tick_skip=Constants_demo.FRAME_SKIP,
+                                pretrained_agents=pretrained_agents,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa

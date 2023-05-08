@@ -98,6 +98,7 @@ if __name__ == "__main__":
                                         stat_trackers=stat_trackers,
                                         gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
+                                        pretrained_agents=Constants_demo.pretrained_agents,
                                         )
 
     critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    alg.load("Demo_saves/Opti_1683473991.4737124/Opti_5080/checkpoint.pt")
+    # alg.load("Demo_saves/Opti_1683473991.4737124/Opti_5080/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
