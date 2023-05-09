@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "demo_run0.02"
+    run_id = "demo_run1.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Demo_Run0.02",
+                        name="Demo_Run1.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -82,12 +82,12 @@ if __name__ == "__main__":
                                                               demo_w=3,
                                                               got_demoed_w=-3,
                                                               goal_w=5,
-                                                              concede_w=-5,
-                                                              velocity_pb_w=0.01,
+                                                              concede_w=-1,
+                                                              velocity_pb_w=0.05,
                                                               velocity_bg_w=0.05,
-                                                              velocity_po_w=0.001,
-                                                              vel_po_mult_ss=10,
-                                                              vel_po_mult_neg=0.01,
+                                                              velocity_po_w=0.05,
+                                                              vel_po_mult_ss=3,
+                                                              vel_po_mult_neg=1,
                                                               tick_skip=Constants_demo.FRAME_SKIP,
                                                               ),
                                         lambda: CoyoteAction(),

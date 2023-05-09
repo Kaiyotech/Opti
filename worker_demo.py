@@ -21,12 +21,12 @@ if __name__ == "__main__":
                         demo_w=3,
                         got_demoed_w=-3,
                         goal_w=5,
-                        concede_w=-5,
-                        velocity_pb_w=0.01,
+                        concede_w=-1,
+                        velocity_pb_w=0.05,
                         velocity_bg_w=0.05,
-                        velocity_po_w=0.001,
-                        vel_po_mult_ss=10,
-                        vel_po_mult_neg=0.01,
+                        velocity_po_w=0.05,
+                        vel_po_mult_ss=3,
+                        vel_po_mult_neg=1,
                         tick_skip=Constants_demo.FRAME_SKIP,
                         )
     frame_skip = Constants_demo.FRAME_SKIP
