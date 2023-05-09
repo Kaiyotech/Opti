@@ -88,6 +88,8 @@ if __name__ == "__main__":
                                                               velocity_po_w=0.001,
                                                               vel_po_mult_ss=5,
                                                               vel_po_mult_neg=0.01,
+                                                              boost_gain_w=0.5,
+                                                              boost_spend_w=-0.3,
                                                               tick_skip=Constants_demo.FRAME_SKIP,
                                                               ),
                                         lambda: CoyoteAction(),
