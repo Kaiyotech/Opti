@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "dtap_run1.03"
+    run_id = "dtap_run2.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Dtap_Run1.03",
+                        name="Dtap_Run2.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -82,6 +82,7 @@ if __name__ == "__main__":
                                                                  add_fliptime=True,
                                                                  add_boosttime=True,
                                                                  add_handbrake=True,
+                                                                 doubletap_indicator=True,
                                                                  ),
                                         lambda: ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                                                               concede_w=-10,
@@ -104,11 +105,11 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(229, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
+    critic = Sequential(Linear(231, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
                         Linear(128, 128), LeakyReLU(),
                         Linear(128, 1))
 
-    actor = Sequential(Linear(229, 96), LeakyReLU(), Linear(96, 96), LeakyReLU(),
+    actor = Sequential(Linear(231, 96), LeakyReLU(), Linear(96, 96), LeakyReLU(),
                        Linear(96, 96), LeakyReLU(),
                        Linear(96, 373))
 
