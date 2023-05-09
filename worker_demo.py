@@ -18,14 +18,14 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_demo.ZERO_SUM,
-                        demo_w=3,
-                        got_demoed_w=-3,
+                        demo_w=4,
+                        got_demoed_w=-4,
                         goal_w=5,
-                        concede_w=-1,
-                        velocity_pb_w=0.05,
+                        concede_w=-2,
+                        velocity_pb_w=0.03,
                         velocity_bg_w=0.05,
-                        velocity_po_w=0.05,
-                        vel_po_mult_ss=3,
+                        velocity_po_w=0.01,
+                        vel_po_mult_ss=2,
                         vel_po_mult_neg=1,
                         tick_skip=Constants_demo.FRAME_SKIP,
                         )
