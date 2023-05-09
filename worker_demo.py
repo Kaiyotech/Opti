@@ -27,6 +27,8 @@ if __name__ == "__main__":
                         velocity_po_w=0.001,
                         vel_po_mult_ss=5,
                         vel_po_mult_neg=0.01,
+                        boost_gain_w=0.5,
+                        boost_spend_w=-0.3,
                         tick_skip=Constants_demo.FRAME_SKIP,
                         )
     frame_skip = Constants_demo.FRAME_SKIP
@@ -49,7 +51,7 @@ if __name__ == "__main__":
     batch_mode = True
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0
+    infinite_boost_odds = 0.2
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
@@ -75,7 +77,7 @@ if __name__ == "__main__":
             evaluation_prob = 0
             game_speed = 1
             auto_minimize = False
-            infinite_boost_odds = 0
+            # infinite_boost_odds = 0.2
             simulator = False
             past_version_prob = 0
 

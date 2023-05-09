@@ -17,7 +17,7 @@ from typing import Any, List
 from gym import Space
 from gym.spaces import Tuple, Box
 
-from rlgym.utils.common_values import BOOST_LOCATIONS
+from rlgym.utils.common_values import BOOST_LOCATIONS, BALL_RADIUS
 
 from numba import njit
 
@@ -76,8 +76,14 @@ class CoyoteObsBuilder(ObsBuilder):
                  end_object: PhysicsObject = None,
                  mask_aerial_opp=False,
                  selector_infinite_boost=None,
+                 doubletap_indicator=False,
                  ):
         super().__init__()
+        self.doubletap_indicator = doubletap_indicator
+        if self.doubletap_indicator:
+            self.floor_bounce = False
+            self.backboard_bounce = False
+            self.prev_ball_vel = np.asarray([0] * 3)
         assert not (selector_infinite_boost is not None and not selector)
         self.n = 0
         self.selector_infinite_boost = selector_infinite_boost
@@ -225,6 +231,11 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.add_handbrake:
             self.handbrakes = np.zeros(len(initial_state.players))
 
+        if self.doubletap_indicator:
+            self.floor_bounce = False
+            self.backboard_bounce = False
+            self.prev_ball_vel = np.array(initial_state.ball.linear_velocity)
+
     def pre_step(self, state: GameState):
         # dist = state.ball.position - state.players[0].car_data.position
         # dist_norm = np.linalg.norm(dist)
@@ -252,6 +263,17 @@ class CoyoteObsBuilder(ObsBuilder):
             state.ball.position[2] = self.end_object.position[2]
             state.ball.linear_velocity = np.asarray([0, 0, 0])
             state.ball.angular_velocity = np.asarray([0, 0, 0])
+
+        # for double tap
+        if self.doubletap_indicator:
+            if state.ball.position[2] < BALL_RADIUS * 2 and 0.55 * self.prev_ball_vel[2] \
+                    < state.ball.linear_velocity[2] > 0.65 * self.prev_ball_vel[2]:
+                self.floor_bounce = True
+            elif 0.55 * self.prev_ball_vel[1] < state.ball.linear_velocity[1] > 0.65 * \
+                    self.prev_ball_vel[1] and \
+                    abs(state.ball.position[1]) > 4900 and state.ball.position[2] > 500:
+                self.backboard_bounce = True
+            self.prev_ball_vel = np.array(state.ball.linear_velocity)
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
@@ -713,6 +735,9 @@ class CoyoteObsBuilder(ObsBuilder):
                 player.is_demoed, demo_timer, self.POS_STD, self.VEL_STD, self.ANG_STD,
                 ball.position, ball.linear_velocity, prev_act
             )
+
+        if self.doubletap_indicator:
+            player_data.extend(list([int(self.backboard_bounce), int(self.floor_bounce)]))
 
         if self.stack_size != 0:
             if self.selector:
