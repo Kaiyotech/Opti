@@ -110,6 +110,7 @@ if __name__ == "__main__":
                                      add_fliptime=True,
                                      add_boosttime=True,
                                      add_handbrake=True,
+                                     doubletap_indicator=True,
                                      ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
