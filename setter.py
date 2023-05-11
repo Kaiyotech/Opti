@@ -257,12 +257,12 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0,
-                                                   random_boost=True, print_choice=True),
+                                                   random_boost=True),
                         True, False, False),
                          AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0,
-                                                    random_boost=True, print_choice=True),
+                                                    random_boost=True),
                                        True, False, False),
-                         ), (0.2, 0.8))
+                         ), (1, 0))
                 )
 
         elif mode == "recovery_ball":
