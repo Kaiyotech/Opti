@@ -17,7 +17,7 @@ from typing import Any, List
 from gym import Space
 from gym.spaces import Tuple, Box
 
-from rlgym.utils.common_values import BOOST_LOCATIONS, BALL_RADIUS
+from rlgym.utils.common_values import BOOST_LOCATIONS, BALL_RADIUS, BACK_WALL_Y
 
 from numba import njit
 
@@ -266,12 +266,18 @@ class CoyoteObsBuilder(ObsBuilder):
 
         # for double tap
         if self.doubletap_indicator:
-            if state.ball.position[2] < BALL_RADIUS * 2 and 0.55 * self.prev_ball_vel[2] \
-                    < state.ball.linear_velocity[2] > 0.65 * self.prev_ball_vel[2]:
+            touched = False
+            for player in state.players:
+                if player.ball_touched:
+                    touched = True
+            ball_bounced_ground = self.prev_ball_vel[2] * state.ball.linear_velocity[2] < 0
+            ball_near_ground = state.ball.position[2] < BALL_RADIUS * 2
+            if not touched and ball_near_ground and ball_bounced_ground:
                 self.floor_bounce = True
-            elif 0.55 * self.prev_ball_vel[1] < state.ball.linear_velocity[1] > 0.65 * \
-                    self.prev_ball_vel[1] and \
-                    abs(state.ball.position[1]) > 4900 and state.ball.position[2] > 500:
+
+            ball_bounced_backboard = self.prev_ball_vel[1] * state.ball.linear_velocity[1] < 0
+            ball_near_wall = abs(state.ball.position[1]) > (BACK_WALL_Y - BALL_RADIUS * 2)
+            if not touched and ball_near_wall and ball_bounced_backboard:
                 self.backboard_bounce = True
             self.prev_ball_vel = np.array(state.ball.linear_velocity)
 
