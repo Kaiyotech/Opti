@@ -134,8 +134,10 @@ class ZeroSumReward(RewardFunction):
             velocity_po_w=0,
             vel_po_mult_neg=1,
             vel_po_mult_ss=1,
-            flatten_wall_height=False
+            flatten_wall_height=False,
+            backboard_bounce_rew=0,
     ):
+        self.backboard_bounce_rew = backboard_bounce_rew
         self.vel_po_mult_ss = vel_po_mult_ss
         self.vel_po_mult_neg = vel_po_mult_neg
         self.velocity_po_w = velocity_po_w
@@ -304,7 +306,10 @@ class ZeroSumReward(RewardFunction):
 
         ball_bounced_backboard = self.last_state.ball.linear_velocity[1] * state.ball.linear_velocity[1] < 0
         ball_near_wall = abs(state.ball.position[1]) > (BACK_WALL_Y - BALL_RADIUS * 2)
+        backboard_new = False
         if not touched and ball_near_wall and ball_bounced_backboard:
+            if not self.backboard_bounce:
+                backboard_new = True
             self.backboard_bounce = True
 
         # for aerial
@@ -605,6 +610,10 @@ class ZeroSumReward(RewardFunction):
                 #  self.got_reset[i] = False
                 self.cons_resets = 0
                 self.reset_timer = -100000
+
+            # doubletap help
+            if i == self.last_touch_car and backboard_new:
+                player_rewards[i] += self.backboard_bounce_rew
 
         mid = len(player_rewards) // 2
 

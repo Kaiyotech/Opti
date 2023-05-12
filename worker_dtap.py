@@ -31,6 +31,7 @@ if __name__ == "__main__":
                           acel_ball_w=0.25,
                           jump_touch_w=0.5,
                           wall_touch_w=0.5,
+                        backboard_bounce_rew=1,
                           tick_skip=Constants_dtap.FRAME_SKIP,
                           flatten_wall_height=True,
                         )
