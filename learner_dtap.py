@@ -87,12 +87,12 @@ if __name__ == "__main__":
                                         lambda: ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                                                               concede_w=-10,
                                                               double_tap_w=10,
-                                                              velocity_bg_w=0.03,  # fix for the tick skip change
-                                                              velocity_pb_w=0.002,
+                                                              velocity_bg_w=0.01,  # fix for the tick skip change
+                                                              velocity_pb_w=0,
                                                               acel_ball_w=0.25,
                                                               jump_touch_w=0.5,
                                                               wall_touch_w=0.5,
-                                                              backboard_bounce_rew=1,
+                                                              backboard_bounce_rew=2,
                                                               tick_skip=Constants_dtap.FRAME_SKIP,
                                                               flatten_wall_height=True,
                                                               ),
