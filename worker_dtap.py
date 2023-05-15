@@ -24,16 +24,16 @@ set_num_threads(1)
 
 if __name__ == "__main__":
     rew = ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
-                          concede_w=-10,
-                          double_tap_w=10,
-                          velocity_bg_w=0.03,  # fix for the tick skip change
-                          velocity_pb_w=0.002,
-                          acel_ball_w=0.25,
-                          jump_touch_w=0.5,
-                          wall_touch_w=0.5,
-                        backboard_bounce_rew=1,
-                          tick_skip=Constants_dtap.FRAME_SKIP,
-                          flatten_wall_height=True,
+                        concede_w=-10,
+                        double_tap_w=10,
+                        velocity_bg_w=0.01,  # fix for the tick skip change
+                        velocity_pb_w=0,
+                        acel_ball_w=0.25,
+                        jump_touch_w=0.5,
+                        wall_touch_w=0.5,
+                        backboard_bounce_rew=2,
+                        tick_skip=Constants_dtap.FRAME_SKIP,
+                        flatten_wall_height=True,
                         )
     frame_skip = Constants_dtap.FRAME_SKIP
     fps = 120 // frame_skip
@@ -45,7 +45,8 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0
     past_version_prob = 0  # 0.5  # 0.1
-    non_latest_version_prob = [1, 0, 0, 0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
+    non_latest_version_prob = [1, 0, 0,
+                               0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = False
     force_old_deterministic = False
     gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
@@ -81,12 +82,12 @@ if __name__ == "__main__":
             infinite_boost_odds = 0.2
             simulator = False
             past_version_prob = 0
-                                    
+
             gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
-            
+
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
         from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
@@ -198,6 +199,7 @@ if __name__ == "__main__":
     worker.env._match._obs_builder.env = worker.env  # noqa
     if simulator and visualize:
         from rocketsimvisualizer import VisualizerThread
+
         arena = worker.env._game.arena  # noqa
         v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
                              overwrite_controls=False)  # noqa
