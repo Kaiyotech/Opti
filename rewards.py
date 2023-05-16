@@ -136,7 +136,9 @@ class ZeroSumReward(RewardFunction):
             vel_po_mult_ss=1,
             flatten_wall_height=False,
             backboard_bounce_rew=0,
+            double_tap_floor_mult=0,
     ):
+        self.double_tap_floor_mult = double_tap_floor_mult
         self.backboard_bounce_rew = backboard_bounce_rew
         self.vel_po_mult_ss = vel_po_mult_ss
         self.vel_po_mult_neg = vel_po_mult_neg
@@ -632,8 +634,12 @@ class ZeroSumReward(RewardFunction):
                     if self.got_reset[self.blue_toucher]:
                         player_rewards[self.blue_toucher] += self.flip_reset_goal_w * (
                                     goal_speed / (CAR_MAX_SPEED * 1.25))
-                    if self.backboard_bounce and not self.floor_bounce:
-                        player_rewards[self.blue_toucher] += self.double_tap_w
+                    if self.backboard_bounce:
+                        if self.floor_bounce:
+                            rew = self.double_tap_w * self.double_tap_floor_mult
+                        else:
+                            rew = self.double_tap_w
+                        player_rewards[self.blue_toucher] += rew
                     if self.blue_touch_height > GOAL_HEIGHT:
                         player_rewards[self.blue_toucher] += self.aerial_goal_w * (goal_speed / (CAR_MAX_SPEED * 1.25))
                     player_rewards[:mid] += self.team_spirit * goal_reward
@@ -659,8 +665,12 @@ class ZeroSumReward(RewardFunction):
                     if self.got_reset[self.orange_toucher]:
                         player_rewards[self.orange_toucher] += self.flip_reset_goal_w * (
                                     goal_speed / (CAR_MAX_SPEED * 1.25))
-                    if self.backboard_bounce and not self.floor_bounce:
-                        player_rewards[self.orange_toucher] += self.double_tap_w
+                    if self.backboard_bounce:
+                        if self.floor_bounce:
+                            rew = self.double_tap_w * self.double_tap_floor_mult
+                        else:
+                            rew = self.double_tap_w
+                        player_rewards[self.orange_toucher] += rew
                     if self.orange_touch_height > GOAL_HEIGHT:
                         player_rewards[self.orange_toucher] += self.aerial_goal_w * (
                                     goal_speed / (CAR_MAX_SPEED * 1.25))
