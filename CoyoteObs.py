@@ -77,9 +77,11 @@ class CoyoteObsBuilder(ObsBuilder):
                  mask_aerial_opp=False,
                  selector_infinite_boost=None,
                  doubletap_indicator=False,
+                 dtap_dict=None,
                  ):
         super().__init__()
         self.doubletap_indicator = doubletap_indicator
+        self.dtap_dict = dtap_dict
         if self.doubletap_indicator:
             self.floor_bounce = False
             self.backboard_bounce = False
@@ -279,6 +281,14 @@ class CoyoteObsBuilder(ObsBuilder):
             ball_near_wall = abs(state.ball.position[1]) > (BACK_WALL_Y - BALL_RADIUS * 2)
             if not touched and ball_near_wall and ball_bounced_backboard:
                 self.backboard_bounce = True
+                self.dtap_dict["ball_hit_bb"] = False
+
+            if touched and not self.dtap_dict["hit_towards_bb"]:
+                self.dtap_dict["hit_towards_bb"] = True
+
+            if touched and self.dtap_dict["hit_towards_bb"] and self.dtap_dict["ball_hit_bb"]:
+                self.dtap_dict["hit_towards_goal"] = True
+
             self.prev_ball_vel = np.array(state.ball.linear_velocity)
 
     def _update_timers(self, state: GameState):
@@ -743,7 +753,11 @@ class CoyoteObsBuilder(ObsBuilder):
             )
 
         if self.doubletap_indicator:
-            player_data.extend(list([int(self.backboard_bounce), int(self.floor_bounce)]))
+            player_data.extend(list([int(self.backboard_bounce),
+                                     int(self.floor_bounce),
+                                     int(self.dtap_dict["hit_towards_bb"]),
+                                     int(self.dtap_dict["hit_towards_goal"]),
+                                     ]))
 
         if self.stack_size != 0:
             if self.selector:

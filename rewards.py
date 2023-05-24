@@ -137,7 +137,12 @@ class ZeroSumReward(RewardFunction):
             flatten_wall_height=False,
             backboard_bounce_rew=0,
             double_tap_floor_mult=0,
+            dtap_dict=None,
+            fancy_dtap=False,
+            dtap_helper_w=0,
     ):
+        self.dtap_helper_w = dtap_helper_w
+        self.fancy_dtap = fancy_dtap
         self.double_tap_floor_mult = double_tap_floor_mult
         self.backboard_bounce_rew = backboard_bounce_rew
         self.vel_po_mult_ss = vel_po_mult_ss
@@ -251,6 +256,7 @@ class ZeroSumReward(RewardFunction):
         self.backboard_bounce = False
         self.floor_bounce = False
         self.got_reset = []
+        self.dtap_dict = dtap_dict
         # for aerial goal
         self.blue_touch_height = -1
         self.orange_touch_height = -1
@@ -447,9 +453,23 @@ class ZeroSumReward(RewardFunction):
                 norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
                 norm_vel = vel / BALL_MAX_SPEED
                 vel_bg_reward = float(np.dot(norm_pos_diff, norm_vel))
-                player_rewards[i] += self.velocity_bg_w * vel_bg_reward
+                if not self.fancy_dtap or (self.fancy_dtap and self.dtap_dict["hit_towards_goal"]):
+                    player_rewards[i] += self.velocity_bg_w * vel_bg_reward
+                    # no vel_bg reward unless hit towards goal when doing fancy dtap
                 if self.got_reset[i] and player.has_jump and not player.on_ground:
                     player_rewards[i] += self.has_flip_reset_vbg_w * vel_bg_reward
+
+            # fancy_dtap portion
+            if self.fancy_dtap and self.dtap_dict["hit_towards_bb"] and not self.dtap_dict["ball_hit_bb"]:
+                # dtap_helper - ball towards y, negative z?, x towards center, mostly y is high
+                objective = np.array([state.ball.position[0] / 2, BACK_WALL_Y, 1200])  # dirty
+                vel = state.ball.linear_velocity
+                pos_diff = objective - state.ball.position
+                pos_diff[1] = pos_diff[1] * 5  # mostly care about y
+                norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
+                norm_vel = vel / BALL_MAX_SPEED
+                dtap_help_rew = float(np.dot(norm_pos_diff, norm_vel))
+                player_rewards[i] += self.dtap_helper_w * dtap_help_rew
 
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall

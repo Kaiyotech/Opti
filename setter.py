@@ -15,7 +15,7 @@ from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, 
 
 
 class CoyoteSetter(DynamicGMSetter):
-    def __init__(self, mode, end_object_choice=None, simulator=False):
+    def __init__(self, mode, end_object_choice=None, simulator=False, dtap_dict=None):
         if simulator:
             from rlgym_sim.utils.state_setters import DefaultState
             from rlgym_sim.utils.state_setters.random_state import RandomState
@@ -257,10 +257,10 @@ class CoyoteSetter(DynamicGMSetter):
                 self.setters.append(
                     WeightedSampleSetter(
                         (AugmentSetter(ReplaySetter(double_tap_replays[i], defender_front_goal_weight=0,
-                                                   random_boost=True),
-                        True, False, False),
+                                                   random_boost=True, dtap_dict=dtap_dict, initial_state_dict=(0, 0, 0)),
+                                       True, False, False),
                          AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0,
-                                                    random_boost=True),
+                                                    random_boost=True, dtap_dict=dtap_dict, initial_state_dict=(1, 0, 0)),
                                        True, False, False),
                          ), (0.2, 0.8))
                 )

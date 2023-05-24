@@ -23,18 +23,27 @@ from pretrained_agents.KBB.kbb import KBB
 set_num_threads(1)
 
 if __name__ == "__main__":
+
+    dtap_status = {"hit_towards_bb": False,
+                   "ball_hit_bb": False,
+                   "hit_towards_goal": False,
+                   }
+
     rew = ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                         concede_w=-10,
                         double_tap_w=10,
-                        velocity_bg_w=0,
-                        velocity_pb_w=0,
-                        acel_ball_w=0,
-                        jump_touch_w=0,
-                        wall_touch_w=0,
+                        velocity_bg_w=0.1,
+                        velocity_pb_w=0.1,
+                        acel_ball_w=1,
+                        jump_touch_w=1,
+                        wall_touch_w=1,
                         backboard_bounce_rew=1,
                         tick_skip=Constants_dtap.FRAME_SKIP,
                         flatten_wall_height=True,
-                        double_tap_floor_mult=0.5,
+                        double_tap_floor_mult=0.8,
+                        dtap_dict=dtap_status,
+                        fancy_dtap=True,
+                        dtap_helper_w=0.1,
                         )
     frame_skip = Constants_dtap.FRAME_SKIP
     fps = 120 // frame_skip
@@ -97,7 +106,7 @@ if __name__ == "__main__":
         from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
             NoTouchTimeoutCondition
 
-    setter = CoyoteSetter(mode="doubletap", simulator=simulator)
+    setter = CoyoteSetter(mode="doubletap", simulator=simulator, dtap_dict=dtap_status,)
 
     match = Match(
         game_speed=game_speed,
@@ -107,12 +116,8 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False, embed_players=False,
                                      infinite_boost_odds=infinite_boost_odds,
-                                     add_jumptime=True,
-                                     add_airtime=True,
-                                     add_fliptime=True,
-                                     add_boosttime=True,
-                                     add_handbrake=True,
                                      doubletap_indicator=True,
+                                     dtap_dict=dtap_status,
                                      ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),
@@ -133,12 +138,8 @@ if __name__ == "__main__":
         obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP, team_size=team_size,
                                      extra_boost_info=False, embed_players=False,
                                      infinite_boost_odds=infinite_boost_odds,
-                                     add_jumptime=True,
-                                     add_airtime=True,
-                                     add_fliptime=True,
-                                     add_boosttime=True,
-                                     add_handbrake=True,
                                      doubletap_indicator=True,
+                                     dtap_dict=dtap_status,
                                      ),
         action_parser=CoyoteAction(),
         terminal_conditions=[GoalScoredCondition(),

@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "dtap_run3.00"
+    run_id = "dtap_runtest4.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Dtap_Run3.00",
+                        name="Dtap_Runtest4.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -72,30 +72,34 @@ if __name__ == "__main__":
         GoalSpeed()
     ]
 
+    dtap_status = {"hit_towards_bb": False,
+                   "ball_hit_bb": False,
+                   "hit_towards_goal": False,
+                   }
+
     rollout_gen = RedisRolloutGenerator("Opti_Dtap",
                                         redis,
                                         lambda: CoyoteObsBuilder(expanding=True, tick_skip=Constants_dtap.FRAME_SKIP,
                                                                  team_size=3, extra_boost_info=False,
                                                                  embed_players=False,
-                                                                 add_jumptime=True,
-                                                                 add_airtime=True,
-                                                                 add_fliptime=True,
-                                                                 add_boosttime=True,
-                                                                 add_handbrake=True,
                                                                  doubletap_indicator=True,
+                                                                 dtap_dict=dtap_status,
                                                                  ),
                                         lambda: ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                                                               concede_w=-10,
                                                               double_tap_w=10,
-                                                              velocity_bg_w=0,
-                                                              velocity_pb_w=0,
-                                                              acel_ball_w=0,
-                                                              jump_touch_w=0,
-                                                              wall_touch_w=0,
+                                                              velocity_bg_w=0.1,
+                                                              velocity_pb_w=0.1,
+                                                              acel_ball_w=1,
+                                                              jump_touch_w=1,
+                                                              wall_touch_w=1,
                                                               backboard_bounce_rew=1,
                                                               tick_skip=Constants_dtap.FRAME_SKIP,
                                                               flatten_wall_height=True,
-                                                              double_tap_floor_mult=0.5,
+                                                              double_tap_floor_mult=0.8,
+                                                              dtap_dict=dtap_status,
+                                                              fancy_dtap=True,
+                                                              dtap_helper_w=0.1,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,
@@ -107,13 +111,13 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(231, 256), LeakyReLU(), Linear(256, 128), LeakyReLU(),
-                        Linear(128, 128), LeakyReLU(),
-                        Linear(128, 1))
+    critic = Sequential(Linear(226, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                        Linear(256, 256), LeakyReLU(),
+                        Linear(256, 1))
 
-    actor = Sequential(Linear(231, 96), LeakyReLU(), Linear(96, 96), LeakyReLU(),
-                       Linear(96, 96), LeakyReLU(),
-                       Linear(96, 373))
+    actor = Sequential(Linear(226, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                       Linear(256, 128), LeakyReLU(),
+                       Linear(128, 373))
 
     actor = DiscretePolicy(actor, (373,))
 
@@ -140,7 +144,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("GP_saves/Opti_1682795258.7251265/Opti_41230/checkpoint.pt")
+    # alg.load("dtap_saves/Opti_1683834997.1134317/Opti_11780/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
