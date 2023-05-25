@@ -124,7 +124,7 @@ if __name__ == "__main__":
                              BallTouchGroundCondition(min_time_sec=1,
                                                       time_to_arm_sec=2,  # allow it to roll from ground or pop
                                                       tick_skip=Constants_dtap.FRAME_SKIP,
-                                                      time_after_ground_sec=0,
+                                                      time_after_ground_sec=0.25,
                                                       min_height=200,
                                                       check_towards_goal=True),
                              TimeoutCondition(fps * 50),
@@ -146,7 +146,7 @@ if __name__ == "__main__":
                              BallTouchGroundCondition(min_time_sec=1,
                                                       time_to_arm_sec=2,  # allow it to roll from ground or pop
                                                       tick_skip=Constants_dtap.FRAME_SKIP,
-                                                      time_after_ground_sec=0,
+                                                      time_after_ground_sec=0.25,
                                                       min_height=200,
                                                       check_towards_goal=True),
                              TimeoutCondition(fps * 50),
