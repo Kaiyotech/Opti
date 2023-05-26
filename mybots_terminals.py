@@ -5,12 +5,12 @@ from rlgym.utils.gamestates.physics_object import PhysicsObject
 import numpy as np
 
 
-def ball_towards_goal(ball, time_to_goal, allow_pinch_cont):
+def ball_towards_goal(ball, y_distance_check, allow_pinch_cont):
     x, y, z = ball.position
     vx, vy, vz = ball.linear_velocity
-    y_time_goal = (BACK_WALL_Y - abs(y)) / vy
+    y_distance = BACK_WALL_Y - y_distance_check
     normal_check = y * \
-        vy > 0 and (abs(x) < 1000 or x * vx < 0) and y_time_goal < time_to_goal
+        vy > 0 and (abs(x) < 1000 or x * vx < 0) and abs(y) > y_distance
     if not allow_pinch_cont:
         return normal_check
     else:
@@ -28,16 +28,18 @@ class BallTouchGroundCondition(TerminalCondition):
                  neg_z_check=False,
                  check_towards_goal=False,
                  time_to_arm_sec=0,
-                 # y_distance_goal=1120,
-                 time_to_goal=0.5,
+                 y_distance_goal=1120,
+                 # time_to_goal=0.5,
                  on_ground_again=False,
                  allow_pinch_cont=False,
+                 towards_goal_time_limit=1,
                  ):
         super().__init__()
+        self.towards_goal_time_steps = towards_goal_time_limit * (120 // tick_skip)
         self.allow_pinch_cont = allow_pinch_cont
         self.on_ground_again = on_ground_again
-        # self.y_distance_goal = y_distance_goal
-        self.time_to_goal=time_to_goal
+        self.y_distance_goal = y_distance_goal
+        # self.time_to_goal=time_to_goal
         self.min_steps = min_time_sec * (120 // tick_skip)
         self.time_to_arm_steps = time_to_arm_sec * (120 // tick_skip)
         self.steps = 0
@@ -70,8 +72,8 @@ class BallTouchGroundCondition(TerminalCondition):
                 return True
             elif self.neg_z_check:
                 return current_state.ball.linear_velocity[2] < -1
-            elif self.check_towards_goal:
-                return not ball_towards_goal(current_state.ball, self.time_to_goal, self.allow_pinch_cont)
+            elif self.check_towards_goal and self.towards_goal_time_steps < self.steps_after_ground:
+                return not ball_towards_goal(current_state.ball, self.y_distance_goal, self.allow_pinch_cont)
         else:
             return False
 
