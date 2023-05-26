@@ -72,7 +72,7 @@ class BallTouchGroundCondition(TerminalCondition):
                 return True
             elif self.neg_z_check:
                 return current_state.ball.linear_velocity[2] < -1
-            elif self.check_towards_goal and self.towards_goal_time_steps < self.steps_after_ground:
+            elif self.check_towards_goal and self.steps > self.touch_time + self.towards_goal_time_steps:
                 return not ball_towards_goal(current_state.ball, self.y_distance_goal, self.allow_pinch_cont)
         else:
             return False
