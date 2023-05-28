@@ -92,7 +92,7 @@ if __name__ == "__main__":
             simulator = False
             past_version_prob = 0
 
-            gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
+            # gamemode_weights = {'1v0': 0.4, '1v1': 0.6}
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
