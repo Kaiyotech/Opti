@@ -89,7 +89,7 @@ if __name__ == "__main__":
                                                               concede_w=-10,
                                                               double_tap_w=10,
                                                               velocity_bg_w=0.1,
-                                                              velocity_pb_w=0.1,
+                                                              velocity_pb_w=0.01,
                                                               acel_ball_w=1,
                                                               jump_touch_w=1,
                                                               wall_touch_w=1,
