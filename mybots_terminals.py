@@ -32,10 +32,10 @@ class BallTouchGroundCondition(TerminalCondition):
                  # time_to_goal=0.5,
                  on_ground_again=False,
                  allow_pinch_cont=False,
-                 towards_goal_time_limit=1,
+                 towards_goal_time_limit_sec=1,
                  ):
         super().__init__()
-        self.towards_goal_time_steps = towards_goal_time_limit * (120 // tick_skip)
+        self.towards_goal_time_steps = towards_goal_time_limit_sec * (120 // tick_skip)
         self.allow_pinch_cont = allow_pinch_cont
         self.on_ground_again = on_ground_again
         self.y_distance_goal = y_distance_goal
@@ -72,8 +72,10 @@ class BallTouchGroundCondition(TerminalCondition):
                 return True
             elif self.neg_z_check:
                 return current_state.ball.linear_velocity[2] < -1
-            elif self.check_towards_goal and self.steps > self.touch_time + self.towards_goal_time_steps:
+            elif self.check_towards_goal:
                 return not ball_towards_goal(current_state.ball, self.y_distance_goal, self.allow_pinch_cont)
+            elif self.steps > self.touch_time + self.towards_goal_time_steps:
+                return True
         else:
             return False
 
