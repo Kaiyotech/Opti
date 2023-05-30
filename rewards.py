@@ -140,7 +140,9 @@ class ZeroSumReward(RewardFunction):
             dtap_dict=None,
             fancy_dtap=False,
             dtap_helper_w=0,
+            dtap_helper_2_w=0,
     ):
+        self.dtap_helper_2_w = dtap_helper_2_w
         self.dtap_helper_w = dtap_helper_w
         self.fancy_dtap = fancy_dtap
         self.double_tap_floor_mult = double_tap_floor_mult
@@ -369,6 +371,8 @@ class ZeroSumReward(RewardFunction):
                 if not player.on_ground and state.ball.position[2] > min_height:
                     # x_from_wall = min(SIDE_WALL_X - BALL_RADIUS - abs(state.ball.position[0]), 20)
                     # wall_multiplier = x_from_wall / 20
+                    # if fancy dtap, only give a single aerial touch reward
+                    # if not self.fancy_dtap or (self.fancy_dtap and not self.dtap_dict["hit_towards_bb"]):
                     player_rewards[i] += self.jump_touch_w * (
                             (state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
 
@@ -470,6 +474,15 @@ class ZeroSumReward(RewardFunction):
                 norm_vel = vel / BALL_MAX_SPEED
                 dtap_help_rew = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.dtap_helper_w * dtap_help_rew
+
+                # (2 * ballpos[0] * ballvel[0] + 1.2 * bounce_y_coord * ballvel[1] + 2 * ballpos[2] * ballvel[2] - 2 *
+                #  ballpos[0] * carvel[0] - 2 * bounce_y_coord * carvel[1] - 2 * ballpos[2] * carvel[2] - 2 * ballvel[0] *
+                #  carpos[0] - 1.2 * ballvel[1] * carpos[1] - 2 * ballvel[2] * carpos[2] + 1.2 * ballvel[1] * carvel[
+                #      1] * bounce_time - 0.72 * ballvel[1] * ballvel[1] * bounce_time + 2 * carpos[0] * carvel[0] + 2 *
+                #  carpos[1] * carvel[1] + 2 * carpos[2] * carvel[2]) / (
+                #             4 * ballvel[0] * carvel[0] + 2.4 * ballvel[1] * carvel[1] + 4 * ballvel[2] * carvel[2] - 2 *
+                #             ballvel[0] * ballvel[0] - 0.72 * ballvel[1] * ballvel[1] - 2 * ballvel[2] * ballvel[2] - 2 *
+                #             carvel[0] * carvel[0] - 2 * carvel[1] * carvel[1] - 2 * carvel[2] * carvel[2])
 
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall
@@ -634,7 +647,8 @@ class ZeroSumReward(RewardFunction):
                 self.reset_timer = -100000
 
             # doubletap help
-            if i == self.last_touch_car and backboard_new:
+            # changed 5/30/23 to add the ball_hit_bb, so it only gives the first bounce to avoid pancakes/pinches.
+            if i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
                 player_rewards[i] += self.backboard_bounce_rew
 
         mid = len(player_rewards) // 2
