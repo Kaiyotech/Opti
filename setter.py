@@ -262,7 +262,7 @@ class CoyoteSetter(DynamicGMSetter):
                          AugmentSetter(ReplaySetter(easy_double_tap_replays[i], defender_front_goal_weight=0,
                                                     random_boost=True, dtap_dict=dtap_dict, initial_state_dict=(1, 0, 0)),
                                        True, False, False),
-                         ), (0.2, 0.8))
+                         ), (0.8, 0.2))
                 )
 
         elif mode == "recovery_ball":
