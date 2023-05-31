@@ -485,7 +485,7 @@ class ZeroSumReward(RewardFunction):
                 pos_diff[1] = pos_diff[1] * 5  # mostly care about y
                 norm_pos_diff = pos_diff / np.linalg.norm(pos_diff)
                 vel[1] = vel[1] * 5  # mostly care about y
-                norm_vel = vel / np.linalg.norm(vel)
+                norm_vel = vel / np.linalg.norm(vel + 1e-8)
                 dtap_help_rew = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.dtap_helper_w * dtap_help_rew
 
