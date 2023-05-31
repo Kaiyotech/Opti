@@ -141,9 +141,9 @@ class ZeroSumReward(RewardFunction):
             fancy_dtap=False,
             dtap_helper_w=0,
             dtap_helper_2_w=0,
-            trajectory_intserection_distance_w=0,
+            trajectory_intersection_distance_w=0,
     ):
-        self.trajectory_intersection_distance_w = trajectory_intserection_distance_w
+        self.trajectory_intersection_distance_w = trajectory_intersection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
         self.dtap_helper_w = dtap_helper_w
         self.fancy_dtap = fancy_dtap

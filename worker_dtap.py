@@ -31,11 +31,11 @@ if __name__ == "__main__":
 
     rew = ZeroSumReward(zero_sum=Constants_dtap.ZERO_SUM,
                         concede_w=-10,
-                        double_tap_w=10,
-                        velocity_bg_w=0.05,
+                        double_tap_w=20,
+                        velocity_bg_w=0.1,
                         velocity_pb_w=0.01,
                         acel_ball_w=1.5,
-                        jump_touch_w=0.25,
+                        jump_touch_w=1,
                         wall_touch_w=1,
                         backboard_bounce_rew=0.7,
                         tick_skip=Constants_dtap.FRAME_SKIP,
@@ -44,7 +44,8 @@ if __name__ == "__main__":
                         dtap_dict=dtap_status,
                         fancy_dtap=True,
                         dtap_helper_w=0.1,
-                        punish_backboard_pinch_w=-0.5,
+                        punish_backboard_pinch_w=-0.2,
+                        trajectory_intersection_distance_w=0.1,
                         )
     frame_skip = Constants_dtap.FRAME_SKIP
     fps = 120 // frame_skip
