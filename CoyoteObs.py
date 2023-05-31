@@ -976,18 +976,18 @@ class CoyoteObsBuilder(ObsBuilder):
             # return torch.FloatTensor([obs])
             # return np.expand_dims(obs, 0)
         elif self.expanding and self.embed_players:
-            # TODO remove this *****
-            to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
-                   np.asarray([players_data])
-            if np.isnan(to_ret[0]).any() or np.isnan(to_ret[1]).any():
-                print(f"There is a nan in the obs. {to_ret}")
-                print_state(state)
-                exit()
-            if np.isinf(to_ret[0]).any() or np.isinf(to_ret[1]).any():
-                print(f"There is an inf in the obs. {to_ret}")
-                print_state(state)
-                exit()
-            return to_ret
+            # # TODO remove this *****
+            # to_ret = np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
+            #        np.asarray([players_data])
+            # if np.isnan(to_ret[0]).any() or np.isnan(to_ret[1]).any():
+            #     print(f"There is a nan in the obs. {to_ret}")
+            #     print_state(state)
+            #     exit()
+            # if np.isinf(to_ret[0]).any() or np.isinf(to_ret[1]).any():
+            #     print(f"There is an inf in the obs. {to_ret}")
+            #     print_state(state)
+            #     exit()
+            # return to_ret
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0), \
                    np.asarray([players_data])
             # return torch.FloatTensor([obs]), torch.FloatTensor([players_data])

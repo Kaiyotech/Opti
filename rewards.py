@@ -757,35 +757,35 @@ class ZeroSumReward(RewardFunction):
             player_rewards[:mid] -= orange_mean
             player_rewards[mid:] -= blue_mean
 
-        # TODO: remove this
-        if np.isnan(player_rewards).any():
-            print(f"There is a nan in the rewwards. {player_rewards}")
-            print("state is:")
-            print_state(state)
-            print("Last state is:")
-            print_state(self.last_state)
-            exit()
-        if np.isnan(player_self_rewards).any():
-            print(f"There is a nan in the self-rewwards. {player_self_rewards}")
-            print("state is:")
-            print_state(state)
-            print("Last state is:")
-            print_state(self.last_state)
-            exit()
-        if np.isinf(player_rewards).any():
-            print(f"There is a inf in the rewwards. {player_rewards}")
-            print("state is:")
-            print_state(state)
-            print("Last state is:")
-            print_state(self.last_state)
-            exit()
-        if np.isinf(player_self_rewards).any():
-            print(f"There is a inf in the self-rewwards. {player_self_rewards}")
-            print("state is:")
-            print_state(state)
-            print("Last state is:")
-            print_state(self.last_state)
-            exit()
+        # # TODO: remove this
+        # if np.isnan(player_rewards).any():
+        #     print(f"There is a nan in the rewwards. {player_rewards}")
+        #     print("state is:")
+        #     print_state(state)
+        #     print("Last state is:")
+        #     print_state(self.last_state)
+        #     exit()
+        # if np.isnan(player_self_rewards).any():
+        #     print(f"There is a nan in the self-rewwards. {player_self_rewards}")
+        #     print("state is:")
+        #     print_state(state)
+        #     print("Last state is:")
+        #     print_state(self.last_state)
+        #     exit()
+        # if np.isinf(player_rewards).any():
+        #     print(f"There is a inf in the rewwards. {player_rewards}")
+        #     print("state is:")
+        #     print_state(state)
+        #     print("Last state is:")
+        #     print_state(self.last_state)
+        #     exit()
+        # if np.isinf(player_self_rewards).any():
+        #     print(f"There is a inf in the self-rewwards. {player_self_rewards}")
+        #     print("state is:")
+        #     print_state(state)
+        #     print("Last state is:")
+        #     print_state(self.last_state)
+        #     exit()
 
         self.last_state = state
         self.rewards = player_rewards + player_self_rewards
