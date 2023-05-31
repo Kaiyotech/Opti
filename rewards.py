@@ -141,7 +141,9 @@ class ZeroSumReward(RewardFunction):
             fancy_dtap=False,
             dtap_helper_w=0,
             dtap_helper_2_w=0,
+            trajectory_intserection_distance_w=0,
     ):
+        self.trajectory_intersection_distance_w = trajectory_intserection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
         self.dtap_helper_w = dtap_helper_w
         self.fancy_dtap = fancy_dtap
@@ -475,14 +477,41 @@ class ZeroSumReward(RewardFunction):
                 dtap_help_rew = float(np.dot(norm_pos_diff, norm_vel))
                 player_rewards[i] += self.dtap_helper_w * dtap_help_rew
 
-                # (2 * ballpos[0] * ballvel[0] + 1.2 * bounce_y_coord * ballvel[1] + 2 * ballpos[2] * ballvel[2] - 2 *
-                #  ballpos[0] * carvel[0] - 2 * bounce_y_coord * carvel[1] - 2 * ballpos[2] * carvel[2] - 2 * ballvel[0] *
-                #  carpos[0] - 1.2 * ballvel[1] * carpos[1] - 2 * ballvel[2] * carpos[2] + 1.2 * ballvel[1] * carvel[
-                #      1] * bounce_time - 0.72 * ballvel[1] * ballvel[1] * bounce_time + 2 * carpos[0] * carvel[0] + 2 *
-                #  carpos[1] * carvel[1] + 2 * carpos[2] * carvel[2]) / (
-                #             4 * ballvel[0] * carvel[0] + 2.4 * ballvel[1] * carvel[1] + 4 * ballvel[2] * carvel[2] - 2 *
-                #             ballvel[0] * ballvel[0] - 0.72 * ballvel[1] * ballvel[1] - 2 * ballvel[2] * ballvel[2] - 2 *
-                #             carvel[0] * carvel[0] - 2 * carvel[1] * carvel[1] - 2 * carvel[2] * carvel[2])
+                ballpos = state.ball.position
+                ballvel = state.ball.linear_velocity
+                carpos = player.car_data.position
+                carvel = player.car_data.linear_velocity
+                # max time is when the ball touches the ground (it touches when the center is BALL_RADIUS away from the ground)
+                max_time = (
+                    (ballvel[2] - BALL_RADIUS) + np.sqrt(ballvel[2] + 1300 * (ballpos[2] - BALL_RADIUS))) / 650
+                # bounce time is when the ball touches the backboard (it touches when the center is BALL_RADIUS away from the backboard)
+                bounce_time = (BACK_WALL_Y - BALL_RADIUS -
+                               ballpos[1]) / ballvel[1]
+                bounce_y_coord = ballpos[1] * ballvel[1] * bounce_time
+                # dist is a function of time elapsed where t=0 is the starting position. It is accurate only for t in [bounce_time, max_time].
+                # 0.6 is coefficient of restitution
+                if max_time < bounce_time or bounce_time < 0:
+                    min_dist = 800
+                else:
+                    def dist(t): return np.sqrt(
+                        ((ballpos[0] + ballvel[0] * t) -
+                            (carpos[0] + carvel[0] * t)) ** 2
+                        + ((bounce_y_coord + 0.6 * ballvel[1] * (t - bounce_time)) -
+                            (carpos[1] + carvel[1] * t)) ** 2
+                        + ((ballpos[2] + ballvel[2] * t - 325 * t * t) - (carpos[2] + carvel[2] * t - 325 * t * t)) ** 2)
+
+                    # pretend this doesn't exist. It's the value of t at which d/dt (dist(t)^2)=0 (and therefore the value at which d/dt dist(t)=0)
+                    derivative_zero = (2*ballpos[0]*ballvel[0] + 1.2*bounce_y_coord*ballvel[1] + 2*ballpos[2]*ballvel[2] - 2*ballpos[0]*carvel[0] - 2*bounce_y_coord*carvel[1] - 2*ballpos[2]*carvel[2] - 2*ballvel[0]*carpos[0] - 1.2*ballvel[1]*carpos[1] - 2*ballvel[2]*carpos[2] + 1.2*ballvel[1]*carvel[1]*bounce_time - 0.72*ballvel[1]*ballvel[1]
+                                        * bounce_time + 2*carpos[0]*carvel[0] + 2*carpos[1]*carvel[1] + 2*carpos[2]*carvel[2])/(4*ballvel[0]*carvel[0] + 2.4*ballvel[1]*carvel[1] + 4*ballvel[2]*carvel[2] - 2*ballvel[0]*ballvel[0] - 0.72*ballvel[1]*ballvel[1] - 2*ballvel[2]*ballvel[2] - 2*carvel[0]*carvel[0] - 2*carvel[1]*carvel[1] - 2*carvel[2]*carvel[2])
+                    # The min for dist(t) for t in [bounce_time, max_time] is one of dist(bounce_time), dist(max_time), or (if derivative_zero is in the range) dist(derivative_zero).
+                    if derivative_zero > bounce_time and derivative_zero < max_time:
+                        min_dist = min(dist(bounce_time), dist(
+                            derivative_zero), dist(max_time))
+                    else:
+                        min_dist = min(dist(bounce_time), dist(max_time))
+
+                # Reward linearly decreasing from 1 to 0, where min_dist=0 gives 1 and min_dist >= 800 gives 0
+                player_rewards[i] += max(0, 800-min_dist) / 800 * self.trajectory_intersection_distance_w
 
             # distance ball from halfway (for kickoffs)
             # 1 at max oppo wall, 0 at midfield, -1 at our wall
