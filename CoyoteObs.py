@@ -207,31 +207,39 @@ class CoyoteObsBuilder(ObsBuilder):
                 if self.selector_infinite_boost is not None:
                     self.selector_infinite_boost["infinite_boost"] = False
 
-        if self.add_boosttime:
-            self.boosttimes = np.zeros(len(initial_state.players))
+        # I'm willing to bet that boosttime is not reset in RLGym
+        # if self.add_boosttime:
+        #     self.boosttimes = np.zeros(len(initial_state.players))
 
-        if self.add_jumptime:
-            self.jumptimes = np.zeros(len(initial_state.players))
+        # This is probably not reset properly in RLGym
+        # if self.add_jumptime:
+        #     self.jumptimes = np.zeros(len(initial_state.players))
 
         if self.add_fliptime:
-            self.fliptimes = np.zeros(len(initial_state.players))
+            # fliptimes MIGHT NOT be reset, but has_flipped must be since not resetting this would mean a flip's momentum would be continued between episodes
+            # self.fliptimes = np.zeros(len(initial_state.players))
             self.has_flippeds = [False] * len(initial_state.players)
-            self.has_doublejumpeds = [False] * len(initial_state.players)
+            # I'm willing to bet that has_doublejumped is not reset in RLGym
+            # self.has_doublejumpeds = [False] * len(initial_state.players)
             self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players))]
 
-        if self.add_airtime:
-            self.airtimes = np.zeros(len(initial_state.players))
+        # I'm certain airtime is not reset in RLGym
+        # if self.add_airtime:
+        #     self.airtimes = np.zeros(len(initial_state.players))
 
         if self.add_jumptime or self.add_fliptime or self.add_airtime:
             self.prev_prev_actions = [[0] * 8 for _ in range(len(initial_state.players))]
+            # is_jumping not being reset in RLGym would mean jumps could continue between episodes, which they don't (right?)
             self.is_jumpings = [False] * len(initial_state.players)
-            self.has_jumpeds = [False] * len(initial_state.players)
+            # I'm willing to bet that has_jumped is not reset in RLGym
+            # self.has_jumpeds = [False] * len(initial_state.players)
             self.on_grounds = [False] * len(initial_state.players)
             for i, p in enumerate(initial_state.players):
                 self.on_grounds[i] = p.on_ground
 
-        if self.add_handbrake:
-            self.handbrakes = np.zeros(len(initial_state.players))
+        # I'm willing to bet that handbrake value is not reset
+        # if self.add_handbrake:
+        #     self.handbrakes = np.zeros(len(initial_state.players))
 
         if self.doubletap_indicator:
             self.floor_bounce = False
@@ -344,8 +352,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.is_jumpings[cid]:
             # JUMP_MIN_TIME = 3 ticks
             # JUMP_MAX_TIME = 24 ticks
-            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
-                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            self.is_jumpings[cid] = self.jumptimes[cid] < 3 or (prev_actions[5] == 1 and self.jumptimes[cid] < 24)
         elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
             self.is_jumpings[cid] = True
             self.jumptimes[cid] = 0
