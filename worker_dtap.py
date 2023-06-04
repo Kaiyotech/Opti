@@ -62,7 +62,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     gamemode_weights = {'1v0': 0.5, '1v1': 0.5}
     visualize = False
-    simulator = True
+    simulator = False
     batch_mode = True
     team_size = 3
     dynamic_game = True

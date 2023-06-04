@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "dtap_run4.00"
+    run_id = "dtap_run4.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Dtap_Run4.00",
+                        name="Dtap_Run4.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -146,11 +146,11 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
     )
 
-    # alg.load("dtap_saves/Opti_1683834997.1134317/Opti_11780/checkpoint.pt")
+    alg.load("dtap_saves/Opti_1684953666.264502/Opti_15740/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    alg.freeze_policy(50)
+    # alg.freeze_policy(50)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="Dtap_saves")
