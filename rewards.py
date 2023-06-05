@@ -142,7 +142,9 @@ class ZeroSumReward(RewardFunction):
             dtap_helper_w=0,
             dtap_helper_2_w=0,
             trajectory_intersection_distance_w=0,
+            pun_rew_ball_height_w=0,
     ):
+        self.pun_rew_ball_height_w = pun_rew_ball_height_w
         self.trajectory_intersection_distance_w = trajectory_intersection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
         self.dtap_helper_w = dtap_helper_w
@@ -456,6 +458,13 @@ class ZeroSumReward(RewardFunction):
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
                 self.cons_touches = 0
+
+            # punish low ball to encourage wall play, reward higher ball
+            # punish below 350, 0 at 350, positive above
+            #−0.000002x2+0.005x−1
+            ball_height = state.ball.position[2]
+            player_self_rewards[i] += self.pun_rew_ball_height_w * ((1.0645093e-6 * (ball_height ** 2)) +
+                                                                    (3.7704918e-3 * ball_height) - 1.3378752)
 
             # vel bg
             if self.blue_toucher is not None or self.orange_toucher is not None:
