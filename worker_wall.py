@@ -28,7 +28,7 @@ if __name__ == "__main__":
                         concede_w=-10,
                         goal_w=10,
                         velocity_bg_w=0.1,
-                        velocity_pb_w=0.05,
+                        velocity_pb_w=0.02,
                         acel_ball_w=2,
                         jump_touch_w=1,
                         wall_touch_w=1,
@@ -38,7 +38,7 @@ if __name__ == "__main__":
                         boost_gain_w=0.75,
                         boost_spend_w=-0.5,
                         punish_boost=True,
-                        pun_rew_ball_height_w=0.01,
+                        pun_rew_ball_height_w=0.05,
                         )
     frame_skip = Constants_wall.FRAME_SKIP
     fps = 120 // frame_skip
