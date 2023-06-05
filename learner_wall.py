@@ -104,11 +104,11 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
 
-    critic = Sequential(Linear(226, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    critic = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
-    actor = Sequential(Linear(226, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                        Linear(256, 128), LeakyReLU(),
                        Linear(128, 373))
 
