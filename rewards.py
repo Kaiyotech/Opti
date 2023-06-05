@@ -713,7 +713,7 @@ class ZeroSumReward(RewardFunction):
 
             # doubletap help
             # changed 5/30/23 to add the ball_hit_bb, so it only gives the first bounce to avoid pancakes/pinches.
-            if i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
+            if self.backboard_bounce_rew != 0 and i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
                 player_rewards[i] += self.backboard_bounce_rew
 
         mid = len(player_rewards) // 2

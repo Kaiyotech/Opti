@@ -54,7 +54,7 @@ if __name__ == "__main__":
                                0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
-    gamemode_weights = {'1v0': 0.3, '1v1': 0.7}
+    gamemode_weights = {'1v1': 1}
     visualize = False
     simulator = True
     batch_mode = True

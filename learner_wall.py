@@ -100,7 +100,7 @@ if __name__ == "__main__":
                                         logger=logger,
                                         clear=False,
                                         stat_trackers=stat_trackers,
-                                        gamemodes=("1v0", "1v1"),
+                                        gamemodes=("1v1",),
                                         max_age=1,
                                         )
 
