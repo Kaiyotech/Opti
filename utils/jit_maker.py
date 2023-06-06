@@ -49,8 +49,8 @@ if model_type == "gp":
 
 # actor for selector
 if model_type == "selector":
-    input_size = 426 + 5
-    action_size = 31
+    action_size = 34
+    input_size = 429 + (5 * action_size)
     boost_size = 2
     shape = (action_size, boost_size)
 
@@ -83,6 +83,27 @@ if model_type == "flick":
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
     actor = DiscretePolicy(actor, shape=(373,))
+
+if model_type == "demo":
+    actor = Sequential(Linear(222, 96), LeakyReLU(), Linear(96, 96), LeakyReLU(),
+                       Linear(96, 96), LeakyReLU(),
+                       Linear(96, 373))
+
+    actor = DiscretePolicy(actor, (373,))
+
+if model_type == "wall":
+    actor = Sequential(Linear(222, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                       Linear(256, 128), LeakyReLU(),
+                       Linear(128, 373))
+
+    actor = DiscretePolicy(actor, (373,))
+
+if model_type == "dtap":
+    actor = Sequential(Linear(226, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
+                       Linear(256, 128), LeakyReLU(),
+                       Linear(128, 373))
+
+    actor = DiscretePolicy(actor, (373,))
 
 # actor for ceiling pinch
 if model_type == "ceilingpinch":

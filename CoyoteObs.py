@@ -190,7 +190,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.model_action_stacks = {}
         if self.stack_size != 0 and self.selector:
             for i, p in enumerate(initial_state.players):
-                self.model_action_stacks[i] = [0.] * self.stack_size
+                self.model_action_stacks[i] = np.concatenate([self.model_action_size * [0]] * self.stack_size)
 
         if self.action_parser is not None:
             self.action_parser.reset(initial_state)
@@ -207,31 +207,31 @@ class CoyoteObsBuilder(ObsBuilder):
                 if self.selector_infinite_boost is not None:
                     self.selector_infinite_boost["infinite_boost"] = False
 
-        if self.add_boosttime:
-            self.boosttimes = np.zeros(len(initial_state.players))
+        # if self.add_boosttime:
+        #     self.boosttimes = np.zeros(len(initial_state.players))
 
-        if self.add_jumptime:
-            self.jumptimes = np.zeros(len(initial_state.players))
+        # if self.add_jumptime:
+        #     self.jumptimes = np.zeros(len(initial_state.players))
 
         if self.add_fliptime:
-            self.fliptimes = np.zeros(len(initial_state.players))
+            # self.fliptimes = np.zeros(len(initial_state.players))
             self.has_flippeds = [False] * len(initial_state.players)
-            self.has_doublejumpeds = [False] * len(initial_state.players)
+            # self.has_doublejumpeds = [False] * len(initial_state.players)
             self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players))]
 
-        if self.add_airtime:
-            self.airtimes = np.zeros(len(initial_state.players))
+        # if self.add_airtime:
+        #     self.airtimes = np.zeros(len(initial_state.players))
 
         if self.add_jumptime or self.add_fliptime or self.add_airtime:
             self.prev_prev_actions = [[0] * 8 for _ in range(len(initial_state.players))]
             self.is_jumpings = [False] * len(initial_state.players)
-            self.has_jumpeds = [False] * len(initial_state.players)
+            # self.has_jumpeds = [False] * len(initial_state.players)
             self.on_grounds = [False] * len(initial_state.players)
             for i, p in enumerate(initial_state.players):
                 self.on_grounds[i] = p.on_ground
 
-        if self.add_handbrake:
-            self.handbrakes = np.zeros(len(initial_state.players))
+        # if self.add_handbrake:
+        #     self.handbrakes = np.zeros(len(initial_state.players))
 
         if self.doubletap_indicator:
             self.floor_bounce = False
@@ -344,8 +344,9 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.is_jumpings[cid]:
             # JUMP_MIN_TIME = 3 ticks
             # JUMP_MAX_TIME = 24 ticks
-            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
-                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            # if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
+            #     self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            self.is_jumpings[cid] = self.jumptimes[cid] < 3 or (prev_actions[5] == 1 and self.jumptimes[cid] < 24)
         elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
             self.is_jumpings[cid] = True
             self.jumptimes[cid] = 0
@@ -899,9 +900,14 @@ class CoyoteObsBuilder(ObsBuilder):
         stack[:self.action_size] = new_action
 
     def model_add_action_to_stack(self, new_action: np.ndarray, car_id: int):
+        # stack = self.model_action_stacks[car_id]
+        # stack.pop(-1)
+        # stack.insert(0, new_action[0] / self.model_action_size)
         stack = self.model_action_stacks[car_id]
-        stack.pop(-1)
-        stack.insert(0, new_action[0] / self.model_action_size)
+        stack[self.model_action_size:] = stack[:-self.model_action_size]
+        one_hot = np.zeros(self.model_action_size)
+        np.put(one_hot, new_action[0], 1)
+        stack[:self.model_action_size] = one_hot
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
                   previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False, ) -> Any:

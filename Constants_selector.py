@@ -1,3 +1,6 @@
+from pretrained_agents.nexto.nexto_v2 import NextoV2
+from pretrained_agents.KBB.kbb import KBB
+
 FRAME_SKIP = 4
 TIME_HORIZON = 7  # horizon in seconds
 T_STEP = FRAME_SKIP / 120   # real time per rollout step
@@ -26,17 +29,32 @@ SUB_MODEL_NAMES = [
     "recover_135",
     "recover_90",
     "recover_45",
-    "recover_back_left",
-    "recover_back_right",
-    "recover_opponent",
-    "recover_back_post",
+    "recover_b_left",
+    "recover_b_right",
+    "recover_b_post",
     "recover_ball",
     "halfflip_back",
     "speedflip",
     "halfflip_ball",
-    "walldash_straight",
+    "walldash_str",
     "walldash_up",
     "walldash_down",
     "walldash_boost",
-    "walldash_ball",
+    "demo",
+    "doubletap",
+    "wall_play",
+    "left_turn",
+    "straight",
+    "right_turn"
+
 ]
+
+model_name = "nexto-model.pt"
+nexto = NextoV2(model_string=model_name, n_players=6)
+model_name = "kbb.pt"
+kbb = KBB(model_string=model_name)
+
+pretrained_agents = {
+    nexto: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+    kbb: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+    }

@@ -189,6 +189,8 @@ class CoyoteAction(ActionParser):
 
 
 def override_state(player, state, position_index) -> GameState:
+
+    return NotImplemented
     # takes the player and state and returns a new state based on the position index
     # which mocks specific values such as ball position, nearest opponent position, etc.
     # for use with the recovery model's observer builder
@@ -340,7 +342,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 30
+    assert 10 <= position_index <= 28
 
     if player.team_num == 1:
         inverted = True
@@ -358,8 +360,8 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         c.position - player_car.position))
 
     recovery_distance = 3000
-    # 22, 25, 30 are actual ball, just override player
-    if ball_position is None and (position_index != 22 and position_index != 25 and position_index != 30):
+    # 21, 24 are actual ball, just override player
+    if ball_position is None and (position_index != 21 and position_index != 24):
         # Ball position first
         ball_pos = np.asarray([0, 0, 0])
         # 2000 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
@@ -381,15 +383,15 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             elif position_index == 19:
                 ball_pos = np.asarray([-3072, -4096, 94])
 
-        elif position_index == 20:  # 20 is closest opponent
-            ball_pos = oppo_car[0].position
-            ball_pos[2] = 94
-        elif position_index == 21:  # 21 is back post entry, approx 1000, 4800
+        # elif position_index == 20:  # 20 is closest opponent
+        #     ball_pos = oppo_car[0].position
+        #     ball_pos[2] = 94
+        elif position_index == 20:  # 20 is back post entry, approx 1000, 4800
             x_pos = 1000
             if ball.position[0] >= 0:
                 x_pos = -1000
             ball_pos = np.asarray([x_pos, -4800, 94])
-        elif position_index == 23:  # 23 is behind for half-flip, relative
+        elif position_index == 22:  # 22 is behind for half-flip, relative
             angle_rad = np.pi
             fwd = player_car.forward()[:2]  # vector in forward direction just xy
             if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
@@ -402,7 +404,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
-        elif position_index == 24:  # 24 is forward, relative
+        elif position_index == 23:  # 23 is forward, relative
             angle_rad = 0
             fwd = player_car.forward()[:2]  # vector in forward direction just xy
             if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
@@ -415,7 +417,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
-        elif position_index == 26:  # same z
+        elif position_index == 25:  # same z
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
@@ -424,7 +426,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             y_pos = (1700 * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -3900, 3900)
             ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
-        elif position_index == 27:  # up 45
+        elif position_index == 26:  # up 45
             # space until ceiling
             z_space = max(1, 1700 - player_car.position[2])
             length = z_space / 0.707
@@ -438,7 +440,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             z_pos = (0.707 * length) + player_car.position[2]
             z_pos = np.clip(z_pos, 300, 1750)
             ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
-        elif position_index == 28:  # down 45
+        elif position_index == 27:  # down 45
             # space until ground
             z_space = max(1, player_car.position[2] - 300)
             length = z_space / 0.707
@@ -452,11 +454,11 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             z_pos = player_car.position[2] - (0.707 * length)
             z_pos = np.clip(z_pos, 300, 1750)
             ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
-        elif position_index == 29:  # back boost this side
+        elif position_index == 28:  # back boost this side
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
 
-    elif position_index == 22 or position_index == 25 or position_index == 30:
+    elif position_index == 21 or position_index == 24:
         ball_pos = state.inverted_ball.position if inverted else state.ball.position
 
     # override with passed in ball position
@@ -467,16 +469,16 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     retstate.inverted_ball.position = ball_pos
 
     # Ball velocity next
-    if position_index != 22 and position_index != 25 and position_index != 30:
+    if position_index != 21 and position_index != 24:
         retstate.ball.linear_velocity = np.zeros(3)
         retstate.inverted_ball.linear_velocity = np.zeros(3)
         retstate.ball.angular_velocity = np.zeros(3)
         retstate.inverted_ball.angular_velocity = np.zeros(3)
-    elif position_index == 20:
-        retstate.ball.linear_velocity = oppo_car[0].linear_velocity
-        retstate.inverted_ball.linear_velocity = oppo_car[0].linear_velocity
-        retstate.ball.angular_velocity = oppo_car[0].angular_velocity
-        retstate.inverted_ball.angular_velocity = oppo_car[0].angular_velocity
+    # elif position_index == 20:
+    #     retstate.ball.linear_velocity = oppo_car[0].linear_velocity
+    #     retstate.inverted_ball.linear_velocity = oppo_car[0].linear_velocity
+    #     retstate.ball.angular_velocity = oppo_car[0].angular_velocity
+    #     retstate.inverted_ball.angular_velocity = oppo_car[0].angular_velocity
     else:
         retstate.ball = state.ball
         retstate.inverted_ball = state.inverted_ball
@@ -546,90 +548,92 @@ class SelectorParser(ActionParser):
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
             (SubAgent("pinch_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
-            (SubAgent("recovery_jit.pt"),  # 10
+            (SubAgent("recovery_jit.pt"),  # 10 straight +y
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # +x +y
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # direction
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # direction
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # direction
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # 15  direction
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # direction
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # 17 direction end (-x +y)
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # 18 back left boost
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # 19 back right boost
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 20
+            (SubAgent("recovery_jit.pt"),  # 20, used to be closest opponent, now back post entry
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("recovery_jit.pt"),  # 21, actual ball
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),
+            (SubAgent("halfflip_jit.pt"),  # 22 behind, freeze
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # behind, freeze
+            (SubAgent("halfflip_jit.pt"),  # 23 forward (for the speedflip), freeze, relative
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # forward (for the speedflip), freeze, relative
+            (SubAgent("halfflip_jit.pt"),  # 24 actual ball
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # actual ball
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # same z
+            (SubAgent("walldash_jit.pt"),  # 25 same z
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # up 45
+            (SubAgent("walldash_jit.pt"),  # 26 up 45
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # down 45
+            (SubAgent("walldash_jit.pt"),  # 27 down 45
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # back boost this side
+            (SubAgent("walldash_jit.pt"),  # 28 back boost this side
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # actual ball  (30)
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
+            (SubAgent("demo_jit.pt"),  # demo
+             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                              only_closest_opp=True)),
+            (SubAgent("dtap_jit.pt"),  # doubletap
+             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                              mask_aerial_opp=True)),
+            (SubAgent("wall_jit.pt"),  # 31 ball to wall
+             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                              only_closest_opp=True)),
+            # 32 is turn left with throttle, 33 is straight with throttle, 34 is right
             ]
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None
@@ -668,32 +672,39 @@ class SelectorParser(ActionParser):
             #     self.prev_action[i] = None
             zero_boost = bool(action[1])  # boost action 1 means no boost usage
             action = int(action[0])  # change ndarray [0.] to 0
-            player = state.players[i]
 
-            # run timers for stateful obs for flips and such
-            self.obs_info.step(player, state, self.prev_actions[i])
+            if 32 <= action <= 34:  # simple steer goes here
+                # [throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
+                steer = action - 33
+                parse_action = np.asarray([1, steer, 0, steer, 0, 0, not zero_boost, 0])
+            else:
+                player = state.players[i]
 
-            # override state for recovery
+                # run timers for stateful obs for flips and such
+                self.obs_info.step(player, state, self.prev_actions[i])
 
-            newstate = state
-            # 22, 25, 30 are actual ball, just override player
-            if 10 <= action <= 30:
-                newstate = override_abs_state(player, state, action)
+                # override state for recovery
 
-            if 10 <= action <= 30:
-                # if reaching the "ball" or ball soon, allow a new choice by selector
-                self.force_selector_choice[i] = check_terminal_selector(newstate, player)
-
-            if 23 <= action <= 24:  # freeze
-                if self.prev_model_actions[i] == action:  # action didn't change
-                    newstate = override_abs_state(player, state, action, self.ball_position[i])
-                else:  # action submodel changed or reaching the objective
+                newstate = state
+                # 21, 24 are actual ball, just override player
+                if 10 <= action <= 28:
                     newstate = override_abs_state(player, state, action)
-                    self.ball_position[i] = state.ball.position  # save new position
 
-            obs = self.models[action][1].build_obs(
-                player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost)
-            parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
+                if 10 <= action <= 28:
+                    # if reaching the "ball" or ball soon, allow a new choice by selector
+                    self.force_selector_choice[i] = check_terminal_selector(newstate, player)
+
+                if 22 <= action <= 23:  # freeze
+                    if self.prev_model_actions[i] == action:  # action didn't change
+                        newstate = override_abs_state(player, state, action, self.ball_position[i])
+                    else:  # action submodel changed or reaching the objective
+                        newstate = override_abs_state(player, state, action)
+                        self.ball_position[i] = state.ball.position  # save new position
+
+                obs = self.models[action][1].build_obs(
+                    player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost)
+                parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
+
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
             # self.prev_action[i] = np.asarray(parse_action)

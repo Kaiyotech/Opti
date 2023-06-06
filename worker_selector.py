@@ -4,6 +4,7 @@ from redis.retry import Retry
 from redis.backoff import ExponentialBackoff
 from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
+from rocket_learn.matchmaker.matchmaker import Matchmaker
 from rlgym.utils.gamestates import GameState, PlayerData
 
 from CoyoteObs import CoyoteObsBuilder
@@ -15,6 +16,7 @@ from rewards import ZeroSumReward
 from torch import set_num_threads
 from selection_listener import SelectionListener
 from setter import CoyoteSetter
+from mybots_statesets import EndKickoff
 import Constants_selector
 import numpy as np
 import collections
@@ -27,12 +29,15 @@ from pretrained_agents.nexto.nexto_v2 import NextoV2
 from pretrained_agents.KBB.kbb import KBB
 from pretrained_agents.GP.GP import GP
 
+from rlgym.utils.common_values import BALL_RADIUS, BACK_WALL_Y
+
 set_num_threads(1)
 
 
 class ObsInfo:
     """keeps track of duplicate obs information"""
-    def __init__(self, tick_skip, selector_infinite_boost: dict) -> None:
+
+    def __init__(self, tick_skip, selector_infinite_boost: dict, dtap_dict) -> None:
         from rlgym.utils.common_values import BOOST_LOCATIONS
         self.boost_locations = np.array(BOOST_LOCATIONS)
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -60,6 +65,10 @@ class ObsInfo:
         self.has_jumpeds = [False] * 6
         self.handbrakes = [0] * 6
         self.selector_infinite_boost = selector_infinite_boost
+        self.floor_bounce = False
+        self.backboard_bounce = False
+        self.prev_ball_vel = np.asarray([0] * 3)
+        self.dtap_dict = dtap_dict
 
     def reset(self, initial_state: GameState):
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -69,30 +78,34 @@ class ObsInfo:
         self.orange_obs = []
 
         # timers
-        self.boosttimes = np.zeros(
-            max(p.car_id for p in initial_state.players) + 1)
+        # self.boosttimes = np.zeros(
+        #     max(p.car_id for p in initial_state.players) + 1)
+        #
+        # self.jumptimes = np.zeros(
+        #     max(p.car_id for p in initial_state.players) + 1)
 
-        self.jumptimes = np.zeros(
-            max(p.car_id for p in initial_state.players) + 1)
-
-        self.fliptimes = np.zeros(
-            max(p.car_id for p in initial_state.players) + 1)
+        # self.fliptimes = np.zeros(
+        #     max(p.car_id for p in initial_state.players) + 1)
         self.has_flippeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-        self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        # self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
         self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
 
-        self.airtimes = np.zeros(
-            max(p.car_id for p in initial_state.players) + 1)
+        # self.airtimes = np.zeros(
+        #     max(p.car_id for p in initial_state.players) + 1)
 
         self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
         self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
-        self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        # self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
         self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
         for p in initial_state.players:
             self.on_grounds[p.car_id] = p.on_ground
 
-        self.handbrakes = np.zeros(
-            max(p.car_id for p in initial_state.players) + 1)
+        # self.handbrakes = np.zeros(
+        #     max(p.car_id for p in initial_state.players) + 1)
+
+        self.floor_bounce = False
+        self.backboard_bounce = False
+        self.prev_ball_vel = np.array(initial_state.ball.linear_velocity)
 
     def pre_step(self, state: GameState):
         # create player/team agnostic items (do these even exist?)
@@ -107,6 +120,30 @@ class ObsInfo:
         else:
             for player in state.players:
                 player.boost_amount /= 1
+
+        # for double tap
+        touched = False
+        for player in state.players:
+            if player.ball_touched:
+                touched = True
+        ball_bounced_ground = self.prev_ball_vel[2] * state.ball.linear_velocity[2] < 0
+        ball_near_ground = state.ball.position[2] < BALL_RADIUS * 2
+        if not touched and ball_near_ground and ball_bounced_ground:
+            self.floor_bounce = True
+
+        ball_bounced_backboard = self.prev_ball_vel[1] * state.ball.linear_velocity[1] < 0
+        ball_near_wall = abs(state.ball.position[1]) > (BACK_WALL_Y - BALL_RADIUS * 2)
+        if not touched and ball_near_wall and ball_bounced_backboard:
+            self.backboard_bounce = True
+            self.dtap_dict["ball_hit_bb"] = False
+
+        if touched and not self.dtap_dict["hit_towards_bb"]:
+            self.dtap_dict["hit_towards_bb"] = True
+
+        if touched and self.dtap_dict["hit_towards_bb"] and self.dtap_dict["ball_hit_bb"]:
+            self.dtap_dict["hit_towards_goal"] = True
+
+        self.prev_ball_vel = np.array(state.ball.linear_velocity)
 
     def _update_timers(self, state: GameState):
         current_boosts = state.boost_pads
@@ -163,8 +200,9 @@ class ObsInfo:
         if self.is_jumpings[cid]:
             # JUMP_MIN_TIME = 3 ticks
             # JUMP_MAX_TIME = 24 ticks
-            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
-                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            # if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
+            #     self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            self.is_jumpings[cid] = self.jumptimes[cid] < 3 or (prev_actions[5] == 1 and self.jumptimes[cid] < 24)
         elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
             self.is_jumpings[cid] = True
             self.jumptimes[cid] = 0
@@ -207,7 +245,7 @@ class ObsInfo:
                             self.flipdirs[cid] = list(
                                 flipdir / np.linalg.norm(flipdir))
                         else:
-                            self.flipdirs[cid] = [0,0]
+                            self.flipdirs[cid] = [0, 0]
                     else:
                         self.has_doublejumpeds[cid] = True
         if self.has_flippeds[cid]:
@@ -231,6 +269,7 @@ class ObsInfo:
 
 class SelectionDispatcher(SelectionListener):
     """Dispatches model selection messages to redis channel"""
+
     def __init__(self, redis, redis_channel) -> None:
         super().__init__()
         self.redis = redis
@@ -263,7 +302,7 @@ class SelectionDispatcher(SelectionListener):
         self.xthread_queue.append((selected_model_name, model_action))
         self.wake_event.set()
 
-    def stop(self): # unused
+    def stop(self):  # unused
         self.xthread_queue.clear()
         self.should_run = False
         self.wake_event.set()
@@ -287,13 +326,20 @@ if __name__ == "__main__":
                         jump_touch_w=1,
                         wall_touch_w=2.5,
                         exit_velocity_w=1,
+                        acel_ball_w=0.5,
                         velocity_pb_w=0.005,
+                        velocity_bg_w=0.01,
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
                         )
     # obs_output = np.zeros()
+    dtap_status = {"hit_towards_bb": False,
+                   "ball_hit_bb": False,
+                   "hit_towards_goal": False,
+                   }
     selector_infinite_boost = {"infinite_boost": False}
-    obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost)
+    obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
+                       dtap_dict=dtap_status)
     parser = SelectorParser(obs_info=obs_info)
     fps = 120 // frame_skip
     name = "Default"
@@ -303,13 +349,33 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.01
-    past_version_prob = 0.05
+    past_version_prob = 0
     deterministic_streamer = False
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.15
+    infinite_boost_odds = 0.2
     host = "127.0.0.1"
+    non_latest_version_prob = [1, 0, 0, 0]
+    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
+    simulator = True
+    visualize = False
+    batch_mode = True
+
+    model_name = "necto-model-30Y.pt"
+    nectov1 = NectoV1(model_string=model_name, n_players=6)
+    model_name = "nexto-model.pt"
+    nexto = NextoV2(model_string=model_name, n_players=6)
+    model_name = "kbb.pt"
+    kbb = KBB(model_string=model_name)
+    model_name = "gp_jit.pt"
+    gp = GP(model_string=model_name)
+
+    pretrained_agents = Constants_selector.pretrained_agents
+
+    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=None, past_version_prob=past_version_prob,
+                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
+                            non_latest_version_prob=non_latest_version_prob)
 
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -338,56 +404,97 @@ if __name__ == "__main__":
                   db=Constants_selector.DB_NUM,
                   )
 
+
     def setup_streamer():
-        global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode
+        global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode, \
+            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker
         streamer_mode = True
         evaluation_prob = 0
         game_speed = 1
         auto_minimize = False
-        infinite_boost_odds = 0.15
+        infinite_boost_odds = 0.2
+        simulator = False
+        past_version_prob = 0
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
+
+        pretrained_agents = {
+            nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+            kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+        }
+
+        non_latest_version_prob = [1, 0, 0, 0]
+
+        matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
+                                past_version_prob=past_version_prob,
+                                full_team_trainings=1, full_team_evaluations=1,
+                                force_non_latest_orange=streamer_mode,
+                                non_latest_version_prob=non_latest_version_prob,
+                                showmatch=False,
+                                orange_agent_text_file='orange_stream_file.txt'
+                                )
+
 
     if len(sys.argv) > 3:
         if sys.argv[3] == 'GAMESTATE':
             send_gamestate = True
         elif sys.argv[3] == 'STREAMER':
             setup_streamer()
+        elif sys.argv[3] == 'VISUALIZE':
+            visualize = True
+
+    if simulator:
+        from rlgym_sim.envs import Match as Sim_Match
+        from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
+    else:
+        from rlgym.envs import Match
+        from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
+
+    obs_builder = CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
+                                   extra_boost_info=True, embed_players=True,
+                                   stack_size=Constants_selector.STACK_SIZE,
+                                   action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True,
+                                   selector_infinite_boost=selector_infinite_boost,
+                                   doubletap_indicator=True,
+                                   dtap_dict=dtap_status,
+                                   ),
+
+    setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
+
+    terminals = [GoalScoredCondition(),
+                 NoTouchTimeoutCondition(fps * 40),
+                 TimeoutCondition(fps * 300),
+                 ]
 
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
         team_size=team_size,
-        state_setter=CoyoteSetter(mode="selector"),
-        obs_builder=CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
-                                     extra_boost_info=True, embed_players=True,
-                                     stack_size=Constants_selector.STACK_SIZE,
-                                     action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True,
-                                     selector_infinite_boost=selector_infinite_boost,
-                                     ),
+        state_setter=setter,
+        obs_builder=obs_builder,
         action_parser=parser,
-        terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 40),
-                             TimeoutCondition(fps * 300),
-                             ],
+        terminal_conditions=terminals,
         reward_function=rew,
         tick_skip=frame_skip,
+    ) if not simulator else Sim_Match(
+        spawn_opponents=True,
+        team_size=team_size,
+        state_setter=setter,
+        obs_builder=obs_builder,
+        action_parser=parser,
+        terminal_conditions=terminals,
+        reward_function=rew,
     )
 
-    model_name = "necto-model-30Y.pt"
-    nectov1 = NectoV1(model_string=model_name, n_players=6)
-    model_name = "nexto-model.pt"
-    nexto = NextoV2(model_string=model_name, n_players=6)
-    model_name = "kbb.pt"
-    kbb = KBB(model_string=model_name)
-    model_name = "gp_jit.pt"
-    gp = GP(model_string=model_name)
 
-    pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02, gp: 0}
-    # pretrained_agents = {nectov1: 0.1, nexto: 0.1, kbb: 0.1, gp: 0.1}
+    #
+    # pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02, gp: 0}
+    # # pretrained_agents = {nectov1: 0.1, nexto: 0.1, kbb: 0.1, gp: 0.1}
 
     worker = RedisRolloutWorker(r, name, match,
-                                past_version_prob=past_version_prob,
+                                matchmaker=matchmaker,
                                 sigma_target=2,
                                 evaluation_prob=evaluation_prob,
                                 force_paging=False,
@@ -395,19 +502,30 @@ if __name__ == "__main__":
                                 send_obs=True,
                                 auto_minimize=auto_minimize,
                                 send_gamestates=send_gamestate,
-                                gamemode_weights={'1v1': 0.35, '2v2': 0.2, '3v3': 0.45},  # default 1/3
+                                gamemode_weights=gamemode_weights,  # default 1/3
                                 streamer_mode=streamer_mode,
                                 deterministic_streamer=deterministic_streamer,
                                 force_old_deterministic=force_old_deterministic,
-                                pretrained_agents=None if streamer_mode else pretrained_agents,
+                                pretrained_agents=pretrained_agents,
                                 # testing
-                                batch_mode=False,
+                                eval_setter=EndKickoff(),
+                                simulator=simulator,
+                                live_progress=False,
+                                visualize=visualize,
+                                batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0073,
+                                selector_skip_k=0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
                                 )
 
     worker.env._match._obs_builder.env = worker.env
 
     parser.force_selector_choice = worker.force_selector_choice  # ugh. I hate myself.
+
+    if simulator and visualize:
+        from rocketsimvisualizer import VisualizerThread
+        arena = worker.env._game.arena  # noqa
+        v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
+                             overwrite_controls=False)  # noqa
+        v.start()
 
     worker.run()
