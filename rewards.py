@@ -421,7 +421,7 @@ class ZeroSumReward(RewardFunction):
                     self.cons_touches = 0
 
                 # dribble
-                if state.ball.position[2] > 120 and player.on_ground:
+                if 180 > state.ball.position[2] > 120 and player.on_ground:
                     player_rewards[i] += self.dribble_w
 
             # not touched
