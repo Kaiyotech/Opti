@@ -1,10 +1,4 @@
-from __future__ import annotations
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from rlgym.utils.gamestates import PhysicsObject
-    from rlgym.utils.gamestates import GameState, PlayerData
-
+from rlgym.utils.gamestates import GameState, PlayerData, PhysicsObject
 from rlgym.utils.action_parsers import ActionParser
 import copy
 from typing import Any
@@ -515,6 +509,11 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
 
 class SelectorParser(ActionParser):
     def __init__(self, obs_info=None):
+        # if simulator:
+        #     from rlgym_sim.utils.gamestates import GameState
+        # else:
+        #     from rlgym.utils.gamestates import GameState
+
         from submodels.submodel_agent import SubAgent
         from Constants_selector import SUB_MODEL_NAMES
         self.sub_model_names = [
@@ -629,7 +628,7 @@ class SelectorParser(ActionParser):
                               only_closest_opp=True)),
             (SubAgent("dtap_jit.pt"),  # doubletap
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              mask_aerial_opp=True)),
+                              mask_aerial_opp=True, doubletap_indicator=True)),
             (SubAgent("wall_jit.pt"),  # 31 ball to wall
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True)),
@@ -658,7 +657,7 @@ class SelectorParser(ActionParser):
         return 1
 
     def get_model_action_size(self) -> int:
-        return len(self.models)
+        return len(self.models) + 3  # plus 3 for the left/straight/right
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
 
@@ -702,7 +701,7 @@ class SelectorParser(ActionParser):
                         self.ball_position[i] = state.ball.position  # save new position
 
                 obs = self.models[action][1].build_obs(
-                    player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost)
+                    player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost, n_override=i)
                 parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
 
             if self.selection_listener is not None and i == 0:  # only call for first player

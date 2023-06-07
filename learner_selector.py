@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_8.00"
+    run_id = "selector_run_test8.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_8.00",
+                        name="Selector_Run_test8.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -125,8 +125,8 @@ if __name__ == "__main__":
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
-    action_size = 34
-    input_size = 429 + (Constants_selector.STACK_SIZE * action_size)
+    action_size = 35
+    input_size = 430 + (Constants_selector.STACK_SIZE * action_size)
     boost_size = 2
     shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),

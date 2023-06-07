@@ -157,18 +157,18 @@ class CoyoteObsBuilder(ObsBuilder):
         self.dodge_deadzone = dodge_deadzone
         self.any_timers = add_boosttime or add_jumptime or add_fliptime or add_airtime or add_handbrake
 
-        self.boosttimes = [0] * 6
-        self.jumptimes = [0] * 6
-        self.fliptimes = [0] * 6
-        self.has_flippeds = [False] * 6
-        self.has_doublejumpeds = [False] * 6
-        self.flipdirs = [[0] * 2 for _ in range(6)]
-        self.airtimes = [0] * 6
-        self.on_grounds = [False] * 6
-        self.prev_prev_actions = [[0] * 8 for _ in range(6)]
-        self.is_jumpings = [False] * 6
-        self.has_jumpeds = [False] * 6
-        self.handbrakes = [0] * 6
+        self.boosttimes = [0] * 8
+        self.jumptimes = [0] * 8
+        self.fliptimes = [0] * 8
+        self.has_flippeds = [False] * 8
+        self.has_doublejumpeds = [False] * 8
+        self.flipdirs = [[0] * 2 for _ in range(8)]
+        self.airtimes = [0] * 8
+        self.on_grounds = [False] * 8
+        self.prev_prev_actions = [[0] * 8 for _ in range(8)]
+        self.is_jumpings = [False] * 8
+        self.has_jumpeds = [False] * 8
+        self.handbrakes = [0] * 8
 
     def reset(self, initial_state: GameState):
         self.n = 0
@@ -177,7 +177,7 @@ class CoyoteObsBuilder(ObsBuilder):
             self.boost_timers = np.zeros(self.boost_locations.shape[0])
             self.inverted_boost_timers = np.zeros(
                 self.boost_locations.shape[0])
-            self.demo_timers = np.zeros(len(initial_state.players))
+            self.demo_timers = np.zeros(len(initial_state.players) + 1)
             self.blue_obs = []
             self.orange_obs = []
 
@@ -217,16 +217,16 @@ class CoyoteObsBuilder(ObsBuilder):
             # self.fliptimes = np.zeros(len(initial_state.players))
             self.has_flippeds = [False] * len(initial_state.players)
             # self.has_doublejumpeds = [False] * len(initial_state.players)
-            self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players))]
+            self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players) + 1)]
 
         # if self.add_airtime:
         #     self.airtimes = np.zeros(len(initial_state.players))
 
         if self.add_jumptime or self.add_fliptime or self.add_airtime:
-            self.prev_prev_actions = [[0] * 8 for _ in range(len(initial_state.players))]
-            self.is_jumpings = [False] * len(initial_state.players)
+            self.prev_prev_actions = [[0] * 8 for _ in range(len(initial_state.players) + 1)]
+            self.is_jumpings = [False] * (len(initial_state.players) + 1)
             # self.has_jumpeds = [False] * len(initial_state.players)
-            self.on_grounds = [False] * len(initial_state.players)
+            self.on_grounds = [False] * (len(initial_state.players) + 1)
             for i, p in enumerate(initial_state.players):
                 self.on_grounds[i] = p.on_ground
 
@@ -910,7 +910,10 @@ class CoyoteObsBuilder(ObsBuilder):
         stack[:self.model_action_size] = one_hot
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
-                  previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False, ) -> Any:
+                  previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False,
+                  n_override: int = None) -> Any:
+        if n_override is not None:
+            self.n = n_override
 
         if self.any_timers and obs_info is None:  # if it's not None, this is handled in the obs_info step in the worker
             self._update_addl_timers(player, state, previous_action)
@@ -936,6 +939,8 @@ class CoyoteObsBuilder(ObsBuilder):
             self.is_jumpings = obs_info.is_jumpings
             self.has_jumpeds = obs_info.has_jumpeds
             self.handbrakes = obs_info.handbrakes
+            self.dtap_dict = obs_info.dtap_dict
+            # self.n = obs_info.n
 
         if player.team_num == 1:
             inverted = True
@@ -975,7 +980,8 @@ class CoyoteObsBuilder(ObsBuilder):
                                             self.inverted_boost_locations if inverted else self.boost_locations,
                                             self.boost_values, self.POS_STD))
 
-        self.n += 1
+        if obs_info is None:
+            self.n += 1
 
         if self.expanding and not self.embed_players:
             return np.expand_dims(np.fromiter(obs, dtype=np.float32, count=len(obs)), 0)
@@ -1365,7 +1371,7 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
         stack.insert(0, new_action[0] / self.model_action_size)
 
     def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray,
-                  previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False) -> Any:
+                  previous_model_action: np.ndarray = None, obs_info=None, zero_boost: bool = False, n_override=None) -> Any:
 
         if obs_info is not None:
             # unpack, I'm sure there's a cooler way to do this

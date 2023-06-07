@@ -52,25 +52,27 @@ class ObsInfo:
         self.time_interval = tick_skip / 120
         self.dodge_deadzone = 0.8
         self.any_timers = True
-        self.boosttimes = [0] * 6
-        self.jumptimes = [0] * 6
-        self.fliptimes = [0] * 6
-        self.has_flippeds = [False] * 6
-        self.has_doublejumpeds = [False] * 6
-        self.flipdirs = [[0] * 2 for _ in range(6)]
-        self.airtimes = [0] * 6
-        self.on_grounds = [False] * 6
-        self.prev_prev_actions = [[0] * 8 for _ in range(6)]
-        self.is_jumpings = [False] * 6
-        self.has_jumpeds = [False] * 6
-        self.handbrakes = [0] * 6
+        self.boosttimes = [0] * 8
+        self.jumptimes = [0] * 8
+        self.fliptimes = [0] * 8
+        self.has_flippeds = [False] * 8
+        self.has_doublejumpeds = [False] * 8
+        self.flipdirs = [[0] * 2 for _ in range(8)]
+        self.airtimes = [0] * 8
+        self.on_grounds = [False] * 8
+        self.prev_prev_actions = [[0] * 8 for _ in range(8)]
+        self.is_jumpings = [False] * 8
+        self.has_jumpeds = [False] * 8
+        self.handbrakes = [0] * 8
         self.selector_infinite_boost = selector_infinite_boost
         self.floor_bounce = False
         self.backboard_bounce = False
         self.prev_ball_vel = np.asarray([0] * 3)
         self.dtap_dict = dtap_dict
+        self.n = 0
 
     def reset(self, initial_state: GameState):
+        self.n = 0
         self.boost_timers = np.zeros(self.boost_locations.shape[0])
         self.inverted_boost_timers = np.zeros(self.boost_locations.shape[0])
         self.demo_timers = np.zeros(max(p.car_id for p in initial_state.players) + 1)
@@ -108,6 +110,7 @@ class ObsInfo:
         self.prev_ball_vel = np.array(initial_state.ball.linear_velocity)
 
     def pre_step(self, state: GameState):
+        self.n = 0
         # create player/team agnostic items (do these even exist?)
         self._update_timers(state)
         # create team specific things
@@ -181,6 +184,9 @@ class ObsInfo:
     def step(self, player: PlayerData, state: GameState, previous_action: np.ndarray):
         self._update_addl_timers(player, state, previous_action)
         self.prev_prev_actions[player.car_id] = previous_action  # noqa
+
+    # def after_step(self):
+    #     self.n += 1
 
     def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray):
         cid = player.car_id
@@ -459,7 +465,7 @@ if __name__ == "__main__":
                                    selector_infinite_boost=selector_infinite_boost,
                                    doubletap_indicator=True,
                                    dtap_dict=dtap_status,
-                                   ),
+                                   )
 
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
 
