@@ -167,12 +167,12 @@ class CoyoteAction(ActionParser):
                 stripped_action = (
                     action[~np.isnan(action)]).squeeze().astype('int')
 
-                done_action = self._lookup_table[stripped_action]
+                done_action = copy.deepcopy(self._lookup_table[stripped_action])
                 if zero_boost:
                     done_action[6] = 0
                 parsed_actions.append(done_action)
             elif action.shape[0] == 1:
-                action = self._lookup_table[action[0].astype('int')]
+                action = copy.deepcopy(self._lookup_table[action[0].astype('int')])
                 if zero_boost:
                     action[6] = 0
                 parsed_actions.append(action)
@@ -672,16 +672,15 @@ class SelectorParser(ActionParser):
             zero_boost = bool(action[1])  # boost action 1 means no boost usage
             action = int(action[0])  # change ndarray [0.] to 0
 
+            # run timers for stateful obs for flips and such
+            player = state.players[i]
+            self.obs_info.step(player, state, self.prev_actions[i])
+
             if 32 <= action <= 34:  # simple steer goes here
                 # [throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
                 steer = action - 33
                 parse_action = np.asarray([1, steer, 0, steer, 0, 0, not zero_boost, 0])
             else:
-                player = state.players[i]
-
-                # run timers for stateful obs for flips and such
-                self.obs_info.step(player, state, self.prev_actions[i])
-
                 # override state for recovery
 
                 newstate = state
