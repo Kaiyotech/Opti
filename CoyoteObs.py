@@ -207,17 +207,18 @@ class CoyoteObsBuilder(ObsBuilder):
                 if self.selector_infinite_boost is not None:
                     self.selector_infinite_boost["infinite_boost"] = False
 
-        # if self.add_boosttime:
-        #     self.boosttimes = np.zeros(len(initial_state.players))
+        if self.add_boosttime:
+            self.boosttimes = np.zeros(len(initial_state.players))
 
         # if self.add_jumptime:
         #     self.jumptimes = np.zeros(len(initial_state.players))
 
         if self.add_fliptime:
-            # self.fliptimes = np.zeros(len(initial_state.players))
-            self.has_flippeds = [False] * len(initial_state.players)
+            for i in range(len(initial_state.players)):
+                if self.has_flippeds[i]:
+                    self.fliptimes[i] = 78
             # self.has_doublejumpeds = [False] * len(initial_state.players)
-            self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players) + 1)]
+            # self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players) + 1)]
 
         # if self.add_airtime:
         #     self.airtimes = np.zeros(len(initial_state.players))

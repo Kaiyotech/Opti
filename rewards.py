@@ -869,11 +869,12 @@ class ZeroSumReward(RewardFunction):
             # See CoyoteObs' reset() for why some of these are commented out
             # self.jumptimes = np.zeros(len(initial_state.players))
 
-            # self.fliptimes = np.zeros(len(initial_state.players))
-            self.has_flippeds = [False] * len(initial_state.players)
+            for i in range(len(initial_state.players)):
+                if self.has_flippeds[i]:
+                    self.fliptimes[i] = 78
             # self.has_doublejumpeds = [False] * len(initial_state.players)
-            self.flipdirs = [
-                [0] * 2 for _ in range(len(initial_state.players))]
+            # self.flipdirs = [
+            #     [0] * 2 for _ in range(len(initial_state.players))]
 
             # self.airtimes = np.zeros(len(initial_state.players))
 
