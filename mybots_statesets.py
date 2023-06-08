@@ -128,7 +128,7 @@ class GroundAirDribble(StateSetter):
 
             # rest of the cars are random
             else:
-                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
+                car.set_pos(250 * car.id * rng.choice([-1, 1]), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
 
@@ -260,9 +260,9 @@ class WallDribble(StateSetter):
                 car.boost = 0.33
                 continue
 
-            # rest of the cars are random
+            # rest of the cars are random (removed some randomness from x for safety in sim)
             else:
-                car.set_pos(rng.uniform(-1472, 1472), rng.uniform(-1984, 1984), 17)
+                car.set_pos(250 * car.id * rng.choice([-1, 1]), rng.uniform(-1984, 1984), 17)
                 car.set_rot(0, rng.uniform(-180, 180) * (np.pi / 180), 0)
                 car.boost = 0.33
 

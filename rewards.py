@@ -142,7 +142,9 @@ class ZeroSumReward(RewardFunction):
             dtap_helper_w=0,
             dtap_helper_2_w=0,
             trajectory_intersection_distance_w=0,
+            pun_rew_ball_height_w=0,
     ):
+        self.pun_rew_ball_height_w = pun_rew_ball_height_w
         self.trajectory_intersection_distance_w = trajectory_intersection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
         self.dtap_helper_w = dtap_helper_w
@@ -419,7 +421,7 @@ class ZeroSumReward(RewardFunction):
                     self.cons_touches = 0
 
                 # dribble
-                if state.ball.position[2] > 120 and player.on_ground:
+                if 180 > state.ball.position[2] > 120 and player.on_ground:
                     player_rewards[i] += self.dribble_w
 
             # not touched
@@ -456,6 +458,13 @@ class ZeroSumReward(RewardFunction):
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
                 self.cons_touches = 0
+
+            # punish low ball to encourage wall play, reward higher ball
+            # punish below 350, 0 at 350, positive above
+            #−0.000002x2+0.005x−1
+            ball_height = state.ball.position[2]
+            player_self_rewards[i] += self.pun_rew_ball_height_w * ((1.0645093e-6 * (ball_height ** 2)) +
+                                                                    (3.7704918e-3 * ball_height) - 1.3378752)
 
             # vel bg
             if self.blue_toucher is not None or self.orange_toucher is not None:
@@ -704,7 +713,7 @@ class ZeroSumReward(RewardFunction):
 
             # doubletap help
             # changed 5/30/23 to add the ball_hit_bb, so it only gives the first bounce to avoid pancakes/pinches.
-            if i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
+            if self.backboard_bounce_rew != 0 and i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
                 player_rewards[i] += self.backboard_bounce_rew
 
         mid = len(player_rewards) // 2
@@ -792,34 +801,34 @@ class ZeroSumReward(RewardFunction):
             player_rewards[mid:] -= blue_mean
 
         # # TODO: remove this
-        # if np.isnan(player_rewards).any():
-        #     print(f"There is a nan in the rewwards. {player_rewards}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
-        # if np.isnan(player_self_rewards).any():
-        #     print(f"There is a nan in the self-rewwards. {player_self_rewards}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
-        # if np.isinf(player_rewards).any():
-        #     print(f"There is a inf in the rewwards. {player_rewards}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
-        # if np.isinf(player_self_rewards).any():
-        #     print(f"There is a inf in the self-rewwards. {player_self_rewards}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
+        if np.isnan(player_rewards).any():
+            print(f"There is a nan in the rewwards. {player_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if np.isnan(player_self_rewards).any():
+            print(f"There is a nan in the self-rewwards. {player_self_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if np.isinf(player_rewards).any():
+            print(f"There is a inf in the rewwards. {player_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if np.isinf(player_self_rewards).any():
+            print(f"There is a inf in the self-rewwards. {player_self_rewards}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
 
         self.last_state = state
         self.rewards = player_rewards + player_self_rewards
