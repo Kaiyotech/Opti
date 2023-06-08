@@ -343,6 +343,9 @@ if __name__ == "__main__":
                    "ball_hit_bb": False,
                    "hit_towards_goal": False,
                    }
+
+    simple_actions = [32, 33, 34]
+
     selector_infinite_boost = {"infinite_boost": False}
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
                        dtap_dict=dtap_status)
@@ -470,7 +473,7 @@ if __name__ == "__main__":
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
 
     terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 30),
+                 TimeoutCondition(fps * 3),
                  ]
 
     match = Match(
@@ -520,6 +523,7 @@ if __name__ == "__main__":
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
                                 selector_skip_k=0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
+                                unlock_selector_indices=simple_actions,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
