@@ -473,7 +473,7 @@ if __name__ == "__main__":
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
 
     terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 3),
+                 TimeoutCondition(fps * 30),
                  ]
 
     match = Match(
