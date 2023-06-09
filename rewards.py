@@ -874,21 +874,22 @@ class ZeroSumReward(RewardFunction):
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
+            # See CoyoteObs' reset() for why some of these are commented out
+            # self.jumptimes = np.zeros(len(initial_state.players))
 
-            self.jumptimes = np.zeros(len(initial_state.players))
+            for i in range(len(initial_state.players)):
+                if self.has_flippeds[i]:
+                    self.fliptimes[i] = 78
+            # self.has_doublejumpeds = [False] * len(initial_state.players)
+            # self.flipdirs = [
+            #     [0] * 2 for _ in range(len(initial_state.players))]
 
-            self.fliptimes = np.zeros(len(initial_state.players))
-            self.has_flippeds = [False] * len(initial_state.players)
-            self.has_doublejumpeds = [False] * len(initial_state.players)
-            self.flipdirs = [
-                [0] * 2 for _ in range(len(initial_state.players))]
-
-            self.airtimes = np.zeros(len(initial_state.players))
+            # self.airtimes = np.zeros(len(initial_state.players))
 
             self.prev_prev_actions = [
                 [0] * 8 for _ in range(len(initial_state.players))]
             self.is_jumpings = [False] * len(initial_state.players)
-            self.has_jumpeds = [False] * len(initial_state.players)
+            # self.has_jumpeds = [False] * len(initial_state.players)
             self.on_grounds = [False] * len(initial_state.players)
             for i, p in enumerate(initial_state.players):
                 self.on_grounds[i] = p.on_ground
@@ -1020,8 +1021,7 @@ class ZeroSumReward(RewardFunction):
         if self.is_jumpings[cid]:
             # JUMP_MIN_TIME = 3 ticks
             # JUMP_MAX_TIME = 24 ticks
-            if not ((self.jumptimes[cid] < 3 or prev_actions[5] == 1) and self.jumptimes[cid] < 24):
-                self.is_jumpings[cid] = self.jumptimes[cid] < 3
+            self.is_jumpings[cid] = self.jumptimes[cid] < 3 or (prev_actions[5] == 1 and self.jumptimes[cid] < 24)
         elif prev_actions[5] == 1 and self.prev_prev_actions[cid][5] == 0 and self.on_grounds[cid]:
             self.is_jumpings[cid] = True
             self.jumptimes[cid] = 0
