@@ -690,7 +690,10 @@ class SelectorParser(ActionParser):
 
                 if 10 <= action <= 28:
                     # if reaching the "ball" or ball soon, allow a new choice by selector
-                    self.force_selector_choice[i] = check_terminal_selector(newstate, player)
+                    check_radius = 300
+                    if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
+                        check_radius = 800
+                    self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
 
                 if 22 <= action <= 23:  # freeze
                     if self.prev_model_actions[i] == action:  # action didn't change
@@ -724,8 +727,8 @@ class SelectorParser(ActionParser):
         self.selection_listener = listener
 
 
-def check_terminal_selector(state: GameState, player: PlayerData) -> bool:
-    if np.linalg.norm(player.car_data.position - state.ball.position) < 300:
+def check_terminal_selector(state: GameState, player: PlayerData, check_radius=300) -> bool:
+    if np.linalg.norm(player.car_data.position - state.ball.position) < check_radius:
         return True
     return False
 
