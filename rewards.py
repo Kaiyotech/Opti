@@ -829,6 +829,14 @@ class ZeroSumReward(RewardFunction):
             print("Last state is:")
             print_state(self.last_state)
             exit()
+        if (player_rewards > 100).any() or (player_rewards < -100).any():
+            print(f"There is a large number in rewards. {player_rewards}")
+            print_state(state)
+            exit()
+        if (player_self_rewards > 100).any() or (player_self_rewards < -100).any():
+            print(f"There is a large number in self-rewards. {player_self_rewards}")
+            print_state(state)
+            exit()
 
         self.last_state = state
         self.rewards = player_rewards + player_self_rewards
@@ -918,22 +926,30 @@ class ZeroSumReward(RewardFunction):
             if np.linalg.norm(player.car_data.linear_velocity) > (0.99 * CAR_MAX_SPEED):
                 rew += self.jump_high_speed_w
 
-        # if np.isinf(rew).any():
-        #     print(f"There is a inf in the get rew. {rew}")
-        #     print(f"n is {self.n}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
-        # if np.isnan(rew).any():
-        #     print(f"There is a inf in the get rew. {rew}")
-        #     print(f"n is {self.n}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
+        if np.isinf(rew).any():
+            print(f"There is a inf in the get rew. {rew}")
+            print(f"n is {self.n}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if np.isnan(rew).any():
+            print(f"There is a inf in the get rew. {rew}")
+            print(f"n is {self.n}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if (rew > 100).any() or (rew < -100).any():
+            print(f"There is a large number in rewards. {rew}")
+            print(f"n is {self.n}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
 
         self.n += 1
         return float(rew)
@@ -961,27 +977,35 @@ class ZeroSumReward(RewardFunction):
                 touch_rew = self.touch_object_w
                 boost_touch_rew = player.boost_amount * self.boost_remain_touch_object_w
         boost_rew = float(player.boost_amount) * self.final_reward_boost_w
-        # if np.isinf(reg_reward).any() or np.isinf(dist_rew).any() or np.isinf(boost_rew).any() or \
-        #         np.isinf(touch_rew).any() or np.isinf(boost_touch_rew).any():
-        #     print(
-        #         f"There is a inf in the final rew. {reg_reward} | {dist_rew} | {boost_rew} | {touch_rew} | {boost_touch_rew}")
-        #     print(f"player is {player.car_id}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
-        #
-        # if np.isnan(reg_reward).any() or np.isnan(dist_rew).any() or np.isnan(boost_rew).any() or \
-        #         np.isnan(touch_rew).any() or np.isnan(boost_touch_rew).any():
-        #     print(
-        #         f"There is a nan in the final rew. {reg_reward} | {dist_rew} | {boost_rew} | {touch_rew} | {boost_touch_rew}")
-        #     print(f"player is {player.car_id}")
-        #     print("state is:")
-        #     print_state(state)
-        #     print("Last state is:")
-        #     print_state(self.last_state)
-        #     exit()
+        if np.isinf(reg_reward).any() or np.isinf(dist_rew).any() or np.isinf(boost_rew).any() or \
+                np.isinf(touch_rew).any() or np.isinf(boost_touch_rew).any():
+            print(
+                f"There is a inf in the final rew. {reg_reward} | {dist_rew} | {boost_rew} | {touch_rew} | {boost_touch_rew}")
+            print(f"player is {player.car_id}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+
+        if np.isnan(reg_reward).any() or np.isnan(dist_rew).any() or np.isnan(boost_rew).any() or \
+                np.isnan(touch_rew).any() or np.isnan(boost_touch_rew).any():
+            print(
+                f"There is a nan in the final rew. {reg_reward} | {dist_rew} | {boost_rew} | {touch_rew} | {boost_touch_rew}")
+            print(f"player is {player.car_id}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
+        if reg_reward > 100 or reg_reward < -100:
+            print(f"There is a large number in rewards. {reg_reward}")
+            print(f"n is {self.n}")
+            print("state is:")
+            print_state(state)
+            print("Last state is:")
+            print_state(self.last_state)
+            exit()
 
         return reg_reward + dist_rew + boost_rew + touch_rew + boost_touch_rew
 
