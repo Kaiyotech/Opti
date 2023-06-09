@@ -370,6 +370,7 @@ if __name__ == "__main__":
     simulator = True
     visualize = False
     batch_mode = True
+    selector_skip_k=0.0004
 
     model_name = "necto-model-30Y.pt"
     nectov1 = NectoV1(model_string=model_name, n_players=6)
@@ -416,7 +417,7 @@ if __name__ == "__main__":
 
     def setup_streamer():
         global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode, \
-            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker
+            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, selector_skip_k
         streamer_mode = True
         evaluation_prob = 0
         game_speed = 1
@@ -424,6 +425,7 @@ if __name__ == "__main__":
         infinite_boost_odds = 0.2
         simulator = False
         past_version_prob = 0
+        # selector_skip_k = 5e-7
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
 
@@ -522,7 +524,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
+                                selector_skip_k=selector_skip_k, # 0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
                                 unlock_selector_indices=simple_actions,
                                 )
 
