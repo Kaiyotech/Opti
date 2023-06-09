@@ -80,25 +80,25 @@ class ObsInfo:
         self.orange_obs = []
 
         # timers
-        # self.boosttimes = np.zeros(
-        #     max(p.car_id for p in initial_state.players) + 1)
+        self.boosttimes = np.zeros(8)
         #
         # self.jumptimes = np.zeros(
         #     max(p.car_id for p in initial_state.players) + 1)
 
-        # self.fliptimes = np.zeros(
-        #     max(p.car_id for p in initial_state.players) + 1)
-        self.has_flippeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        for i in range(len(initial_state.players) + 1):
+            if self.has_flippeds[i]:
+                self.fliptimes[i] = 78
+        self.has_flippeds = [False] * 8
         # self.has_doublejumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-        self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
+        # self.flipdirs = [[0] * 2 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
 
         # self.airtimes = np.zeros(
         #     max(p.car_id for p in initial_state.players) + 1)
 
         self.prev_prev_actions = [[0] * 8 for _ in range(max(p.car_id for p in initial_state.players) + 1)]
-        self.is_jumpings = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.is_jumpings = [False] * 8
         # self.has_jumpeds = [False] * (max(p.car_id for p in initial_state.players) + 1)
-        self.on_grounds = [False] * (max(p.car_id for p in initial_state.players) + 1)
+        self.on_grounds = [False] * 8
         for p in initial_state.players:
             self.on_grounds[p.car_id] = p.on_ground
 
