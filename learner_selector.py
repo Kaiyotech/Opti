@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_10.00"
+    run_id = "selector_run_11.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_10.00",
+                        name="Selector_Run_11.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -136,13 +136,15 @@ if __name__ == "__main__":
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
                        Linear(128, action_size + boost_size))
+    #
+    # critic = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
+    #                       shape=shape)
+    #
+    # actor = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor, shape=shape)
+    #
+    # actor = DiscretePolicy(actor, shape=shape)
 
-    critic = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
-                          shape=shape)
-
-    actor = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor, shape=shape)
-
-    actor = DiscretePolicy(actor, shape=shape)
+    actor = DiscretePolicy(actor, (373,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
