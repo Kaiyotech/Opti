@@ -462,7 +462,7 @@ if __name__ == "__main__":
             NoTouchTimeoutCondition
 
     obs_builder = CoyoteObsBuilder(expanding=True, tick_skip=Constants_selector.FRAME_SKIP, team_size=team_size,
-                                   extra_boost_info=True, embed_players=True,
+                                   extra_boost_info=True, embed_players=False,
                                    stack_size=Constants_selector.STACK_SIZE,
                                    action_parser=parser, infinite_boost_odds=infinite_boost_odds, selector=True,
                                    selector_infinite_boost=selector_infinite_boost,
