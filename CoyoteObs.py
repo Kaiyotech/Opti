@@ -136,7 +136,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.action_size = self.default_action.shape[0]
         self.action_parser = action_parser
         if self.action_parser is not None:
-            self.model_action_size = action_parser.get_model_action_size()
+            self.model_action_size = action_parser.get_model_action_size() * 2
         self.env = env
         self.infinite_boost_odds = infinite_boost_odds
         self.infinite_boost_episode = False
@@ -1109,7 +1109,7 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
         self.action_size = self.default_action.shape[0]
         self.action_parser = action_parser
         if self.action_parser is not None:
-            self.model_action_size = action_parser.get_model_action_size()
+            self.model_action_size = action_parser.get_model_action_size() * 2
         self.env = env
         self.infinite_boost_odds = infinite_boost_odds
         self.infinite_boost_episode = False
@@ -1386,6 +1386,7 @@ class CoyoteObsBuilder_Legacy(ObsBuilder):
         stack[:self.action_size] = new_action
 
     def model_add_action_to_stack(self, new_action: np.ndarray, car_id: int):
+        return NotImplemented
         stack = self.model_action_stacks[car_id]
         stack.pop(-1)
         stack.insert(0, new_action[0] / self.model_action_size)

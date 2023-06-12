@@ -5,7 +5,7 @@ from torch.nn import Linear, Sequential, LeakyReLU
 
 from redis import Redis
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
-from agent import OptiSelector
+from agent import OptiSelector, Opti
 from rocket_learn.agent.discrete_policy import DiscretePolicy
 from rocket_learn.ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_12.00"
+    run_id = "selector_run_test12.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_12.00",
+                        name="Selector_Run_test12.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -126,23 +126,23 @@ if __name__ == "__main__":
                                         max_age=1,
                                         )
     action_size = 35
-    input_size = 430 + (Constants_selector.STACK_SIZE * action_size)
     boost_size = 2
-    shape = (action_size, boost_size)
+    input_size = 430 + (Constants_selector.STACK_SIZE * (action_size * boost_size))
+    # shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
                         Linear(256, 1))
 
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, action_size + boost_size))
+                       Linear(128, action_size * boost_size))
 
-    critic = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
-                          shape=shape)
+    critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
+                          )
 
-    actor = OptiSelector(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor, shape=shape)
+    actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=shape)
+    actor = DiscretePolicy(actor, shape=(action_size * boost_size,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
@@ -175,6 +175,6 @@ if __name__ == "__main__":
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
 
-    # alg.freeze_policy(1250)
+    alg.freeze_policy(1250)
 
     alg.run(iterations_per_save=logger.config.save_every, save_dir="Selector_saves")

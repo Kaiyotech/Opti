@@ -524,6 +524,7 @@ if __name__ == "__main__":
                                 step_size=Constants_selector.STEP_SIZE,
                                 selector_skip_k=0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
                                 unlock_selector_indices=simple_actions,
+                                parser_boost_split=parser.get_model_action_size(),
                                 )
 
     worker.env._match._obs_builder.env = worker.env
