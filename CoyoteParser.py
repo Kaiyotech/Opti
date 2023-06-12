@@ -669,8 +669,10 @@ class SelectorParser(ActionParser):
         for i, action in enumerate(actions):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
-            zero_boost = bool(action[1])  # boost action 1 means no boost usage
             action = int(action[0])  # change ndarray [0.] to 0
+            zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
+            if action >= self.get_model_action_size():
+                action -= self.get_model_action_size()
 
             # run timers for stateful obs for flips and such
             player = state.players[i]
