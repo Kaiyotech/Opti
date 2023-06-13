@@ -51,10 +51,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "wall_run0.02"
+    run_id = "wall_run0.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Wall_Run0.02",
+                        name="Wall_Run0.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                                                               goal_w=10,
                                                               velocity_bg_w=0.1,
                                                               velocity_pb_w=0.02,
-                                                              acel_ball_w=2,
+                                                              acel_ball_w=0.5,
                                                               jump_touch_w=1,
                                                               wall_touch_w=1,
                                                               touch_ball_w=0.2,
@@ -93,6 +93,7 @@ if __name__ == "__main__":
                                                               boost_spend_w=-0.5,
                                                               punish_boost=True,
                                                               pun_rew_ball_height_w=0.05,
+                                                              punish_backboard_pinch_w=-2,
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,

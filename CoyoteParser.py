@@ -17,6 +17,9 @@ class CoyoteAction(ActionParser):
     def __init__(self, version=None):
         super().__init__()
         self._lookup_table = self.make_lookup_table(version)
+        # # TODO: remove this
+        # self.angle = 0
+        # self.counter = 0
 
     @staticmethod
     def make_lookup_table(version):
@@ -87,7 +90,7 @@ class CoyoteAction(ActionParser):
                             actions.append(
                                 [throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
             # Aerial
-            for pitch in (-0.85, -0.84, -0.83, 0, 0.83, 0.84, 0.85):
+            for pitch in (-0.75, -0.75, -0.75, -0.75, -0.75, -0.75, -0.75):
                 for yaw in (0, 0, 0, 0, 0, 0, 0):
                     for roll in (0, 0, 0):
                         for jump in (0, 1):
@@ -178,12 +181,17 @@ class CoyoteAction(ActionParser):
                 parsed_actions.append(action)
             else:
                 parsed_actions.append(action)
-
+        # # TODO: remove this
+        # self.counter += 1
+        # if self.counter % 2:
+        #     return np.array(
+        #         [np.array([0., 0., 0, 0., 0., 0., 0., 0.]), np.array([0., 0., 0, 0., 0., 0., 0., 0.])])
+        # else:
+        #     return np.array([np.array([0., 0., self.angle, 0., 0., 1., 0., 0.]), np.array([0., 0., self.angle, 0., 0., 1., 0., 0.])])
         return np.asarray(parsed_actions)
 
 
 def override_state(player, state, position_index) -> GameState:
-
     return NotImplemented
     # takes the player and state and returns a new state based on the position index
     # which mocks specific values such as ball position, nearest opponent position, etc.
@@ -441,7 +449,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
-            fwd = fwd /(np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
+            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
             # distance of length to keep 45 degrees until ceiling/ground
             y_pos = (0.707 * length * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -3900, 3900)
@@ -534,17 +542,21 @@ class SelectorParser(ActionParser):
             (SubAgent("gp_jit.pt"),
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("aerial_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                                     mask_aerial_opp=True)),
             (SubAgent("flick_1_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("flick_2_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("flipreset_1_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                                     mask_aerial_opp=True)),
             (SubAgent("flipreset_2_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                                     mask_aerial_opp=True)),
             (SubAgent("flipreset_3_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False, mask_aerial_opp=True)),
+             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
+                                     mask_aerial_opp=True)),
             (SubAgent("pinch_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
             (SubAgent("recovery_jit.pt"),  # 10 straight +y
@@ -633,7 +645,7 @@ class SelectorParser(ActionParser):
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True)),
             # 32 is turn left with throttle, 33 is straight with throttle, 34 is right
-            ]
+        ]
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None
         # self.prev_model = None
