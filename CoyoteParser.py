@@ -150,6 +150,7 @@ class CoyoteAction(ActionParser):
         return len(self._lookup_table)
 
     def parse_actions(self, actions: Any, state: GameState, zero_boost: bool = False) -> np.ndarray:
+
         # hacky pass through to allow multiple types of agent actions while still parsing nectos
 
         # strip out fillers, pass through 8sets, get look up table values, recombine
@@ -189,6 +190,39 @@ class CoyoteAction(ActionParser):
         # else:
         #     return np.array([np.array([0., 0., self.angle, 0., 0., 1., 0., 0.]), np.array([0., 0., self.angle, 0., 0., 1., 0., 0.])])
         return np.asarray(parsed_actions)
+
+
+def mirror_commands(actions):
+    # [throttle, steer, pitch, yaw, roll, jump, boost, handbrake])
+    actions[1] = -actions[1]
+    actions[3] = -actions[3]
+    actions[4] = -actions[4]
+
+
+def mirror_state_over_y(player, state) -> GameState:
+    retstate = copy_state(state)
+    retstate.ball = state.ball
+    retstate.inverted_ball = state.inverted_ball
+
+    # mirror ball and all cars across the y-axis
+    retstate.ball.position[0] = -retstate.ball.position[0]
+    retstate.ball.linear_velocity[0] = -retstate.ball.linear_velocity[0]
+    retstate.inverted_ball.position[0] = -retstate.inverted_ball.position[0]
+    retstate.inverted_ball.linear_velocity[0] = -retstate.inverted_ball.linear_velocity[0]
+    for car in retstate.players:
+        car_position = np.asarray([-car.car_data.position[0], car.car_data.position[1], car.car_data.position[2]])
+        car_linear_velocity = np.asarray([-car.car_data.linear_velocity[0], car.car_data.linear_velocity[1],
+                                          car.car_data.linear_velocity[2]])
+        car_angular_velocity = np.asarray([-car.car_data.angular_velocity[0], -car.car_data.angular_velocity[1],
+                                           car.car_data.angular_velocity[2]])
+        car_rotation = math.quat_to_euler(car.car_data.quaternion)
+        car_rotation = np.asarray([car_rotation[0], -car_rotation[1], car_rotation[2]])
+        new_car_data = PhysicsObject(
+            position=car_position, quaternion=math.rotation_to_quaternion(math.euler_to_rotation(car_rotation)),
+            linear_velocity=car_linear_velocity, angular_velocity=car_angular_velocity)
+        car.car_data = new_car_data
+        car.inverted_car_data = new_car_data
+    return retstate
 
 
 def override_state(player, state, position_index) -> GameState:
@@ -672,16 +706,18 @@ class SelectorParser(ActionParser):
         return len(self.models) + 3  # plus 3 for the left/straight/right
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
-
         # for models in self.models:
         #     models[1].pre_step(state)
         self.obs_info.pre_step(state)
 
         parsed_actions = []
         for i, action in enumerate(actions):
+            mirrored = False
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
+            # TODO remove this testing
+            action = 31
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
@@ -695,9 +731,16 @@ class SelectorParser(ActionParser):
                 steer = action - 33
                 parse_action = np.asarray([1, steer, 0, steer, 0, 0, not zero_boost, 0])
             else:
-                # override state for recovery
+                # override states
 
                 newstate = state
+                # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
+                if action == 31:
+                    if (player.team_num == 0 and player.car_data.position[0] < 0) or \
+                            (player.team_num == 1 and player.car_data.position[0] > 0):
+                        newstate = mirror_state_over_y(player, state)
+                        mirrored = True
+
                 # 21, 24 are actual ball, just override player
                 if 10 <= action <= 28:
                     newstate = override_abs_state(player, state, action)
@@ -719,6 +762,8 @@ class SelectorParser(ActionParser):
                 obs = self.models[action][1].build_obs(
                     player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost, n_override=i)
                 parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
+                if mirrored:
+                    mirror_commands(parse_action)
 
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
