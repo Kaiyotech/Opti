@@ -471,6 +471,7 @@ if __name__ == "__main__":
                                    )
 
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
+    # setter = CoyoteSetter(mode="test_mirror", dtap_dict=dtap_status)
 
     terminals = [GoalScoredCondition(),
                  TimeoutCondition(fps * 30),
