@@ -226,9 +226,13 @@ def mirror_commands(actions):
 
 def mirror_physics_object_over_y(o: PhysicsObject, mirror_indices):
     o.position[0] *= -1
-    # o.quaternion[1] *= -1
-    # o.quaternion[3] *= -1
-    o.quaternion *= np.array(mirror_indices)
+    rot = o.rotation_mtx()
+    rot[0][0] *= -1
+    rot[0][1] *= -1
+    rot[0][2] *= -1
+    if not all(np.cross(rot[:,0], rot[:,1]) == rot[:,2]):
+        rot[:,1] *= -1 
+    o.quaternion = math.rotation_to_quaternion(rot)
     o._has_computed_rot_mtx = False
     o._has_computed_euler_angles = False
     o.angular_velocity[0] *= -1
