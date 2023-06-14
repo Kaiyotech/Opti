@@ -769,8 +769,6 @@ class SelectorParser(ActionParser):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
-            # TODO remove this testing
-            action = 22
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
@@ -788,11 +786,11 @@ class SelectorParser(ActionParser):
 
                 newstate = state
                 # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
-                if action == 31:
-                    if (player.team_num == 0 and player.car_data.position[0] < 0) or \
-                            (player.team_num == 1 and player.car_data.position[0] > 0):
-                        newstate = mirror_state_over_y(player, state, self.invert_indices)
-                        mirrored = True
+                # if action == 31:
+                #     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
+                #             (player.team_num == 1 and player.car_data.position[0] > 0):
+                #         newstate = mirror_state_over_y(player, state, self.invert_indices)
+                #         mirrored = True
 
                 # 21, 24 are actual ball, just override player
                 if 10 <= action <= 28:
