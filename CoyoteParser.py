@@ -198,30 +198,24 @@ def mirror_commands(actions):
     actions[3] = -actions[3]
     actions[4] = -actions[4]
 
+def mirror_physics_object_over_y(o: PhysicsObject):
+    o.position[0] *= -1
+    o.quaternion[2] *= -1
+    o.quaternion[3] *= -1
+    o._has_computed_rot_mtx = False
+    o._has_computed_euler_angles = False
+    o.angular_velocity[0] *= -1
+    o.linear_velocity[0] *= -1
 
 def mirror_state_over_y(player, state) -> GameState:
     retstate = copy_state(state)
-    retstate.ball = state.ball
-    retstate.inverted_ball = state.inverted_ball
 
     # mirror ball and all cars across the y-axis
-    retstate.ball.position[0] = -retstate.ball.position[0]
-    retstate.ball.linear_velocity[0] = -retstate.ball.linear_velocity[0]
-    retstate.inverted_ball.position[0] = -retstate.inverted_ball.position[0]
-    retstate.inverted_ball.linear_velocity[0] = -retstate.inverted_ball.linear_velocity[0]
+    mirror_physics_object_over_y(retstate.ball)
+    mirror_physics_object_over_y(retstate.inverted_ball)
     for car in retstate.players:
-        car_position = np.asarray([-car.car_data.position[0], car.car_data.position[1], car.car_data.position[2]])
-        car_linear_velocity = np.asarray([-car.car_data.linear_velocity[0], car.car_data.linear_velocity[1],
-                                          car.car_data.linear_velocity[2]])
-        car_angular_velocity = np.asarray([-car.car_data.angular_velocity[0], -car.car_data.angular_velocity[1],
-                                           car.car_data.angular_velocity[2]])
-        car_rotation = math.quat_to_euler(car.car_data.quaternion)
-        car_rotation = np.asarray([car_rotation[0], -car_rotation[1], car_rotation[2]])
-        new_car_data = PhysicsObject(
-            position=car_position, quaternion=math.rotation_to_quaternion(math.euler_to_rotation(car_rotation)),
-            linear_velocity=car_linear_velocity, angular_velocity=car_angular_velocity)
-        car.car_data = new_car_data
-        car.inverted_car_data = new_car_data
+        mirror_physics_object_over_y(car.car_data)
+        mirror_physics_object_over_y(car.inverted_car_data)
     return retstate
 
 
@@ -317,20 +311,45 @@ def override_state(player, state, position_index) -> GameState:
         retstate.players[i].inverted_car_data.position = oppo_pos
     return retstate
 
+def copy_physics_object(o: PhysicsObject) -> PhysicsObject:
+    retobj = PhysicsObject()
+    retobj.position = o.position.copy()
+    retobj.quaternion = o.quaternion.copy()
+    retobj.angular_velocity = o.angular_velocity.copy()
+    retobj.linear_velocity = o.linear_velocity.copy()
+    return retobj
 
-def copy_state(state) -> GameState:
-    # quickly copy state
+def copy_player(p: PlayerData) -> PlayerData:
+    retplayer = PlayerData()
+    retplayer.car_id = p.car_id
+    retplayer.team_num = p.team_num
+    retplayer.match_goals = p.match_goals
+    retplayer.match_saves = p.match_saves
+    retplayer.match_shots = p.match_shots
+    retplayer.match_demolishes = p.match_demolishes
+    retplayer.boost_pickups = p.boost_pickups
+    retplayer.is_demoed = p.is_demoed
+    retplayer.on_ground = p.on_ground
+    retplayer.ball_touched = p.ball_touched
+    retplayer.has_jump = p.has_jump
+    retplayer.has_flip = p.has_flip
+    retplayer.boost_amount = p.boost_amount
+    retplayer.car_data = copy_physics_object(p.car_data)
+    retplayer.inverted_car_data = copy_physics_object(p.inverted_car_data)
+
+def copy_state(state: GameState) -> GameState:
     retstate = GameState()
-    retstate.ball.quaternion = state.ball.quaternion.copy()
-    retstate.inverted_ball.quaternion = state.inverted_ball.quaternion.copy()
 
+    retstate.game_type = state.game_type
     retstate.blue_score = state.blue_score
     retstate.orange_score = state.orange_score
-
-    retstate.boost_pads = state.boost_pads
-    retstate.inverted_boost_pads = state.inverted_boost_pads
-    retstate.game_type = state.game_type
     retstate.last_touch = state.last_touch
+
+    retstate.ball = copy_physics_object(state.ball)
+    retstate.inverted_ball = copy_physics_object(state.inverted_ball)
+
+    retstate.boost_pads = state.boost_pads.copy()
+    retstate.inverted_boost_pads = state.inverted_boost_pads.copy()
 
     for i in range(0, len(state.players)):
         player = PlayerData()
