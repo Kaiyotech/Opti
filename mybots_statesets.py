@@ -878,6 +878,15 @@ class LixSetter(StateSetter):
         state_wrapper.ball.set_ang_vel(0, 0, 0)
 
 
+class TestMirror(StateSetter):
+    def __init__(self):
+        self.rng = np.random.default_rng()
+
+    def reset(self, state_wrapper: StateWrapper):
+        state_wrapper.cars[0].set_pos(*[-2048, -2560, 17])
+        state_wrapper.cars[1].set_pos(*[2048, 2560, 17])
+        state_wrapper.ball.set_pos(self.rng.choice([-1, 1]) * 0)
+
 def mirror(car: CarWrapper, ball_x, ball_y):
     my_car = namedtuple('my_car', 'pos lin_vel rot ang_vel')
     if ball_x == ball_y == 0:

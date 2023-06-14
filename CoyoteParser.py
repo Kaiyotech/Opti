@@ -192,30 +192,58 @@ class CoyoteAction(ActionParser):
         return np.asarray(parsed_actions)
 
 
+def speedflip_override(player, state, shift=None, ball_pos=None):
+    # we want ball on y = 0. Shift all cars and ball such that ball lands on y = 0. No need to mirror, just shift.
+    # Then, if blue ends up on orange side, flip it all over the y axis since blue is used to being on blue for
+    # halfflip and speedflip
+
+    retstate = copy_state(state)
+    if shift is None:
+        shift = retstate.ball.position[1]
+    if ball_pos is None:
+        retstate.ball.position[1] -= shift
+        retstate.inverted_ball.position[1] += shift
+    else:
+        retstate.ball.position = ball_pos
+        retstate.inverted_ball.position = ball_pos
+    for car in retstate.players:
+        car.car_data.position[1] -= shift
+        if car.car_id == player.car_id:
+            car_y = car.inverted_car_data.position[1] if player.team_num else car.car_data.position[1]
+            if car_y > 0:
+                temp = copy.deepcopy(car.car_data)
+                car.car_data = copy.deepcopy(car.inverted_car_data)
+                car.inverted_car_data = copy.deepcopy(temp)
+    return retstate, shift
+
+
 def mirror_commands(actions):
     # [throttle, steer, pitch, yaw, roll, jump, boost, handbrake])
     actions[1] = -actions[1]
     actions[3] = -actions[3]
     actions[4] = -actions[4]
 
-def mirror_physics_object_over_y(o: PhysicsObject):
+
+def mirror_physics_object_over_y(o: PhysicsObject, mirror_indices):
     o.position[0] *= -1
-    o.quaternion[2] *= -1
-    o.quaternion[3] *= -1
+    # o.quaternion[1] *= -1
+    # o.quaternion[3] *= -1
+    o.quaternion *= np.array(mirror_indices)
     o._has_computed_rot_mtx = False
     o._has_computed_euler_angles = False
     o.angular_velocity[0] *= -1
     o.linear_velocity[0] *= -1
 
-def mirror_state_over_y(player, state) -> GameState:
+
+def mirror_state_over_y(player, state, mirror_indices) -> GameState:
     retstate = copy_state(state)
 
     # mirror ball and all cars across the y-axis
-    mirror_physics_object_over_y(retstate.ball)
-    mirror_physics_object_over_y(retstate.inverted_ball)
+    mirror_physics_object_over_y(retstate.ball, mirror_indices)
+    mirror_physics_object_over_y(retstate.inverted_ball, mirror_indices)
     for car in retstate.players:
-        mirror_physics_object_over_y(car.car_data)
-        mirror_physics_object_over_y(car.inverted_car_data)
+        mirror_physics_object_over_y(car.car_data, mirror_indices)
+        mirror_physics_object_over_y(car.inverted_car_data, mirror_indices)
     return retstate
 
 
@@ -311,6 +339,7 @@ def override_state(player, state, position_index) -> GameState:
         retstate.players[i].inverted_car_data.position = oppo_pos
     return retstate
 
+
 def copy_physics_object(o: PhysicsObject) -> PhysicsObject:
     retobj = PhysicsObject()
     retobj.position = o.position.copy()
@@ -318,6 +347,7 @@ def copy_physics_object(o: PhysicsObject) -> PhysicsObject:
     retobj.angular_velocity = o.angular_velocity.copy()
     retobj.linear_velocity = o.linear_velocity.copy()
     return retobj
+
 
 def copy_player(p: PlayerData) -> PlayerData:
     retplayer = PlayerData()
@@ -336,6 +366,7 @@ def copy_player(p: PlayerData) -> PlayerData:
     retplayer.boost_amount = p.boost_amount
     retplayer.car_data = copy_physics_object(p.car_data)
     retplayer.inverted_car_data = copy_physics_object(p.inverted_car_data)
+
 
 def copy_state(state: GameState) -> GameState:
     retstate = GameState()
@@ -574,6 +605,8 @@ class SelectorParser(ActionParser):
         #     from rlgym_sim.utils.gamestates import GameState
         # else:
         #     from rlgym.utils.gamestates import GameState
+        # TODO testing remove this
+        self.invert_indices = [-1, -1, 1, 1]
 
         from submodels.submodel_agent import SubAgent
         from Constants_selector import SUB_MODEL_NAMES
@@ -583,6 +616,7 @@ class SelectorParser(ActionParser):
         ]
         self.selection_listener = None
         self.ball_position = np.zeros([6, 3])
+        self.ball_shift_y = np.zeros(6)
         # self.obs_output = obs_output
         self.obs_info = obs_info
         self.force_selector_choice = None
@@ -736,7 +770,7 @@ class SelectorParser(ActionParser):
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
             # TODO remove this testing
-            action = 31
+            action = 22
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
@@ -757,7 +791,7 @@ class SelectorParser(ActionParser):
                 if action == 31:
                     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
                             (player.team_num == 1 and player.car_data.position[0] > 0):
-                        newstate = mirror_state_over_y(player, state)
+                        newstate = mirror_state_over_y(player, state, self.invert_indices)
                         mirrored = True
 
                 # 21, 24 are actual ball, just override player
@@ -773,9 +807,13 @@ class SelectorParser(ActionParser):
 
                 if 22 <= action <= 23:  # freeze
                     if self.prev_model_actions[i] == action:  # action didn't change
-                        newstate = override_abs_state(player, state, action, self.ball_position[i])
+                       # newstate, self.ball_shift_y[i] = speedflip_override(player, state,
+                       #                                                      ball_pos=self.ball_position[i],
+                       #                                                      shift=self.ball_shift_y[i])
+                        newstate = override_abs_state(player, newstate, action, self.ball_position[i])
                     else:  # action submodel changed or reaching the objective
-                        newstate = override_abs_state(player, state, action)
+                        # newstate, self.ball_shift_y[i] = speedflip_override(player, state)
+                        newstate = override_abs_state(player, newstate, action)
                         self.ball_position[i] = state.ball.position  # save new position
 
                 obs = self.models[action][1].build_obs(
