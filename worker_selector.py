@@ -366,7 +366,8 @@ if __name__ == "__main__":
     infinite_boost_odds = 0.2
     host = "127.0.0.1"
     non_latest_version_prob = [1, 0, 0, 0]
-    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
+    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
+    # gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     simulator = True
     visualize = False
     batch_mode = True
@@ -469,7 +470,7 @@ if __name__ == "__main__":
                                    doubletap_indicator=True,
                                    dtap_dict=dtap_status,
                                    )
-
+    # TODO fix testing
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
     # setter = CoyoteSetter(mode="test_mirror", dtap_dict=dtap_status)
 

@@ -224,14 +224,14 @@ def mirror_commands(actions):
     actions[4] = -actions[4]
 
 
-def mirror_physics_object_over_y(o: PhysicsObject, mirror_indices):
+def mirror_physics_object_over_y(o: PhysicsObject):
     o.position[0] *= -1
     rot = o.rotation_mtx()
     rot[0][0] *= -1
     rot[0][1] *= -1
     rot[0][2] *= -1
-    if not all(np.cross(rot[:,0], rot[:,1]) == rot[:,2]):
-        rot[:,1] *= -1 
+    if not all(np.cross(rot[:, 0], rot[:, 1]) == rot[:, 2]):
+        rot[:, 1] *= -1
     o.quaternion = math.rotation_to_quaternion(rot)
     o._has_computed_rot_mtx = False
     o._has_computed_euler_angles = False
@@ -239,15 +239,15 @@ def mirror_physics_object_over_y(o: PhysicsObject, mirror_indices):
     o.linear_velocity[0] *= -1
 
 
-def mirror_state_over_y(player, state, mirror_indices) -> GameState:
+def mirror_state_over_y(player, state) -> GameState:
     retstate = copy_state(state)
 
     # mirror ball and all cars across the y-axis
-    mirror_physics_object_over_y(retstate.ball, mirror_indices)
-    mirror_physics_object_over_y(retstate.inverted_ball, mirror_indices)
+    mirror_physics_object_over_y(retstate.ball)
+    mirror_physics_object_over_y(retstate.inverted_ball)
     for car in retstate.players:
-        mirror_physics_object_over_y(car.car_data, mirror_indices)
-        mirror_physics_object_over_y(car.inverted_car_data, mirror_indices)
+        mirror_physics_object_over_y(car.car_data)
+        mirror_physics_object_over_y(car.inverted_car_data)
     return retstate
 
 
@@ -610,7 +610,7 @@ class SelectorParser(ActionParser):
         # else:
         #     from rlgym.utils.gamestates import GameState
         # TODO testing remove this
-        self.invert_indices = [-1, -1, 1, 1]
+        # self.invert_indices = [-1, -1, 1, 1]
 
         from submodels.submodel_agent import SubAgent
         from Constants_selector import SUB_MODEL_NAMES
@@ -773,6 +773,7 @@ class SelectorParser(ActionParser):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
+            # action = 31  # TODO testing remove this
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
@@ -793,7 +794,7 @@ class SelectorParser(ActionParser):
                 # if action == 31:
                 #     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
                 #             (player.team_num == 1 and player.car_data.position[0] > 0):
-                #         newstate = mirror_state_over_y(player, state, self.invert_indices)
+                #         newstate = mirror_state_over_y(player, state)
                 #         mirrored = True
 
                 # 21, 24 are actual ball, just override player
@@ -809,9 +810,9 @@ class SelectorParser(ActionParser):
 
                 if 22 <= action <= 23:  # freeze
                     if self.prev_model_actions[i] == action:  # action didn't change
-                       # newstate, self.ball_shift_y[i] = speedflip_override(player, state,
-                       #                                                      ball_pos=self.ball_position[i],
-                       #                                                      shift=self.ball_shift_y[i])
+                        # newstate, self.ball_shift_y[i] = speedflip_override(player, state,
+                        #                                                      ball_pos=self.ball_position[i],
+                        #                                                      shift=self.ball_shift_y[i])
                         newstate = override_abs_state(player, newstate, action, self.ball_position[i])
                     else:  # action submodel changed or reaching the objective
                         # newstate, self.ball_shift_y[i] = speedflip_override(player, state)
