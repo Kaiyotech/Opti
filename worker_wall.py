@@ -26,11 +26,12 @@ if __name__ == "__main__":
 
     rew = ZeroSumReward(zero_sum=Constants_wall.ZERO_SUM,
                         concede_w=-10,
-                        goal_w=10,
+                        goal_w=0,
+                        aerial_goal_w=10,
                         velocity_bg_w=0.3,
                         velocity_pb_w=0.002,
                         acel_ball_w=2,
-                        jump_touch_w=0.1,
+                        jump_touch_w=0.15,
                         wall_touch_w=0.5,
                         touch_ball_w=0,
                         tick_skip=Constants_wall.FRAME_SKIP,
@@ -38,7 +39,7 @@ if __name__ == "__main__":
                         boost_gain_w=2,
                         boost_spend_w=-4,
                         punish_boost=True,
-                        pun_rew_ball_height_w=0.002,
+                        pun_rew_ball_height_w=0.004,
                         dribble_w=-0.1,
                         punish_backboard_pinch_w=-4,
                         )
