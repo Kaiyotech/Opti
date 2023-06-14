@@ -235,7 +235,8 @@ def mirror_physics_object_over_y(o: PhysicsObject):
     o.quaternion = math.rotation_to_quaternion(rot)
     o._has_computed_rot_mtx = False
     o._has_computed_euler_angles = False
-    o.angular_velocity[0] *= -1
+    o.angular_velocity[1] *= -1
+    o.angular_velocity[2] *= -1
     o.linear_velocity[0] *= -1
 
 
