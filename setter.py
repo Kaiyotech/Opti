@@ -11,7 +11,7 @@ from rlgym_tools.extra_state_setters.weighted_sample_setter import WeightedSampl
 from rlgym_tools.extra_state_setters.augment_setter import AugmentSetter
 
 from mybots_statesets import GroundAirDribble, WallDribble, HalfFlip, Walldash, Wavedash, \
-    Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter, LixSetter
+    Curvedash, Chaindash, RandomEvenRecovery, RecoverySetter, LixSetter, TestMirror
 
 
 class CoyoteSetter(DynamicGMSetter):
@@ -317,6 +317,10 @@ class CoyoteSetter(DynamicGMSetter):
                 #         (0.75, 0.15, 0.1)
                 #     )
                 # )
+
+        elif mode == "test_mirror":
+            for i in range(3):
+                self.setters.append(TestMirror())
 
     def reset(self, state_wrapper: StateWrapper):
         # if self.end_object_choice is not None and self.end_object_choice == "random":
