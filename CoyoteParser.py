@@ -240,7 +240,7 @@ def mirror_physics_object_over_y(o: PhysicsObject):
     o.linear_velocity[0] *= -1
 
 
-def mirror_state_over_y(player, state) -> GameState:
+def mirror_state_over_y(state) -> GameState:
     retstate = copy_state(state)
 
     # mirror ball and all cars across the y-axis
@@ -387,34 +387,8 @@ def copy_state(state: GameState) -> GameState:
     retstate.boost_pads = state.boost_pads.copy()
     retstate.inverted_boost_pads = state.inverted_boost_pads.copy()
 
-    for i in range(0, len(state.players)):
-        player = PlayerData()
-        player.ball_touched = state.players[i].ball_touched
-        player.boost_amount = state.players[i].boost_amount
-        player.boost_pickups = state.players[i].boost_pickups
-
-        player.car_data.angular_velocity = state.players[i].car_data.angular_velocity.copy()
-        player.car_data.linear_velocity = state.players[i].car_data.linear_velocity.copy()
-        player.car_data.position = state.players[i].car_data.position.copy()
-        player.car_data.quaternion = state.players[i].car_data.quaternion.copy()
-
-        player.inverted_car_data.angular_velocity = state.players[i].inverted_car_data.angular_velocity.copy()
-        player.inverted_car_data.linear_velocity = state.players[i].inverted_car_data.linear_velocity.copy()
-        player.inverted_car_data.position = state.players[i].inverted_car_data.position.copy()
-        player.inverted_car_data.quaternion = state.players[i].inverted_car_data.quaternion.copy()
-
-        player.car_id = state.players[i].car_id
-        player.has_flip = state.players[i].has_flip
-        player.has_jump = state.players[i].has_jump
-        player.is_demoed = state.players[i].is_demoed
-        player.match_demolishes = state.players[i].match_demolishes
-        player.match_goals = state.players[i].match_goals
-        player.match_saves = state.players[i].match_saves
-        player.match_shots = state.players[i].match_shots
-        player.on_ground = state.players[i].on_ground
-        player.team_num = state.players[i].team_num
-
-        retstate.players.append(player)
+    for player in state.players:
+        retstate.players.append(copy_player(player))
 
     return retstate
 
@@ -791,11 +765,15 @@ class SelectorParser(ActionParser):
                 # override states
 
                 newstate = state
+                newplayer = player
                 # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
                 # if action == 31:
                 #     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
                 #             (player.team_num == 1 and player.car_data.position[0] > 0):
-                #         newstate = mirror_state_over_y(player, state)
+                #         newstate = mirror_state_over_y(state)
+                #         newplayer = copy_player(player)
+                #         mirror_physics_object_over_y(newplayer.car_data)
+                #         mirror_physics_object_over_y(newplayer.inverted_car_data)
                 #         mirrored = True
 
                 # 21, 24 are actual ball, just override player
@@ -821,7 +799,7 @@ class SelectorParser(ActionParser):
                         self.ball_position[i] = state.ball.position  # save new position
 
                 obs = self.models[action][1].build_obs(
-                    player, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost, n_override=i)
+                    newplayer, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost, n_override=i)
                 parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
                 if mirrored:
                     mirror_commands(parse_action)
