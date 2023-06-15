@@ -214,6 +214,8 @@ def speedflip_override(player, state, shift=None, ball_pos=None):
                 temp = copy.deepcopy(car.car_data)
                 car.car_data = copy.deepcopy(car.inverted_car_data)
                 car.inverted_car_data = copy.deepcopy(temp)
+            player.car_data = copy.deepcopy(car.car_data)
+            player.inverted_car_data = copy.deepcopy(car.inverted_car_data)
     return retstate, shift
 
 
@@ -750,7 +752,7 @@ class SelectorParser(ActionParser):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
-            # action = 31  # TODO testing remove this
+            action = 22  # TODO testing remove this
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
@@ -791,17 +793,20 @@ class SelectorParser(ActionParser):
 
                 if 22 <= action <= 23:  # freeze
                     if self.prev_model_actions[i] == action:  # action didn't change
-                        # newstate, self.ball_shift_y[i] = speedflip_override(player, state,
-                        #                                                      ball_pos=self.ball_position[i],
-                        #                                                      shift=self.ball_shift_y[i])
+                        # newplayer = copy_player(player)
+                        # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state,
+                        #                                                     ball_pos=self.ball_position[i],
+                        #                                                     shift=self.ball_shift_y[i])
                         newstate = override_abs_state(player, newstate, action, self.ball_position[i])
                     else:  # action submodel changed or reaching the objective
-                        # newstate, self.ball_shift_y[i] = speedflip_override(player, state)
+                        # newplayer = copy_player(player)
+                        # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state)
                         newstate = override_abs_state(player, newstate, action)
-                        self.ball_position[i] = state.ball.position  # save new position
+                        self.ball_position[i] = newstate.ball.position  # save new position
 
                 obs = self.models[action][1].build_obs(
-                    newplayer, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost, n_override=i)
+                    newplayer, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost,
+                    n_override=i)
                 parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
                 if mirrored:
                     mirror_commands(parse_action)
