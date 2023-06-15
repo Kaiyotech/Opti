@@ -372,6 +372,8 @@ def copy_player(p: PlayerData) -> PlayerData:
     retplayer.car_data = copy_physics_object(p.car_data)
     retplayer.inverted_car_data = copy_physics_object(p.inverted_car_data)
 
+    return retplayer
+
 
 def copy_state(state: GameState) -> GameState:
     retstate = GameState()
@@ -767,14 +769,14 @@ class SelectorParser(ActionParser):
                 newstate = state
                 newplayer = player
                 # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
-                # if action == 31:
-                #     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
-                #             (player.team_num == 1 and player.car_data.position[0] > 0):
-                #         newstate = mirror_state_over_y(state)
-                #         newplayer = copy_player(player)
-                #         mirror_physics_object_over_y(newplayer.car_data)
-                #         mirror_physics_object_over_y(newplayer.inverted_car_data)
-                #         mirrored = True
+                if action == 31:
+                    if (player.team_num == 0 and player.car_data.position[0] < 0) or \
+                            (player.team_num == 1 and player.car_data.position[0] > 0):
+                        newstate = mirror_state_over_y(state)
+                        newplayer = copy_player(player)
+                        mirror_physics_object_over_y(newplayer.car_data)
+                        mirror_physics_object_over_y(newplayer.inverted_car_data)
+                        mirrored = True
 
                 # 21, 24 are actual ball, just override player
                 if 10 <= action <= 28:
