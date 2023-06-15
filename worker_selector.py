@@ -16,7 +16,7 @@ from rewards import ZeroSumReward
 from torch import set_num_threads
 from selection_listener import SelectionListener
 from setter import CoyoteSetter
-from mybots_statesets import EndKickoff
+from mybots_statesets import EndKickoff, HalfFlip
 import Constants_selector
 import numpy as np
 import collections
@@ -475,6 +475,7 @@ if __name__ == "__main__":
     # TODO fix testing
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
     # setter = CoyoteSetter(mode="test_mirror", dtap_dict=dtap_status)
+    # setter = HalfFlip()
 
     terminals = [GoalScoredCondition(),
                  TimeoutCondition(fps * 30),
@@ -529,6 +530,7 @@ if __name__ == "__main__":
                                 selector_skip_k=selector_skip_k, # 0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
                                 unlock_selector_indices=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
+                                # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
     worker.env._match._obs_builder.env = worker.env
