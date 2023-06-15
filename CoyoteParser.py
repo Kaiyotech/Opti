@@ -752,7 +752,7 @@ class SelectorParser(ActionParser):
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
-            action = 22  # TODO testing remove this
+            # action = 22  # TODO testing remove this
             zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             if action >= self.get_model_action_size():
                 action -= self.get_model_action_size()
