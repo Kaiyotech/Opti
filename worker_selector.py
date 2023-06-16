@@ -344,7 +344,7 @@ if __name__ == "__main__":
                    "hit_towards_goal": False,
                    }
 
-    simple_actions = [32, 33, 34]
+    simple_actions = [32, 33, 34, 64, 66, 68]
 
     selector_infinite_boost = {"infinite_boost": False}
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
