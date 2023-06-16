@@ -526,7 +526,8 @@ if __name__ == "__main__":
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
                                 selector_skip_k=0.0004,  # 0.0004 is 2 seconds, 0.0073 is half second
-                                unlock_selector_indices=simple_actions,
+                                # unlock_selector_indices=simple_actions,
+                                unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
                                 # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
