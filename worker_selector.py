@@ -363,7 +363,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0.2
+    infinite_boost_odds = 0
     host = "127.0.0.1"
     non_latest_version_prob = [1, 0, 0, 0]
     gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
@@ -411,7 +411,7 @@ if __name__ == "__main__":
                   username="user1",
                   password=os.environ["redis_user1_key"],
                   retry_on_error=[ConnectionError, TimeoutError],
-                  retry=Retry(ExponentialBackoff(cap=10, base=1), 25),
+                  retry=Retry(ExponentialBackoff(cap=20, base=1.5), 25),
                   db=Constants_selector.DB_NUM,
                   )
 
@@ -423,7 +423,7 @@ if __name__ == "__main__":
         evaluation_prob = 0
         game_speed = 1
         auto_minimize = False
-        infinite_boost_odds = 0.2
+        infinite_boost_odds = 0
         simulator = False
         past_version_prob = 0
         # selector_skip_k = 5e-7
@@ -478,7 +478,8 @@ if __name__ == "__main__":
     # setter = HalfFlip()
 
     terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 30),
+                 TimeoutCondition(fps * 300),
+                 NoTouchTimeoutCondition(fps * 30),
                  ]
 
     match = Match(
