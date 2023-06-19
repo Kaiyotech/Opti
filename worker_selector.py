@@ -337,6 +337,12 @@ if __name__ == "__main__":
                         velocity_bg_w=0.01,
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
+                        boost_gain_w=0.15,
+                        punish_boost=True,
+                        use_boost_punish_formula=False,
+                        boost_spend_w=-0.3,
+                        boost_gain_small_w=0.15,
+                        punish_low_boost_w=-0.02,
                         )
     # obs_output = np.zeros()
     dtap_status = {"hit_towards_bb": False,
@@ -363,7 +369,7 @@ if __name__ == "__main__":
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
-    infinite_boost_odds = 0
+    infinite_boost_odds = 0.2
     host = "127.0.0.1"
     non_latest_version_prob = [1, 0, 0, 0]
     gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
@@ -529,6 +535,7 @@ if __name__ == "__main__":
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
                                 selector_skip_k=0.00005,  # 0.0004 is 2 seconds, 0.0073 is half second
+                                selector_boost_skip_k=0.0004,
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
