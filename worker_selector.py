@@ -540,6 +540,7 @@ if __name__ == "__main__":
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
                                 initial_choice_block_indices=[2, 37],
+                                initial_choice_block_weight=0.5,
                                 # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
