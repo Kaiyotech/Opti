@@ -343,6 +343,8 @@ if __name__ == "__main__":
                         boost_spend_w=-0.3,
                         boost_gain_small_w=0.15,
                         punish_low_boost_w=-0.02,
+                        cancel_jump_touch_indices=[2, 37],
+                        cancel_wall_touch_indices=[2, 37],
                         )
     # obs_output = np.zeros()
     dtap_status = {"hit_towards_bb": False,
@@ -350,7 +352,7 @@ if __name__ == "__main__":
                    "hit_towards_goal": False,
                    }
 
-    simple_actions = [32, 33, 34, 64, 66, 68]
+    simple_actions = [32, 33, 34, 67, 68, 69]
 
     selector_infinite_boost = {"infinite_boost": False}
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
@@ -537,6 +539,7 @@ if __name__ == "__main__":
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
+                                initial_choice_block_indices=[2, 37],
                                 # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
