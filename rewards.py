@@ -143,7 +143,13 @@ class ZeroSumReward(RewardFunction):
             dtap_helper_2_w=0,
             trajectory_intersection_distance_w=0,
             pun_rew_ball_height_w=0,
+            cancel_jump_touch_indices=None,
+            cancel_wall_touch_indices=None,
     ):
+        self.cancel_wall_touch_indices = cancel_wall_touch_indices
+        self.cancel_jump_touch_indices = cancel_jump_touch_indices
+        self.jump_rewards = [0] * 6
+        self.wall_rewards = [0] * 6
         self.pun_rew_ball_height_w = pun_rew_ball_height_w
         self.trajectory_intersection_distance_w = trajectory_intersection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
@@ -383,16 +389,20 @@ class ZeroSumReward(RewardFunction):
                     # wall_multiplier = x_from_wall / 20
                     # if fancy dtap, only give a single aerial touch reward
                     # if not self.fancy_dtap or (self.fancy_dtap and not self.dtap_dict["hit_towards_bb"]):
-                    player_rewards[i] += self.jump_touch_w * (
+                    jump_reward = self.jump_touch_w * (
                         (state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
+                    self.jump_rewards[i] = jump_reward
+                    player_rewards[i] += jump_reward
 
                 # wall touch
                 min_height = 500
                 if player.on_ground and state.ball.position[2] > min_height:
                     coef_1 = 0.5 if self.flatten_wall_height else 0
                     coef_2 = 1.5 if self.flatten_wall_height else 1
-                    player_self_rewards[i] += self.wall_touch_w * (coef_1 + state.ball.position[2] - min_height) / \
+                    wall_reward = self.wall_touch_w * (coef_1 + state.ball.position[2] - min_height) / \
                         (coef_2 * rnge)
+                    self.wall_rewards[i] = wall_reward
+                    player_self_rewards[i] += wall_reward
 
                 # ground/kuxir/team pinch training
                 if state.ball.position[2] < 250:
@@ -926,6 +936,13 @@ class ZeroSumReward(RewardFunction):
         if self.jump_high_speed_w != 0 and previous_action[5] == 1:
             if np.linalg.norm(player.car_data.linear_velocity) > (0.99 * CAR_MAX_SPEED):
                 rew += self.jump_high_speed_w
+
+        # cancel jump and wall rewards
+        div = 2 if self.zero_sum else 1
+        if self.cancel_wall_touch_indices is not None and previous_model_action in self.cancel_wall_touch_indices:
+            rew -= self.wall_rewards[self.n] / div
+        if self.cancel_jump_touch_indices is not None and previous_model_action in self.cancel_jump_touch_indices:
+            rew -= self.jump_rewards[self.n] / div
         
         # #  TODO remove this
         # if np.isinf(rew).any():
