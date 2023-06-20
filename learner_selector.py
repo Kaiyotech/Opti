@@ -43,7 +43,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-4,
+        actor_lr=0, # 1e-4,
         critic_lr=1e-4,
         n_steps=Constants_selector.STEP_SIZE,
         batch_size=100_000,
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_15.00"
+    run_id = "selector_run_16.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_15.00",
+                        name="Selector_Run_16.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -102,16 +102,16 @@ if __name__ == "__main__":
                                                               team_spirit=1,
                                                               punish_action_change_w=0,
                                                               decay_punish_action_change_w=0,
-                                                              flip_reset_w=2,
-                                                              flip_reset_goal_w=5,
-                                                              aerial_goal_w=2,
-                                                              double_tap_w=4,
-                                                              cons_air_touches_w=0.2,
+                                                              flip_reset_w=3,
+                                                              flip_reset_goal_w=6,
+                                                              aerial_goal_w=3,
+                                                              double_tap_w=6,
+                                                              cons_air_touches_w=0.1,
                                                               jump_touch_w=1,
-                                                              wall_touch_w=2.5,
+                                                              wall_touch_w=1,
                                                               exit_velocity_w=1,
-                                                              acel_ball_w=0.5,
-                                                              velocity_pb_w=0.005,
+                                                              acel_ball_w=1,
+                                                              velocity_pb_w=0,  # 0.005,
                                                               velocity_bg_w=0.01,
                                                               kickoff_w=0.05,
                                                               punish_dist_goal_score_w=-1,
@@ -121,8 +121,8 @@ if __name__ == "__main__":
                                                               boost_spend_w=-0.3,
                                                               boost_gain_small_w=0.15,
                                                               punish_low_boost_w=-0.02,
-                                                              cancel_jump_touch_indices=[2, 37],
-                                                              cancel_wall_touch_indices=[2, 37],
+                                                              # cancel_jump_touch_indices=[2, 37],
+                                                              # cancel_wall_touch_indices=[2, 37],
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
