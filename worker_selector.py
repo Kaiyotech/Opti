@@ -340,9 +340,9 @@ if __name__ == "__main__":
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
                         boost_gain_w=0.15,
-                        punish_boost=False,
+                        punish_boost=True,
                         use_boost_punish_formula=False,
-                        # boost_spend_w=-0.3,
+                        boost_spend_w=-0.1,
                         boost_gain_small_w=0.15,
                         punish_low_boost_w=-0.02,
                         # cancel_jump_touch_indices=[2, 37],
@@ -535,7 +535,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.00007,  # 5 seconds
+                                selector_skip_k=0.0004,  # 5 seconds
                                 selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
