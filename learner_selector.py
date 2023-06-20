@@ -43,7 +43,7 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=0, # 1e-4,
+        actor_lr=1e-4,
         critic_lr=1e-4,
         n_steps=Constants_selector.STEP_SIZE,
         batch_size=100_000,
@@ -100,6 +100,8 @@ if __name__ == "__main__":
                                                               goal_w=5,
                                                               concede_w=-5,
                                                               team_spirit=1,
+                                                              demo_w=2,
+                                                              got_demoed_w=-2,
                                                               punish_action_change_w=0,
                                                               decay_punish_action_change_w=0,
                                                               flip_reset_w=3,
