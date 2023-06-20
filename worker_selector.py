@@ -343,8 +343,8 @@ if __name__ == "__main__":
                         boost_spend_w=-0.3,
                         boost_gain_small_w=0.15,
                         punish_low_boost_w=-0.02,
-                        cancel_jump_touch_indices=[2, 37],
-                        cancel_wall_touch_indices=[2, 37],
+                        # cancel_jump_touch_indices=[2, 37],
+                        # cancel_wall_touch_indices=[2, 37],
                         )
     # obs_output = np.zeros()
     dtap_status = {"hit_towards_bb": False,
@@ -536,8 +536,8 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.00005,  # 0.0004 is 2 seconds, 0.0073 is half second
-                                selector_boost_skip_k=0.0004,
+                                selector_skip_k=0.0002,
+                                selector_boost_skip_k=0.0008,
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
