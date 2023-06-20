@@ -324,16 +324,16 @@ if __name__ == "__main__":
                         team_spirit=1,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=0,
-                        flip_reset_w=2,
-                        flip_reset_goal_w=5,
-                        aerial_goal_w=2,
-                        double_tap_w=4,
-                        cons_air_touches_w=0.2,
+                        flip_reset_w=3,
+                        flip_reset_goal_w=6,
+                        aerial_goal_w=3,
+                        double_tap_w=6,
+                        cons_air_touches_w=0.1,
                         jump_touch_w=1,
-                        wall_touch_w=2.5,
+                        wall_touch_w=1,
                         exit_velocity_w=1,
-                        acel_ball_w=0.5,
-                        velocity_pb_w=0.005,
+                        acel_ball_w=1,
+                        velocity_pb_w=0,  # 0.005,
                         velocity_bg_w=0.01,
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
@@ -510,7 +510,6 @@ if __name__ == "__main__":
         reward_function=rew,
     )
 
-
     #
     # pretrained_agents = {nectov1: 0.02, nexto: 0.02, kbb: 0.02, gp: 0}
     # # pretrained_agents = {nectov1: 0.1, nexto: 0.1, kbb: 0.1, gp: 0.1}
@@ -536,13 +535,13 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0002,
-                                selector_boost_skip_k=0.0008,
+                                selector_skip_k=0.00007,  # 5 seconds
+                                selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
-                                initial_choice_block_indices=[2, 37],
-                                initial_choice_block_weight=0.5,
+                                # initial_choice_block_indices=[2, 37],
+                                # initial_choice_block_weight=0.5,
                                 # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
@@ -552,6 +551,7 @@ if __name__ == "__main__":
 
     if simulator and visualize:
         from rocketsimvisualizer import VisualizerThread
+
         arena = worker.env._game.arena  # noqa
         v = VisualizerThread(arena, fps=60, tick_rate=120, tick_skip=frame_skip, step_arena=False,  # noqa
                              overwrite_controls=False)  # noqa
