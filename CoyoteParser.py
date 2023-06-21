@@ -833,7 +833,9 @@ class SelectorParser(ActionParser):
 
 
 def check_terminal_selector(state: GameState, player: PlayerData, check_radius=300) -> bool:
-    if np.linalg.norm(player.car_data.position - state.ball.position) < check_radius:
+    player_position = player.inverted_car_data.position if player.team_num == 1 else player.car_data.position
+    ball_position = state.inverted_ball.position if player.team_num == 1 else state.ball.position
+    if np.linalg.norm(player_position - ball_position) < check_radius:
         return True
     return False
 
