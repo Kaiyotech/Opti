@@ -340,13 +340,13 @@ if __name__ == "__main__":
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
                         boost_gain_w=0.15,
-                        punish_boost=True,
+                        punish_boost=False,
                         use_boost_punish_formula=False,
-                        boost_spend_w=-0.1,
+                        boost_spend_w=0,  # -0.1,
                         boost_gain_small_w=0.15,
                         punish_low_boost_w=-0.02,
-                        # cancel_jump_touch_indices=[2, 37],
-                        # cancel_wall_touch_indices=[2, 37],
+                        cancel_jump_touch_indices=[2, 37],
+                        cancel_wall_touch_indices=[2, 37],
                         )
     # obs_output = np.zeros()
     dtap_status = {"hit_towards_bb": False,
