@@ -373,7 +373,7 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0.01
     past_version_prob = 0
-    deterministic_streamer = False
+    deterministic_streamer = True
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
