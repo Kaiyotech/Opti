@@ -286,6 +286,10 @@ class SelectionDispatcher(SelectionListener):
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
 
+        # delete all stats on startup
+        for key in r.scan_iter("selector_stat*"):
+            r.delete(key)
+
     def _flush_queue(self):
         if len(self.xthread_queue) == 0:
             return

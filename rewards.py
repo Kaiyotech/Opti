@@ -303,6 +303,8 @@ class ZeroSumReward(RewardFunction):
             self.has_jumpeds = [False] * 6
 
     def pre_step(self, state: GameState):
+        self.jump_rewards = [0] * 6
+        self.wall_rewards = [0] * 6
         self.last_state = self.current_state
         self.current_state = state
         self.n = 0
@@ -881,6 +883,8 @@ class ZeroSumReward(RewardFunction):
         self.previous_action = np.asarray([-1] * len(initial_state.players))
         self.last_action_change = np.asarray([0] * len(initial_state.players))
         self.dash_count = [0] * 6
+        self.jump_rewards = [0] * 6
+        self.wall_rewards = [0] * 6
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
