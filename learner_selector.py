@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_16.00"
+    run_id = "selector_run_16.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_16.00",
+                        name="Selector_Run_16.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -118,13 +118,13 @@ if __name__ == "__main__":
                                                               kickoff_w=0.05,
                                                               punish_dist_goal_score_w=-1,
                                                               boost_gain_w=0.15,
-                                                              punish_boost=True,
+                                                              punish_boost=False,
                                                               use_boost_punish_formula=False,
-                                                              boost_spend_w=-0.3,
+                                                              boost_spend_w=0,  # -0.1,
                                                               boost_gain_small_w=0.15,
                                                               punish_low_boost_w=-0.02,
-                                                              # cancel_jump_touch_indices=[2, 37],
-                                                              # cancel_wall_touch_indices=[2, 37],
+                                                              cancel_jump_touch_indices=[2, 37],
+                                                              cancel_wall_touch_indices=[2, 37],
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         num_actions=action_size,
     )
 
-    alg.load("Selector_saves/Opti_1687269734.0026155/Opti_160/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1687280438.1055014/Opti_750/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
