@@ -452,10 +452,10 @@ if __name__ == "__main__":
         # selector_skip_k = 5e-7
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
-        terminals = [GoalScoredCondition(),
-                     TimeoutCondition(fps * 60),
-                     NoTouchTimeoutCondition(fps * 30),
-                     ]
+        # terminals = [GoalScoredCondition(),
+                     # TimeoutCondition(fps * 60),
+                     # NoTouchTimeoutCondition(fps * 30),
+                     # ]
 
         pretrained_agents = {
             nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
