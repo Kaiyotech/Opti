@@ -37,15 +37,15 @@ SUB_MODEL_NAMES = [
     "speedflip",
     "halfflip_ball",
     "walldash_str",
-    "walldash_up",
-    "walldash_down",
+    # "walldash_up",
+    # "walldash_down",
     "walldash_boost",
     "demo",
     "doubletap",
     "wall_play",
-    "left_turn",
-    "straight",
-    "right_turn"
+    # "left_turn",
+    # "straight",
+    # "right_turn"
 
 ]
 

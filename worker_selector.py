@@ -17,6 +17,7 @@ from torch import set_num_threads
 from selection_listener import SelectionListener
 from setter import CoyoteSetter
 from mybots_statesets import EndKickoff, HalfFlip
+from mybots_terminals import RandomTruncation
 import Constants_selector
 import numpy as np
 import collections
@@ -325,30 +326,30 @@ if __name__ == "__main__":
                         tick_skip=frame_skip,
                         goal_w=10,
                         concede_w=-10,
-                        team_spirit=1,
-                        demo_w=2,
-                        got_demoed_w=-2,
+                        team_spirit=0.7,
+                        demo_w=3,
+                        got_demoed_w=-3,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=0,
                         flip_reset_w=3,
                         flip_reset_goal_w=6,
-                        aerial_goal_w=3,
+                        aerial_goal_w=4,
                         double_tap_w=6,
                         cons_air_touches_w=0.3,
-                        jump_touch_w=0.5,
-                        wall_touch_w=0.5,
+                        jump_touch_w=0.25,
+                        wall_touch_w=0.25,
                         exit_velocity_w=1,
                         acel_ball_w=1,
                         velocity_pb_w=0,  # 0.005,
                         velocity_bg_w=0.01,
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
-                        boost_gain_w=0.15,
-                        punish_boost=False,
-                        use_boost_punish_formula=False,
-                        boost_spend_w=0,  # -0.1,
-                        boost_gain_small_w=0.15,
-                        punish_low_boost_w=-0.02,
+                        # boost_gain_w=0.15,
+                        # punish_boost=False,
+                        # use_boost_punish_formula=False,
+                        # boost_spend_w=0,  # -0.1,
+                        # boost_gain_small_w=0.15,
+                        # punish_low_boost_w=-0.02,
                         cancel_jump_touch_indices=[2, 37],
                         cancel_wall_touch_indices=[2, 37],
                         )
@@ -358,7 +359,7 @@ if __name__ == "__main__":
                    "hit_towards_goal": False,
                    }
 
-    simple_actions = [32, 33, 34, 67, 68, 69]
+    simple_actions = [32, 33, 34, 35, 36, 37]
 
     selector_infinite_boost = {"infinite_boost": False}
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
@@ -402,6 +403,14 @@ if __name__ == "__main__":
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
+    terminals = [GoalScoredCondition(),
+                 RandomTruncation(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
+                                  avg_frames=None,
+                                  min_frames=fps * 5),
+                 # TimeoutCondition(fps * 15),
+                 # NoTouchTimeoutCondition(fps * 30),
+                 ]
+
     if len(sys.argv) > 1:
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
@@ -432,7 +441,7 @@ if __name__ == "__main__":
 
     def setup_streamer():
         global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode, \
-            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, selector_skip_k
+            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, terminals, selector_skip_k
         streamer_mode = True
         evaluation_prob = 0
         game_speed = 1
@@ -443,6 +452,10 @@ if __name__ == "__main__":
         # selector_skip_k = 5e-7
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
+        terminals = [GoalScoredCondition(),
+                     TimeoutCondition(fps * 60),
+                     NoTouchTimeoutCondition(fps * 30),
+                     ]
 
         pretrained_agents = {
             nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
@@ -491,11 +504,6 @@ if __name__ == "__main__":
     # setter = CoyoteSetter(mode="test_mirror", dtap_dict=dtap_status)
     # setter = HalfFlip()
 
-    terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 300),
-                 NoTouchTimeoutCondition(fps * 30),
-                 ]
-
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
@@ -541,14 +549,13 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0004,  # 5 seconds
-                                selector_boost_skip_k=0.0018,  # 1 seconds
+                                selector_skip_k=0.0001,  # 4 seconds
+                                # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
-                                unlock_indices_group=simple_actions,
-                                parser_boost_split=parser.get_model_action_size(),
+                                # unlock_indices_group=simple_actions,
+                                # parser_boost_split=parser.get_model_action_size(),
                                 # initial_choice_block_indices=[2, 37],
                                 # initial_choice_block_weight=0.5,
-                                # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
     worker.env._match._obs_builder.env = worker.env
