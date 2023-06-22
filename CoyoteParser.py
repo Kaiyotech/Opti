@@ -796,6 +796,11 @@ class SelectorParser(ActionParser):
             if 10 <= action <= 26:
                 newstate = override_abs_state(player, state, action)
 
+            zero_boost = False
+            # remove boost from dashes
+            if 10 <= action <= 21:
+                zero_boost = True
+
             if 10 <= action <= 26:
                 # if reaching the "ball" or ball soon, allow a new choice by selector
                 check_radius = 300
@@ -817,9 +822,9 @@ class SelectorParser(ActionParser):
                     self.ball_position[i] = newstate.ball.position  # save new position
 
             obs = self.models[action][1].build_obs(
-                newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=False,
+                newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
                 n_override=i)
-            parse_action = self.models[action][0].act(obs, zero_boost=False)[0]
+            parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
             if mirrored:
                 mirror_commands(parse_action)
 
