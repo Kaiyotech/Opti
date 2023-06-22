@@ -763,9 +763,9 @@ class SelectorParser(ActionParser):
             #     self.prev_action[i] = None
             action = int(action[0])  # change ndarray [0.] to 0
             # action = 22  # TODO testing remove this
-            zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
-            if action >= self.get_model_action_size():
-                action -= self.get_model_action_size()
+            # zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
+            # if action >= self.get_model_action_size():
+            #     action -= self.get_model_action_size()
 
             # run timers for stateful obs for flips and such
             player = state.players[i]
@@ -817,9 +817,9 @@ class SelectorParser(ActionParser):
                     self.ball_position[i] = newstate.ball.position  # save new position
 
             obs = self.models[action][1].build_obs(
-                newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
+                newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=False,
                 n_override=i)
-            parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
+            parse_action = self.models[action][0].act(obs, zero_boost=False)[0]
             if mirrored:
                 mirror_commands(parse_action)
 
