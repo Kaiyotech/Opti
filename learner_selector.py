@@ -135,9 +135,9 @@ if __name__ == "__main__":
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
-    action_size = 32
+    action_size = 30
     # boost_size = 2
-    input_size = 430 + (Constants_selector.STACK_SIZE * (action_size))
+    input_size = 430 + (Constants_selector.STACK_SIZE * action_size)
     # shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),

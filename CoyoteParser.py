@@ -503,35 +503,35 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             y_pos = (1700 * fwd) + player_car.position[1]
             y_pos = np.clip(y_pos, -3900, 3900)
             ball_pos = np.asarray([player_car.position[0], y_pos, player_car.position[2]])
-        elif position_index == 26:  # up 45
-            # space until ceiling
-            z_space = max(1, 1700 - player_car.position[2])
-            length = z_space / 0.707
-            fwd = player_car.forward()[1]  # vector in forward direction just y
-            if abs(fwd) == 0:
-                fwd = player_car.forward()[0]
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
-            # distance of length to keep 45 degrees until ceiling/ground
-            y_pos = (0.707 * length * fwd) + player_car.position[1]
-            y_pos = np.clip(y_pos, -3900, 3900)
-            z_pos = (0.707 * length) + player_car.position[2]
-            z_pos = np.clip(z_pos, 300, 1750)
-            ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
-        elif position_index == 27:  # down 45
-            # space until ground
-            z_space = max(1, player_car.position[2] - 300)
-            length = z_space / 0.707
-            fwd = player_car.forward()[1]  # vector in forward direction just y
-            if abs(fwd) == 0:
-                fwd = player_car.forward()[0]
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
-            # distance of length to keep 45 degrees until ceiling/ground
-            y_pos = (0.707 * length * fwd) + player_car.position[1]
-            y_pos = np.clip(y_pos, -3900, 3900)
-            z_pos = player_car.position[2] - (0.707 * length)
-            z_pos = np.clip(z_pos, 300, 1750)
-            ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
-        elif position_index == 28:  # back boost this side
+        # elif position_index == 26:  # up 45
+        #     # space until ceiling
+        #     z_space = max(1, 1700 - player_car.position[2])
+        #     length = z_space / 0.707
+        #     fwd = player_car.forward()[1]  # vector in forward direction just y
+        #     if abs(fwd) == 0:
+        #         fwd = player_car.forward()[0]
+        #     fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
+        #     # distance of length to keep 45 degrees until ceiling/ground
+        #     y_pos = (0.707 * length * fwd) + player_car.position[1]
+        #     y_pos = np.clip(y_pos, -3900, 3900)
+        #     z_pos = (0.707 * length) + player_car.position[2]
+        #     z_pos = np.clip(z_pos, 300, 1750)
+        #     ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
+        # elif position_index == 27:  # down 45
+        #     # space until ground
+        #     z_space = max(1, player_car.position[2] - 300)
+        #     length = z_space / 0.707
+        #     fwd = player_car.forward()[1]  # vector in forward direction just y
+        #     if abs(fwd) == 0:
+        #         fwd = player_car.forward()[0]
+        #     fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit (just get sign basically)
+        #     # distance of length to keep 45 degrees until ceiling/ground
+        #     y_pos = (0.707 * length * fwd) + player_car.position[1]
+        #     y_pos = np.clip(y_pos, -3900, 3900)
+        #     z_pos = player_car.position[2] - (0.707 * length)
+        #     z_pos = np.clip(z_pos, 300, 1750)
+        #     ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
+        elif position_index == 26:  # back boost this side
             x_pos = 3072 if player_car.position[0] >= 0 else -3072
             ball_pos = np.asarray([x_pos, -4096, 40])
 
@@ -701,15 +701,15 @@ class SelectorParser(ActionParser):
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # 26 up 45
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # 27 down 45
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # 28 back boost this side
+            # (SubAgent("walldash_jit.pt"),  # 26 up 45
+            #  CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
+            #                   only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
+            #                   add_handbrake=True, add_boosttime=True)),
+            # (SubAgent("walldash_jit.pt"),  # 27 down 45
+            #  CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
+            #                   only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
+            #                   add_handbrake=True, add_boosttime=True)),
+            (SubAgent("walldash_jit.pt"),  # 26 back boost this side
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
@@ -719,7 +719,7 @@ class SelectorParser(ActionParser):
             (SubAgent("dtap_jit.pt"),  # doubletap
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               mask_aerial_opp=True, doubletap_indicator=True)),
-            (SubAgent("wall_jit.pt"),  # 31 ball to wall
+            (SubAgent("wall_jit.pt"),  # 29 ball to wall
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True)),
             # 32 is turn left with throttle, 33 is straight with throttle, 34 is right with boost
@@ -781,8 +781,8 @@ class SelectorParser(ActionParser):
             newstate = state
             newplayer = player
             new_prev_action = self.prev_actions[i]
-            # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
-            if action == 31:
+            # 29 is wall, which gets mirrored if blue x negative or orange x positive for car
+            if action == 29:
                 if (player.team_num == 0 and player.car_data.position[0] < 0) or \
                         (player.team_num == 1 and player.car_data.position[0] > 0):
                     newstate = mirror_state_over_y(state)
@@ -793,10 +793,10 @@ class SelectorParser(ActionParser):
                     mirrored = True
 
             # 21, 24 are actual ball, just override player
-            if 10 <= action <= 28:
+            if 10 <= action <= 26:
                 newstate = override_abs_state(player, state, action)
 
-            if 10 <= action <= 28:
+            if 10 <= action <= 26:
                 # if reaching the "ball" or ball soon, allow a new choice by selector
                 check_radius = 300
                 if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
