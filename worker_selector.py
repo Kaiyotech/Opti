@@ -323,6 +323,10 @@ class SelectionDispatcher(SelectionListener):
 
 if __name__ == "__main__":
     frame_skip = Constants_selector.FRAME_SKIP
+    dtap_status = {"hit_towards_bb": False,
+                   "ball_hit_bb": False,
+                   "hit_towards_goal": False,
+                   }
     rew = ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                         tick_skip=frame_skip,
                         goal_w=10,
@@ -357,13 +361,10 @@ if __name__ == "__main__":
                         cancel_flip_reset_indices=[2],
                         cancel_cons_air_touch_indices=[2],
                         cancel_backboard_bounce_indices=[2],
-
+                        dtap_dict=dtap_status,
                         )
     # obs_output = np.zeros()
-    dtap_status = {"hit_towards_bb": False,
-                   "ball_hit_bb": False,
-                   "hit_towards_goal": False,
-                   }
+
 
     simple_actions = [32, 33, 34, 35, 36, 37]
 
