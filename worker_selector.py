@@ -325,30 +325,30 @@ if __name__ == "__main__":
                         tick_skip=frame_skip,
                         goal_w=10,
                         concede_w=-10,
-                        team_spirit=1,
-                        demo_w=2,
-                        got_demoed_w=-2,
+                        team_spirit=0.7,
+                        demo_w=3,
+                        got_demoed_w=-3,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=0,
                         flip_reset_w=3,
                         flip_reset_goal_w=6,
-                        aerial_goal_w=3,
+                        aerial_goal_w=4,
                         double_tap_w=6,
                         cons_air_touches_w=0.3,
-                        jump_touch_w=0.5,
-                        wall_touch_w=0.5,
+                        jump_touch_w=0.25,
+                        wall_touch_w=0.25,
                         exit_velocity_w=1,
                         acel_ball_w=1,
                         velocity_pb_w=0,  # 0.005,
                         velocity_bg_w=0.01,
                         kickoff_w=0.05,
                         punish_dist_goal_score_w=-1,
-                        boost_gain_w=0.15,
-                        punish_boost=False,
-                        use_boost_punish_formula=False,
-                        boost_spend_w=0,  # -0.1,
-                        boost_gain_small_w=0.15,
-                        punish_low_boost_w=-0.02,
+                        # boost_gain_w=0.15,
+                        # punish_boost=False,
+                        # use_boost_punish_formula=False,
+                        # boost_spend_w=0,  # -0.1,
+                        # boost_gain_small_w=0.15,
+                        # punish_low_boost_w=-0.02,
                         cancel_jump_touch_indices=[2, 37],
                         cancel_wall_touch_indices=[2, 37],
                         )
@@ -401,6 +401,11 @@ if __name__ == "__main__":
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
+    terminals = [GoalScoredCondition(),
+                 TimeoutCondition(fps * 15),
+                 # NoTouchTimeoutCondition(fps * 30),
+                 ]
+
     if len(sys.argv) > 1:
         host = sys.argv[1]
         if host != "127.0.0.1" and host != "localhost":
@@ -431,7 +436,7 @@ if __name__ == "__main__":
 
     def setup_streamer():
         global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode, \
-            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker
+            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, terminals
         streamer_mode = True
         evaluation_prob = 0
         game_speed = 1
@@ -441,6 +446,10 @@ if __name__ == "__main__":
         past_version_prob = 0
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
+        terminals = [GoalScoredCondition(),
+                     TimeoutCondition(fps * 60),
+                     NoTouchTimeoutCondition(fps * 30),
+                     ]
 
         pretrained_agents = {
             nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
@@ -489,11 +498,6 @@ if __name__ == "__main__":
     # setter = CoyoteSetter(mode="test_mirror", dtap_dict=dtap_status)
     # setter = HalfFlip()
 
-    terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 300),
-                 NoTouchTimeoutCondition(fps * 30),
-                 ]
-
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
@@ -539,14 +543,13 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0004,  # 5 seconds
+                                selector_skip_k=0.0004,  # 2 seconds
                                 selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 unlock_indices_group=simple_actions,
                                 parser_boost_split=parser.get_model_action_size(),
                                 # initial_choice_block_indices=[2, 37],
                                 # initial_choice_block_weight=0.5,
-                                # dodge_deadzone=0.8,  # TODO testing remove this
                                 )
 
     worker.env._match._obs_builder.env = worker.env
