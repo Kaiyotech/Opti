@@ -11,13 +11,14 @@ from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
     NoTouchTimeoutCondition
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
+from rocket_learn.utils.truncated_condition import TerminalToTruncatedWrapper
 from CoyoteParser import SelectorParser
 from rewards import ZeroSumReward
 from torch import set_num_threads
 from selection_listener import SelectionListener
 from setter import CoyoteSetter
 from mybots_statesets import EndKickoff, HalfFlip
-from mybots_terminals import RandomTruncation
+from mybots_terminals import RandomTruncationBallGround
 import Constants_selector
 import numpy as np
 import collections
@@ -404,9 +405,9 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 RandomTruncation(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
-                                  avg_frames=None,
-                                  min_frames=fps * 5),
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
+                                                             avg_frames=None,
+                                                             min_frames=fps * 5)),
                  # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]

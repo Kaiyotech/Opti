@@ -115,7 +115,7 @@ class KickoffTrainer(TerminalCondition):
             return False
 
 
-class RandomTruncation(TerminalCondition):
+class RandomTruncationBallGround(TerminalCondition):
     """
     A condition that triggers randomly distributed around a given length and can change for different sizes
     """
@@ -143,7 +143,7 @@ class RandomTruncation(TerminalCondition):
 
     def is_terminal(self, current_state: GameState) -> bool:
         self.steps += 1
-        return self.steps > self.check_length
+        return self.steps > self.check_length and current_state.ball.position[2] < 300
 
 
 class BallStopped(TerminalCondition):
