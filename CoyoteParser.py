@@ -226,6 +226,14 @@ def mirror_commands(actions):
     actions[4] = -actions[4]
 
 
+def mirror_prev_action(actions):
+    retactions = copy.deepcopy(actions)
+    retactions[1] = -retactions[1]
+    retactions[3] = -retactions[3]
+    retactions[4] = -retactions[4]
+    return retactions
+
+
 def mirror_physics_object_over_y(o: PhysicsObject):
     o.position[0] *= -1
     rot = o.rotation_mtx()
@@ -770,6 +778,7 @@ class SelectorParser(ActionParser):
 
                 newstate = state
                 newplayer = player
+                new_prev_action = self.prev_actions[i]
                 # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
                 if action == 31:
                     if (player.team_num == 0 and player.car_data.position[0] < 0) or \
@@ -778,6 +787,7 @@ class SelectorParser(ActionParser):
                         newplayer = copy_player(player)
                         mirror_physics_object_over_y(newplayer.car_data)
                         mirror_physics_object_over_y(newplayer.inverted_car_data)
+                        new_prev_action = mirror_prev_action(new_prev_action)
                         mirrored = True
 
                 # 21, 24 are actual ball, just override player
@@ -805,7 +815,7 @@ class SelectorParser(ActionParser):
                         self.ball_position[i] = newstate.ball.position  # save new position
 
                 obs = self.models[action][1].build_obs(
-                    newplayer, newstate, self.prev_actions[i], obs_info=self.obs_info, zero_boost=zero_boost,
+                    newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
                     n_override=i)
                 parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
                 if mirrored:
