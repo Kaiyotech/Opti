@@ -123,7 +123,7 @@ class RandomTruncation(TerminalCondition):
     def __init__(self, avg_frames, avg_frames_per_mode=None, min_frames=10):
         super().__init__()
         if avg_frames_per_mode is not None:
-            self.frames = [avg_frames_per_mode]
+            self.frames = avg_frames_per_mode
         else:
             self.frames = [avg_frames, avg_frames, avg_frames]
         self.steps = 0
