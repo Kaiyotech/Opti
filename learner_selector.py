@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_17.00"
+    run_id = "selector_run_test17.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_17.00",
+                        name="Selector_Run_test17.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -135,9 +135,9 @@ if __name__ == "__main__":
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         )
-    action_size = 35
-    boost_size = 2
-    input_size = 430 + (Constants_selector.STACK_SIZE * (action_size * boost_size))
+    action_size = 32
+    # boost_size = 2
+    input_size = 430 + (Constants_selector.STACK_SIZE * (action_size))
     # shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
@@ -145,14 +145,14 @@ if __name__ == "__main__":
 
     actor = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(), Linear(256, 128),
                        LeakyReLU(),
-                       Linear(128, action_size * boost_size))
+                       Linear(128, action_size))
 
     critic = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=critic,
                   )
 
     actor = Opti(embedder=Sequential(Linear(35, 128), LeakyReLU(), Linear(128, 35 * 5)), net=actor)
 
-    actor = DiscretePolicy(actor, shape=(action_size * boost_size,))
+    actor = DiscretePolicy(actor, shape=(action_size,))
 
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},

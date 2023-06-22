@@ -722,7 +722,9 @@ class SelectorParser(ActionParser):
             (SubAgent("wall_jit.pt"),  # 31 ball to wall
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True)),
-            # 32 is turn left with throttle, 33 is straight with throttle, 34 is right
+            # 32 is turn left with throttle, 33 is straight with throttle, 34 is right with boost
+            # 35 36 37 are without boost
+            # not using these simple actions this time
         ]
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None
@@ -747,7 +749,7 @@ class SelectorParser(ActionParser):
         return 1
 
     def get_model_action_size(self) -> int:
-        return len(self.models) + 3  # plus 3 for the left/straight/right
+        return len(self.models)  #   + 6  # plus 6 for the left/straight/right with/without boost
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
         # for models in self.models:
@@ -768,58 +770,58 @@ class SelectorParser(ActionParser):
             # run timers for stateful obs for flips and such
             player = state.players[i]
             self.obs_info.step(player, state, self.prev_actions[i])
+            #
+            # if 32 <= action <= 34:  # simple steer goes here
+            #     # [throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
+            #     steer = action - 33
+            #     parse_action = np.asarray([1, steer, 0, steer, 0, 0, not zero_boost, 0])
+            # else:
+            # override states
 
-            if 32 <= action <= 34:  # simple steer goes here
-                # [throttle or boost, steer, 0, steer, 0, 0, boost, handbrake])
-                steer = action - 33
-                parse_action = np.asarray([1, steer, 0, steer, 0, 0, not zero_boost, 0])
-            else:
-                # override states
+            newstate = state
+            newplayer = player
+            new_prev_action = self.prev_actions[i]
+            # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
+            if action == 31:
+                if (player.team_num == 0 and player.car_data.position[0] < 0) or \
+                        (player.team_num == 1 and player.car_data.position[0] > 0):
+                    newstate = mirror_state_over_y(state)
+                    newplayer = copy_player(player)
+                    mirror_physics_object_over_y(newplayer.car_data)
+                    mirror_physics_object_over_y(newplayer.inverted_car_data)
+                    new_prev_action = mirror_prev_action(new_prev_action)
+                    mirrored = True
 
-                newstate = state
-                newplayer = player
-                new_prev_action = self.prev_actions[i]
-                # 31 is wall, which gets mirrored if blue x negative or orange x positive for car
-                if action == 31:
-                    if (player.team_num == 0 and player.car_data.position[0] < 0) or \
-                            (player.team_num == 1 and player.car_data.position[0] > 0):
-                        newstate = mirror_state_over_y(state)
-                        newplayer = copy_player(player)
-                        mirror_physics_object_over_y(newplayer.car_data)
-                        mirror_physics_object_over_y(newplayer.inverted_car_data)
-                        new_prev_action = mirror_prev_action(new_prev_action)
-                        mirrored = True
+            # 21, 24 are actual ball, just override player
+            if 10 <= action <= 28:
+                newstate = override_abs_state(player, state, action)
 
-                # 21, 24 are actual ball, just override player
-                if 10 <= action <= 28:
-                    newstate = override_abs_state(player, state, action)
+            if 10 <= action <= 28:
+                # if reaching the "ball" or ball soon, allow a new choice by selector
+                check_radius = 300
+                if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
+                    check_radius = 800
+                self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
 
-                if 10 <= action <= 28:
-                    # if reaching the "ball" or ball soon, allow a new choice by selector
-                    check_radius = 300
-                    if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
-                        check_radius = 800
-                    self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
+            if 22 <= action <= 23:  # freeze
+                if self.prev_model_actions[i] == action:  # action didn't change
+                    # newplayer = copy_player(player)
+                    # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state,
+                    #                                                     ball_pos=self.ball_position[i],
+                    #                                                     shift=self.ball_shift_y[i])
+                    newstate = override_abs_state(player, newstate, action, self.ball_position[i])
+                else:  # action submodel changed or reaching the objective
+                    # newplayer = copy_player(player)
+                    # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state)
+                    newstate = override_abs_state(player, newstate, action)
+                    self.ball_position[i] = newstate.ball.position  # save new position
 
-                if 22 <= action <= 23:  # freeze
-                    if self.prev_model_actions[i] == action:  # action didn't change
-                        # newplayer = copy_player(player)
-                        # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state,
-                        #                                                     ball_pos=self.ball_position[i],
-                        #                                                     shift=self.ball_shift_y[i])
-                        newstate = override_abs_state(player, newstate, action, self.ball_position[i])
-                    else:  # action submodel changed or reaching the objective
-                        # newplayer = copy_player(player)
-                        # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state)
-                        newstate = override_abs_state(player, newstate, action)
-                        self.ball_position[i] = newstate.ball.position  # save new position
-
-                obs = self.models[action][1].build_obs(
-                    newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
-                    n_override=i)
-                parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
-                if mirrored:
-                    mirror_commands(parse_action)
+            obs = self.models[action][1].build_obs(
+                newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
+                n_override=i)
+            parse_action = self.models[action][0].act(obs, zero_boost=zero_boost)[0]
+            if mirrored:
+                mirror_commands(parse_action)
 
             if self.selection_listener is not None and i == 0:  # only call for first player
                 self.selection_listener.on_selection(self.sub_model_names[action], parse_action)
