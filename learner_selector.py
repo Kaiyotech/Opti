@@ -157,7 +157,7 @@ if __name__ == "__main__":
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
         {"params": critic.parameters(), "lr": logger.config.critic_lr},
-    ])
+    ], fused=True)
 
     agent = ActorCriticAgent(actor=actor, critic=critic, optimizer=optim)
     print(f"Gamma is: {gamma}")
@@ -178,6 +178,7 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
         action_selection_dict=action_dict,
         num_actions=action_size,
+        max_grad_norm=None,
     )
 
     # alg.load("Selector_saves/Opti_1687384876.1073518/Opti_1545/checkpoint.pt")
