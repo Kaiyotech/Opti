@@ -154,6 +154,9 @@ if __name__ == "__main__":
 
     actor = DiscretePolicy(actor, shape=(action_size,))
 
+    actor.to("cuda")
+    critic.to("cuda")
+
     optim = torch.optim.Adam([
         {"params": actor.parameters(), "lr": logger.config.actor_lr},
         {"params": critic.parameters(), "lr": logger.config.critic_lr},
