@@ -115,6 +115,37 @@ class KickoffTrainer(TerminalCondition):
             return False
 
 
+class RandomTruncation(TerminalCondition):
+    """
+    A condition that triggers randomly distributed around a given length and can change for different sizes
+    """
+
+    def __init__(self, avg_frames, avg_frames_per_mode=None, min_frames=10):
+        super().__init__()
+        if avg_frames_per_mode is not None:
+            self.frames = [avg_frames_per_mode]
+        else:
+            self.frames = [avg_frames, avg_frames, avg_frames]
+        self.steps = 0
+        self.rng = np.random.default_rng()
+        self.check_length = None
+        self.min_frames = min_frames
+
+    def reset(self, initial_state: GameState):
+        self.steps = 0
+        index = (len(initial_state.players) // 2) - 1
+        if index in range(len(self.frames)):
+            self.check_length = self.frames[index]
+        else:
+            self.check_length = self.frames[0]
+        self.check_length = self.check_length + ((self.check_length / 4) * self.rng.standard_normal())
+        self.check_length = max(self.check_length, self.min_frames)
+
+    def is_terminal(self, current_state: GameState) -> bool:
+        self.steps += 1
+        return self.steps > self.check_length
+
+
 class BallStopped(TerminalCondition):
     """
     A condition that triggers after ball touches ground after min_time_sec after first touch

@@ -17,6 +17,7 @@ from torch import set_num_threads
 from selection_listener import SelectionListener
 from setter import CoyoteSetter
 from mybots_statesets import EndKickoff, HalfFlip
+from mybots_terminals import RandomTruncation
 import Constants_selector
 import numpy as np
 import collections
@@ -402,7 +403,10 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TimeoutCondition(fps * 15),
+                 RandomTruncation(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
+                                  avg_frames=None,
+                                  min_frames=fps * 5),
+                 # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]
 
