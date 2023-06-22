@@ -145,11 +145,20 @@ class ZeroSumReward(RewardFunction):
             pun_rew_ball_height_w=0,
             cancel_jump_touch_indices=None,
             cancel_wall_touch_indices=None,
+            cancel_flip_reset_indices=None,
+            cancel_cons_air_touch_indices=None,
+            cancel_backboard_bounce_indices=None,
     ):
+        self.cancel_backboard_bounce_indices = cancel_backboard_bounce_indices
+        self.cancel_cons_air_touch_indices = cancel_cons_air_touch_indices
+        self.cancel_flip_reset_indices = cancel_flip_reset_indices
         self.cancel_wall_touch_indices = cancel_wall_touch_indices
         self.cancel_jump_touch_indices = cancel_jump_touch_indices
         self.jump_rewards = [0] * 6
         self.wall_rewards = [0] * 6
+        self.flip_reset_rewards = [0] * 6
+        self.cons_air_touch_rewards = [0] * 6
+        self.backboard_bounce_rewards = [0] * 6
         self.pun_rew_ball_height_w = pun_rew_ball_height_w
         self.trajectory_intersection_distance_w = trajectory_intersection_distance_w
         self.dtap_helper_2_w = dtap_helper_2_w
@@ -427,8 +436,10 @@ class ZeroSumReward(RewardFunction):
                 if state.ball.position[2] > 140 and not player.on_ground:
                     self.cons_touches += 1
                     if self.cons_touches > 1:
-                        player_rewards[i] += self.cons_air_touches_w * \
+                        cons_air_reward = self.cons_air_touches_w * \
                             min((1.4 ** self.cons_touches), 5) / 5
+                        self.cons_air_touch_rewards[i] = cons_air_reward
+                        player_rewards[i] += cons_air_reward
                 else:
                     self.cons_touches = 0
 
@@ -712,6 +723,7 @@ class ZeroSumReward(RewardFunction):
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
                 if self.kickoff_timer - self.reset_timer > self.flip_reset_delay_steps:
                     player_rewards[i] += self.flip_reset_w
+                    self.flip_reset_rewards[i] += self.flip_reset_w
                     self.cons_resets += 1
                     if self.cons_resets > 1:
                         player_rewards[i] += self.inc_flip_reset_w * \
@@ -727,6 +739,7 @@ class ZeroSumReward(RewardFunction):
             # changed 5/30/23 to add the ball_hit_bb, so it only gives the first bounce to avoid pancakes/pinches.
             if self.backboard_bounce_rew != 0 and i == self.last_touch_car and backboard_new and not self.dtap_dict["ball_hit_bb"]:
                 player_rewards[i] += self.backboard_bounce_rew
+                self.backboard_bounce_rewards[i] = self.backboard_bounce_rew
 
         mid = len(player_rewards) // 2
 
@@ -885,6 +898,9 @@ class ZeroSumReward(RewardFunction):
         self.dash_count = [0] * 6
         self.jump_rewards = [0] * 6
         self.wall_rewards = [0] * 6
+        self.flip_reset_rewards = [0] * 6
+        self.cons_air_touch_rewards = [0] * 6
+        self.backboard_bounce_rewards = [0] * 6
 
         # if self.walldash_w != 0 or self.wave_zap_dash_w != 0 or self.curvedash_w != 0:
         if self.curve_wave_zap_dash_w != 0 or self.walldash_w != 0:
@@ -941,12 +957,18 @@ class ZeroSumReward(RewardFunction):
             if np.linalg.norm(player.car_data.linear_velocity) > (0.99 * CAR_MAX_SPEED):
                 rew += self.jump_high_speed_w
 
-        # cancel jump and wall rewards
+        # cancel jump and wall rewards and other stuff...
         div = 2 if self.zero_sum else 1
         if self.cancel_wall_touch_indices is not None and previous_model_action in self.cancel_wall_touch_indices:
             rew -= self.wall_rewards[self.n] / div
         if self.cancel_jump_touch_indices is not None and previous_model_action in self.cancel_jump_touch_indices:
             rew -= self.jump_rewards[self.n] / div
+        if self.cancel_backboard_bounce_indices is not None and previous_model_action in self.cancel_backboard_bounce_indices:
+            rew -= self.backboard_bounce_rewards[self.n] / div
+        if self.cancel_flip_reset_indices is not None and previous_model_action in self.cancel_flip_reset_indices:
+            rew -= self.flip_reset_rewards[self.n] / div
+        if self.cancel_cons_air_touch_indices is not None and previous_model_action in self.cancel_cons_air_touch_indices:
+            rew -= self.cons_air_touch_rewards[self.n] / div
         
         # #  TODO remove this
         # if np.isinf(rew).any():

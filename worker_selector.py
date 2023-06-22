@@ -341,6 +341,7 @@ if __name__ == "__main__":
                         wall_touch_w=0.25,
                         exit_velocity_w=1,
                         acel_ball_w=1,
+                        backboard_bounce_rew=1,
                         velocity_pb_w=0,  # 0.005,
                         velocity_bg_w=0.01,
                         kickoff_w=0.05,
@@ -351,8 +352,12 @@ if __name__ == "__main__":
                         # boost_spend_w=0,  # -0.1,
                         # boost_gain_small_w=0.15,
                         # punish_low_boost_w=-0.02,
-                        cancel_jump_touch_indices=[2, 37],
-                        cancel_wall_touch_indices=[2, 37],
+                        cancel_jump_touch_indices=[2],
+                        cancel_wall_touch_indices=[2],
+                        cancel_flip_reset_indices=[2],
+                        cancel_cons_air_touch_indices=[2],
+                        cancel_backboard_bounce_indices=[2],
+
                         )
     # obs_output = np.zeros()
     dtap_status = {"hit_towards_bb": False,
