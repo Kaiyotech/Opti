@@ -366,7 +366,7 @@ if __name__ == "__main__":
     # obs_output = np.zeros()
 
 
-    simple_actions = [32, 33, 34, 35, 36, 37]
+    # simple_actions = [32, 33, 34, 35, 36, 37]
 
     selector_infinite_boost = {"infinite_boost": False}
     obs_info = ObsInfo(tick_skip=Constants_selector.FRAME_SKIP, selector_infinite_boost=selector_infinite_boost,
@@ -556,7 +556,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0001,  # 4 seconds
+                                selector_skip_k=0.0004,  # 2 seconds
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
