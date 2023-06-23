@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_17.02"
+    run_id = "selector_run_17.03"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_17.02",
+                        name="Selector_Run_17.03",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -97,22 +97,23 @@ if __name__ == "__main__":
 
                                         lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                                                               tick_skip=frame_skip,
-                                                              goal_w=10,
-                                                              concede_w=-10,
+                                                              goal_w=5,
+                                                              concede_w=-5,
                                                               team_spirit=0.7,
                                                               demo_w=3,
                                                               got_demoed_w=-3,
                                                               punish_action_change_w=0,
                                                               decay_punish_action_change_w=0,
-                                                              flip_reset_w=3,
-                                                              flip_reset_goal_w=6,
-                                                              aerial_goal_w=4,
-                                                              double_tap_w=6,
-                                                              cons_air_touches_w=0.3,
-                                                              jump_touch_w=0.25,
-                                                              wall_touch_w=0.25,
-                                                              exit_velocity_w=1,
-                                                              acel_ball_w=1,
+                                                              flip_reset_w=1,
+                                                              flip_reset_goal_w=4,
+                                                              aerial_goal_w=2,
+                                                              double_tap_w=4,
+                                                              cons_air_touches_w=0.15,
+                                                              jump_touch_w=0.1,
+                                                              wall_touch_w=0.1,
+                                                              exit_velocity_w=0.5,
+                                                              acel_ball_w=0.5,
+                                                              backboard_bounce_rew=0.5,
                                                               velocity_pb_w=0,  # 0.005,
                                                               velocity_bg_w=0.01,
                                                               kickoff_w=0.05,
@@ -123,8 +124,8 @@ if __name__ == "__main__":
                                                               # boost_spend_w=0,  # -0.1,
                                                               # boost_gain_small_w=0.15,
                                                               # punish_low_boost_w=-0.02,
-                                                              cancel_jump_touch_indices=[2, 37],
-                                                              cancel_wall_touch_indices=[2, 37],
+                                                              # cancel_jump_touch_indices=[2, 37],
+                                                              # cancel_wall_touch_indices=[2, 37],
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -184,7 +185,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1687457151.2385516/Opti_5/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1687459127.2090664/Opti_100/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
