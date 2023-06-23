@@ -130,6 +130,7 @@ class RandomTruncationBallGround(TerminalCondition):
         self.rng = np.random.default_rng()
         self.check_length = None
         self.min_frames = min_frames
+        self.checked_goal = False
 
     def reset(self, initial_state: GameState):
         self.steps = 0
@@ -140,9 +141,15 @@ class RandomTruncationBallGround(TerminalCondition):
             self.check_length = self.frames[0]
         self.check_length = self.check_length + ((self.check_length / 4) * self.rng.standard_normal())
         self.check_length = max(self.check_length, self.min_frames)
+        self.checked_goal = False
 
     def is_terminal(self, current_state: GameState) -> bool:
         self.steps += 1
+        if not self.checked_goal and self.steps > self.check_length and current_state.ball.position[2] < 300:
+            self.checked_goal = True
+            if ball_towards_goal(current_state.ball, 1100, True):
+                self.check_length += 60
+                return False
         return self.steps > self.check_length and current_state.ball.position[2] < 300
 
 

@@ -356,11 +356,11 @@ if __name__ == "__main__":
                         # boost_spend_w=0,  # -0.1,
                         # boost_gain_small_w=0.15,
                         # punish_low_boost_w=-0.02,
-                        # cancel_jump_touch_indices=[2],
-                        # cancel_wall_touch_indices=[2],
-                        # cancel_flip_reset_indices=[2],
-                        # cancel_cons_air_touch_indices=[2],
-                        # cancel_backboard_bounce_indices=[2],
+                        cancel_jump_touch_indices=[2],
+                        cancel_wall_touch_indices=[2],
+                        cancel_flip_reset_indices=[2],
+                        cancel_cons_air_touch_indices=[2],
+                        cancel_backboard_bounce_indices=[2],
                         dtap_dict=dtap_status,
                         )
     # obs_output = np.zeros()
