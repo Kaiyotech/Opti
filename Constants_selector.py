@@ -1,4 +1,5 @@
 from pretrained_agents.nexto.nexto_v2 import NextoV2
+from pretrained_agents.necto.necto_v1 import NectoV1
 from pretrained_agents.KBB.kbb import KBB
 
 FRAME_SKIP = 4
@@ -53,10 +54,13 @@ model_name = "nexto-model.pt"
 nexto = NextoV2(model_string=model_name, n_players=6)
 model_name = "kbb.pt"
 kbb = KBB(model_string=model_name)
+model_name = "necto-model-30Y.pt"
+necto = NectoV1(model_string=model_name, n_players=6)
 
 pretrained_agents = {
-    nexto: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-    kbb: {'prob': 0.5, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+    nexto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+    kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
+    necto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
     }
 
 # "recover_0",
