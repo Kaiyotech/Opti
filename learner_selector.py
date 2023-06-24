@@ -135,6 +135,7 @@ if __name__ == "__main__":
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
+                                        pretrained_agents=Constants_selector.pretrained_agents
                                         )
     action_size = 30
     # boost_size = 2
@@ -185,7 +186,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    # alg.load("Selector_saves/Opti_1687459127.2090664/Opti_100/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1687550505.5916364/Opti_340/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr

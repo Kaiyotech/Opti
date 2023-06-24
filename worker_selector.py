@@ -365,7 +365,6 @@ if __name__ == "__main__":
                         )
     # obs_output = np.zeros()
 
-
     # simple_actions = [32, 33, 34, 35, 36, 37]
 
     selector_infinite_boost = {"infinite_boost": False}
@@ -387,6 +386,7 @@ if __name__ == "__main__":
     dynamic_game = True
     infinite_boost_odds = 0.2
     host = "127.0.0.1"
+    # non_latest_version_prob = [0.85, 0.075, 0.05, 0.025]
     non_latest_version_prob = [1, 0, 0, 0]
     gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
     # gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
@@ -396,7 +396,7 @@ if __name__ == "__main__":
     selector_skip_k=0.0004
 
     model_name = "necto-model-30Y.pt"
-    nectov1 = NectoV1(model_string=model_name, n_players=6)
+    necto = NectoV1(model_string=model_name, n_players=6)
     model_name = "nexto-model.pt"
     nexto = NextoV2(model_string=model_name, n_players=6)
     model_name = "kbb.pt"
@@ -406,14 +406,14 @@ if __name__ == "__main__":
 
     pretrained_agents = Constants_selector.pretrained_agents
 
-    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=None, past_version_prob=past_version_prob,
+    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 20, fps * 30, fps * 40],
                                                              avg_frames=None,
-                                                             min_frames=fps * 5)),
+                                                             min_frames=fps * 10)),
                  # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]
@@ -464,12 +464,12 @@ if __name__ == "__main__":
                      # NoTouchTimeoutCondition(fps * 30),
                      # ]
 
-        pretrained_agents = {
-            nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-            kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
-        }
+        # pretrained_agents = {
+        #     nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+        #     kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
+        # }
 
-        non_latest_version_prob = [1, 0, 0, 0]
+        # non_latest_version_prob = [1, 0, 0, 0]
 
         matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
                                 past_version_prob=past_version_prob,
@@ -556,7 +556,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0004,  # 2 seconds
+                                selector_skip_k=0.00175,  # 1 second
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
