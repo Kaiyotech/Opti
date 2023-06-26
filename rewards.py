@@ -148,7 +148,23 @@ class ZeroSumReward(RewardFunction):
             cancel_flip_reset_indices=None,
             cancel_cons_air_touch_indices=None,
             cancel_backboard_bounce_indices=None,
+            aerial_indices=None,
+            defend_indices=None,
+            ground_indices=None,
+            wall_indices=None,
+            aerial_reward_w=0,
+            defend_reward_w=0,
+            ground_reward_w=0,
+            wall_reward_w=0,
     ):
+        self.wall_reward_w = wall_reward_w
+        self.ground_reward_w = ground_reward_w
+        self.defend_reward_w = defend_reward_w
+        self.aerial_reward_w = aerial_reward_w
+        self.wall_indices = wall_indices
+        self.ground_indices = ground_indices
+        self.defend_indices = defend_indices
+        self.aerial_indices = aerial_indices
         self.cancel_backboard_bounce_indices = cancel_backboard_bounce_indices
         self.cancel_cons_air_touch_indices = cancel_cons_air_touch_indices
         self.cancel_flip_reset_indices = cancel_flip_reset_indices
@@ -396,6 +412,7 @@ class ZeroSumReward(RewardFunction):
                 max_height = CEILING_Z - BALL_RADIUS
                 rnge = max_height - min_height
                 if not player.on_ground and state.ball.position[2] > min_height and previous_model_actions is not None and \
+                        self.cancel_jump_touch_indices is not None and \
                         previous_model_actions[i] not in self.cancel_jump_touch_indices:
                     # x_from_wall = min(SIDE_WALL_X - BALL_RADIUS - abs(state.ball.position[0]), 20)
                     # wall_multiplier = x_from_wall / 20
@@ -407,6 +424,7 @@ class ZeroSumReward(RewardFunction):
                 # wall touch
                 min_height = 500
                 if player.on_ground and state.ball.position[2] > min_height and previous_model_actions is not None and \
+                        self.cancel_wall_touch_indices is not None and \
                         previous_model_actions[i] not in self.cancel_wall_touch_indices:
                     coef_1 = 0.5 if self.flatten_wall_height else 0
                     coef_2 = 1.5 if self.flatten_wall_height else 1
@@ -435,6 +453,7 @@ class ZeroSumReward(RewardFunction):
                 if state.ball.position[2] > 140 and not player.on_ground:
                     self.cons_touches += 1
                     if self.cons_touches > 1 and previous_model_actions is not None and \
+                            self.cancel_cons_air_touch_indices is not None and \
                             previous_model_actions[i] not in self.cancel_cons_air_touch_indices:
                         player_rewards[i] += self.cons_air_touches_w * \
                                              min((1.4 ** self.cons_touches), 5) / 5
@@ -732,7 +751,8 @@ class ZeroSumReward(RewardFunction):
                 # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
                 if self.kickoff_timer - self.reset_timer > self.flip_reset_delay_steps:
-                    if previous_model_actions is not None and previous_model_actions[i] not in self.cancel_flip_reset_indices:
+                    if previous_model_actions is not None and self.cancel_flip_reset_indices is not None and \
+                            previous_model_actions[i] not in self.cancel_flip_reset_indices:
                         player_rewards[i] += self.flip_reset_w
                     self.cons_resets += 1
                     if self.cons_resets > 1:
@@ -748,9 +768,25 @@ class ZeroSumReward(RewardFunction):
             # doubletap help
             # changed 5/30/23 to add the ball_hit_bb, so it only gives the first bounce to avoid pancakes/pinches.
             if self.backboard_bounce_rew != 0 and i == self.last_touch_car and backboard_new and not self.dtap_dict[
-                "ball_hit_bb"] and previous_model_actions is not None and \
+                "ball_hit_bb"] and previous_model_actions is not None and self.cancel_backboard_bounce_indices is not None and \
                     previous_model_actions[i] not in self.cancel_backboard_bounce_indices:
                 player_rewards[i] += self.backboard_bounce_rew
+
+            # reward groups for selector reward
+            if previous_model_actions is not None:
+                if previous_model_actions[i] in self.aerial_indices and not player.on_ground and \
+                        player.car_data.position[2] > 300:
+                    player_self_rewards += self.aerial_reward_w
+                elif previous_model_actions[i] in self.ground_indices and player.on_ground and \
+                        player.car_data.position[2] < 150:
+                    player_self_rewards += self.ground_reward_w
+                elif previous_model_actions[i] in self.wall_indices and player.on_ground and \
+                        player.car_data.position[2] > 150:
+                    player_self_rewards += self.wall_reward_w
+                elif previous_model_actions[i] in self.defend_indices:
+                    y = player.inverted_car_data.position[1] if player.team_num else player.car_data.position[1]
+                    if y < -3920 and -2000 < player.car_data.position[0] < 2000:
+                        player_self_rewards += self.defend_reward_w
 
         mid = len(player_rewards) // 2
 

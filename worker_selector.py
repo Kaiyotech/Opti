@@ -6,6 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from rocket_learn.matchmaker.matchmaker import Matchmaker
 from rlgym.utils.gamestates import GameState, PlayerData
+from rlgym.utils.state_setters.default_state import DefaultState
 
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
@@ -336,33 +337,41 @@ if __name__ == "__main__":
                         got_demoed_w=-3,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=0,
-                        flip_reset_w=4,
-                        flip_reset_goal_w=8,
-                        aerial_goal_w=8,
-                        double_tap_w=8,
-                        cons_air_touches_w=1,
-                        jump_touch_w=2,
-                        wall_touch_w=3,
+                        flip_reset_w=2,
+                        flip_reset_goal_w=5,
+                        aerial_goal_w=5,
+                        double_tap_w=5,
+                        # cons_air_touches_w=,
+                        # jump_touch_w=0.5,
+                        # wall_touch_w=1,
                         flatten_wall_height=True,
-                        exit_velocity_w=1,
-                        acel_ball_w=1,
-                        backboard_bounce_rew=3,
-                        velocity_pb_w=0.0075,  # 0.005,
-                        velocity_bg_w=0.02,
+                        # exit_velocity_w=1,
+                        # acel_ball_w=1,
+                        backboard_bounce_rew=2,
+                        velocity_pb_w=0,  # 0.005,
+                        # velocity_bg_w=0.02,
                         kickoff_w=0.05,
-                        punish_dist_goal_score_w=-1,
-                        # boost_gain_w=0.15,
-                        # punish_boost=False,
-                        # use_boost_punish_formula=False,
-                        # boost_spend_w=0,  # -0.1,
-                        # boost_gain_small_w=0.15,
-                        # punish_low_boost_w=-0.02,
-                        cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                        cancel_wall_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                        cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                        cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                        cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # punish_dist_goal_score_w=-1,
+                        # # boost_gain_w=0.15,
+                        # # punish_boost=False,
+                        # # use_boost_punish_formula=False,
+                        # # boost_spend_w=0,  # -0.1,
+                        # # boost_gain_small_w=0.15,
+                        # # punish_low_boost_w=-0.02,
+                        # cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # cancel_wall_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                         dtap_dict=dtap_status,
+                        aerial_reward_w=0.1,
+                        ground_reward_w=0.003,
+                        defend_reward_w=0.003,
+                        wall_reward_w=0.01,
+                        aerial_indices=[3, 6, 7, 8, 28, 29],
+                        wall_indices=[8, 25, 26, 28, 29],
+                        ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
+                        defend_indices=[*range(2, 10), 27, 28],
                         )
     # obs_output = np.zeros()
 
@@ -406,15 +415,16 @@ if __name__ == "__main__":
     gp = GP(model_string=model_name)
 
     pretrained_agents = Constants_selector.pretrained_agents
+    pretrained_agents = None
 
     matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 20, fps * 30, fps * 40],
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
                                                              avg_frames=None,
-                                                             min_frames=fps * 10)),
+                                                             min_frames=fps * 5)),
                  # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]
@@ -460,10 +470,6 @@ if __name__ == "__main__":
         # selector_skip_k = 5e-7
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
-        # terminals = [GoalScoredCondition(),
-                     # TimeoutCondition(fps * 60),
-                     # NoTouchTimeoutCondition(fps * 30),
-                     # ]
 
         # pretrained_agents = {
         #     nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
@@ -557,7 +563,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.00175,  # 1 second
+                                selector_skip_k=0.00011,  # 4 seconds # 0.00175,  # 1 second
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,

@@ -449,8 +449,28 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
             fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
             rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
                                   fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance of 2000 in rotated direction
+            # distance in rotated direction
             forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
+            if abs(forward_point[0]) > 4096:
+                new_dist = recovery_distance - abs(forward_point[0] - 4096) * 1.414
+                forward_point = (new_dist * rot_fwd) + player_car.position[:2]
+            elif abs(forward_point[1]) > 5120:
+                new_dist = recovery_distance - abs(forward_point[1] - 5120) * 1.414
+                forward_point = (new_dist * rot_fwd) + player_car.position[:2]
+            if position_index in [11, 13, 15, 17]:  # 45 angle needs to clip on the 45 to keep it correct
+                # edges are 2944 and 3968, if we're outside the corner then we need to project it to the line of corner
+                if (-2944 > forward_point[0] or forward_point[0] > 2944) and (-3968 > forward_point[1] or forward_point[1] > 3968):
+                    quad = np.array([1, 1])
+                    if forward_point[0] < 0:
+                        quad[0] = -1
+                    if forward_point[1] < 0:
+                        quad[1] = -1
+                    corner_point_1 = np.array([4096, 3968]) * quad
+                    corner_point_2 = np.array([2944, 5120]) * quad
+                    dist = corner_point_2 - corner_point_1
+                    nx = (((forward_point[0] - corner_point_1[0]) * dist[0]) +
+                          ((forward_point[1] - corner_point_1[1]) * dist[1])) / (dist[0] * dist[0] + dist[1] * dist[1])
+                    forward_point = (dist * nx) + corner_point_1
             forward_point[0] = np.clip(forward_point[0], -4096, 4096)
             forward_point[1] = np.clip(forward_point[1], -5120, 5120)
             ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
@@ -619,7 +639,7 @@ class SelectorParser(ActionParser):
                 expanding=True, tick_skip=4, team_size=3)),
             (SubAgent("gp_jit.pt"),
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-            (SubAgent("aerial_jit.pt"),
+            (SubAgent("aerial_jit.pt"),  # 3
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                      mask_aerial_opp=True)),
             (SubAgent("flick_1_jit.pt"),
@@ -804,8 +824,8 @@ class SelectorParser(ActionParser):
             if 10 <= action <= 26:
                 # if reaching the "ball" or ball soon, allow a new choice by selector
                 check_radius = 300
-                if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
-                    check_radius = 800
+                # if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
+                #     check_radius = 1100  # 800
                 self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
 
             if 22 <= action <= 23:  # freeze
