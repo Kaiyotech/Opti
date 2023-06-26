@@ -565,7 +565,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.00011,  # 4 seconds # 0.00175,  # 1 second
+                                selector_skip_k=0.0002,  # 3 seconds # 0.00175,  # 1 second
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
