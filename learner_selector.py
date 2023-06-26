@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_test19.00"
+    run_id = "selector_run_19.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_test19.00",
+                        name="Selector_Run_19.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                                         stat_trackers=stat_trackers,
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
-                                        pretrained_agents=Constants_selector.pretrained_agents
+                                        # pretrained_agents=Constants_selector.pretrained_agents
                                         )
     action_size = 30
     # boost_size = 2

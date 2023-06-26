@@ -414,6 +414,7 @@ if __name__ == "__main__":
     gp = GP(model_string=model_name)
 
     pretrained_agents = Constants_selector.pretrained_agents
+    pretrained_agents = None
 
     matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
