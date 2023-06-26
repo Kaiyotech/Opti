@@ -827,6 +827,8 @@ class SelectorParser(ActionParser):
                 # if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
                 #     check_radius = 1100  # 800
                 self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
+            elif action == 29:  # wall terminal
+                self.force_selector_choice[i] = not player.on_ground
 
             if 22 <= action <= 23:  # freeze
                 if self.prev_model_actions[i] == action:  # action didn't change
