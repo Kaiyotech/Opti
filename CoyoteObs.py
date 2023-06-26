@@ -238,6 +238,19 @@ class CoyoteObsBuilder(ObsBuilder):
             self.floor_bounce = False
             self.backboard_bounce = False
             self.prev_ball_vel = np.array(initial_state.ball.linear_velocity)
+            # dtap_status = {"hit_towards_bb": False,
+            #                "ball_hit_bb": False,
+            #                "hit_towards_goal": False,
+            #                }
+            if self.selector:  # normally comes from the setter when training doubletap specifically but can't for general
+                # replay setters so we'll guess here
+                self.dtap_dict["hit_towards_bb"] = False
+                self.dtap_dict["ball_hit_bb"] = False
+                self.dtap_dict["hit_towards_goal"] = False
+                if abs(initial_state.ball.position[1]) > 3000 and \
+                        (initial_state.ball.position[1] * initial_state.ball.linear_velocity[1]) > 0 and \
+                        initial_state.ball.position[2] > 500:
+                    self.dtap_dict["hit_towards_bb"] = True
 
     def pre_step(self, state: GameState):
         # dist = state.ball.position - state.players[0].car_data.position
