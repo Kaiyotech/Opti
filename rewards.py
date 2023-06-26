@@ -148,7 +148,23 @@ class ZeroSumReward(RewardFunction):
             cancel_flip_reset_indices=None,
             cancel_cons_air_touch_indices=None,
             cancel_backboard_bounce_indices=None,
+            aerial_indices=None,
+            defend_indices=None,
+            ground_indices=None,
+            wall_indices=None,
+            aerial_reward_w=0,
+            defend_reward_w=0,
+            ground_reward_w=0,
+            wall_reward_w=0,
     ):
+        self.wall_reward_w = wall_reward_w
+        self.ground_reward_w = ground_reward_w
+        self.defend_reward_w = defend_reward_w
+        self.aerial_reward_w = aerial_reward_w
+        self.wall_indices = wall_indices
+        self.ground_indices = ground_indices
+        self.defend_indices = defend_indices
+        self.aerial_indices = aerial_indices
         self.cancel_backboard_bounce_indices = cancel_backboard_bounce_indices
         self.cancel_cons_air_touch_indices = cancel_cons_air_touch_indices
         self.cancel_flip_reset_indices = cancel_flip_reset_indices
@@ -751,6 +767,22 @@ class ZeroSumReward(RewardFunction):
                 "ball_hit_bb"] and previous_model_actions is not None and \
                     previous_model_actions[i] not in self.cancel_backboard_bounce_indices:
                 player_rewards[i] += self.backboard_bounce_rew
+
+            # reward groups for selector reward
+            if previous_model_actions is not None:
+                if previous_model_actions in self.aerial_indices and not player.on_ground and \
+                        player.car_data.position[2] > 300:
+                    player_self_rewards += self.aerial_reward_w
+                elif previous_model_actions in self.ground_indices and player.on_ground and \
+                        player.car_data.position[2] < 150:
+                    player_self_rewards += self.ground_reward_w
+                elif previous_model_actions in self.wall_indices and player.on_ground and \
+                        player.car_data.position[2] > 150:
+                    player_self_rewards += self.wall_reward_w
+                elif previous_model_actions in self.defend_indices:
+                    y = player.inverted_car_data.position[1] if player.team_num else player.car_data.position[1]
+                    if y < -3920 and -2000 < player.car_data.position[0] < 2000:
+                        player_self_rewards += self.defend_reward_w
 
         mid = len(player_rewards) // 2
 

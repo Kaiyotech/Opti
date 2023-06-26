@@ -639,7 +639,7 @@ class SelectorParser(ActionParser):
                 expanding=True, tick_skip=4, team_size=3)),
             (SubAgent("gp_jit.pt"),
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-            (SubAgent("aerial_jit.pt"),
+            (SubAgent("aerial_jit.pt"),  # 3
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                      mask_aerial_opp=True)),
             (SubAgent("flick_1_jit.pt"),

@@ -43,8 +43,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=1e-5,
-        critic_lr=1e-5,
+        actor_lr=5e-6,
+        critic_lr=5e-6,
         n_steps=Constants_selector.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=None,
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_18.00"
+    run_id = "selector_run_test19.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_18.00",
+                        name="Selector_Run_test19.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -104,33 +104,41 @@ if __name__ == "__main__":
                                                               got_demoed_w=-3,
                                                               punish_action_change_w=0,
                                                               decay_punish_action_change_w=0,
-                                                              flip_reset_w=1,
-                                                              flip_reset_goal_w=6,
-                                                              aerial_goal_w=4,
-                                                              double_tap_w=6,
-                                                              cons_air_touches_w=0.3,
-                                                              jump_touch_w=0.75,
-                                                              wall_touch_w=0.75,
+                                                              flip_reset_w=2,
+                                                              flip_reset_goal_w=5,
+                                                              aerial_goal_w=5,
+                                                              double_tap_w=5,
+                                                              # cons_air_touches_w=,
+                                                              # jump_touch_w=0.5,
+                                                              # wall_touch_w=1,
                                                               flatten_wall_height=True,
-                                                              exit_velocity_w=1,
-                                                              acel_ball_w=1,
+                                                              # exit_velocity_w=1,
+                                                              # acel_ball_w=1,
                                                               backboard_bounce_rew=2,
-                                                              velocity_pb_w=0.005,  # 0.005,
-                                                              velocity_bg_w=0.02,
+                                                              velocity_pb_w=0,  # 0.005,
+                                                              # velocity_bg_w=0.02,
                                                               kickoff_w=0.05,
-                                                              punish_dist_goal_score_w=-1,
-                                                              # boost_gain_w=0.15,
-                                                              # punish_boost=False,
-                                                              # use_boost_punish_formula=False,
-                                                              # boost_spend_w=0,  # -0.1,
-                                                              # boost_gain_small_w=0.15,
-                                                              # punish_low_boost_w=-0.02,
-                                                              cancel_jump_touch_indices=[2],
-                                                              cancel_wall_touch_indices=[2],
-                                                              cancel_flip_reset_indices=[2],
-                                                              cancel_cons_air_touch_indices=[2],
-                                                              cancel_backboard_bounce_indices=[2],
+                                                              # punish_dist_goal_score_w=-1,
+                                                              # # boost_gain_w=0.15,
+                                                              # # punish_boost=False,
+                                                              # # use_boost_punish_formula=False,
+                                                              # # boost_spend_w=0,  # -0.1,
+                                                              # # boost_gain_small_w=0.15,
+                                                              # # punish_low_boost_w=-0.02,
+                                                              # cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                                                              # cancel_wall_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                                                              # cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                                                              # cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                                                              # cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               dtap_dict=dtap_status,
+                                                              aerial_reward_w=0.1,
+                                                              ground_reward_w=0.003,
+                                                              defend_reward_w=0.003,
+                                                              wall_reward_w=0.01,
+                                                              aerial_indices=[3, 6, 7, 8, 28, 29],
+                                                              wall_indices=[8, 25, 26, 28, 29],
+                                                              ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
+                                                              defend_indices=[*range(2, 10), 27, 28],
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -144,7 +152,7 @@ if __name__ == "__main__":
                                         )
     action_size = 30
     # boost_size = 2
-    input_size = 430 + (Constants_selector.STACK_SIZE * action_size)
+    input_size = 434 + (Constants_selector.STACK_SIZE * action_size)
     # shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
@@ -191,7 +199,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1687550505.5916364/Opti_340/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1687550505.5916364/Opti_340/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr

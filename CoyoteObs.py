@@ -754,6 +754,18 @@ class CoyoteObsBuilder(ObsBuilder):
                 ball.position, ball.linear_velocity, prev_act
             )
 
+        if self.selector:
+            defending = False
+            y = player.inverted_car_data.position[1] if inverted else player.car_data.position[1]
+            if y < -3920 and -2000 < player.car_data.position[0] < 2000:
+                defending = True
+            # add on_ground (not wall), in air above 300, on wall, defending
+            player_data.extend(list([int(player.on_ground and player.car_data.position[2] < 150),
+                                     int(not player.on_ground and player.car_data.position[2] > 300),
+                                     int(player.on_ground and player.car_data.position[2] > 150),
+                                     int(defending)
+                                     ]))
+
         if self.doubletap_indicator:
             player_data.extend(list([int(self.backboard_bounce),
                                      int(self.floor_bounce),
