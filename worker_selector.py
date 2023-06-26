@@ -6,6 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 from rlgym.envs import Match
 from rocket_learn.matchmaker.matchmaker import Matchmaker
 from rlgym.utils.gamestates import GameState, PlayerData
+from rlgym.utils.state_setters.default_state import DefaultState
 
 from CoyoteObs import CoyoteObsBuilder
 from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
