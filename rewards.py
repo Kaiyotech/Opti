@@ -785,7 +785,9 @@ class ZeroSumReward(RewardFunction):
                     player_self_rewards += self.wall_reward_w
                 elif previous_model_actions[i] in self.defend_indices:
                     y = player.inverted_car_data.position[1] if player.team_num else player.car_data.position[1]
-                    if y < -3920 and -2000 < player.car_data.position[0] < 2000:
+                    ball_y = state.inverted_ball.position[1] if player.team_num else state.ball.position[1]
+                    if y < -3920 and -2000 < player.car_data.position[0] < 2000 and state.ball.position[2] > 400 and \
+                            (state.ball.linear_velocity[1] * state.ball.position[1]) > 0 and ball_y < -1500:
                         player_self_rewards += self.defend_reward_w
 
         mid = len(player_rewards) // 2

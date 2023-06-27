@@ -371,7 +371,7 @@ if __name__ == "__main__":
                         aerial_indices=[3, 6, 7, 8, 28, 29],
                         wall_indices=[8, 25, 26, 28, 29],
                         ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
-                        defend_indices=[*range(2, 10), 27, 28],
+                        defend_indices=[3, 6, 7, 8, 28],
                         )
     # obs_output = np.zeros()
 

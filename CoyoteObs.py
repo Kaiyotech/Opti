@@ -770,7 +770,9 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.selector:
             defending = False
             y = player.inverted_car_data.position[1] if inverted else player.car_data.position[1]
-            if y < -3920 and -2000 < player.car_data.position[0] < 2000:
+            if y < -3920 and -2000 < player.car_data.position[0] < 2000 and ball.position[2] > 400 and \
+                    (ball.linear_velocity[1] * ball.position[1]) > 0 and ball.position[1] < -1500:
+                # changing this to be aerial defending with ball in air
                 defending = True
             # add on_ground (not wall), in air above 300, on wall, defending
             player_data.extend(list([int(player.on_ground and player.car_data.position[2] < 150),
