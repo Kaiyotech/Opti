@@ -377,20 +377,6 @@ class ZeroSumReward(RewardFunction):
         norm_ball_vel = norm(state.ball.linear_velocity)
         xy_norm_ball_vel = norm(state.ball.linear_velocity[:-1])
         for i, player in enumerate(state.players):
-            # necessary to replace some player.on_ground with this since it's what I actually meant to be checking
-            # otherwise the ball counts as on_ground, surface here means wall, floor, ceiling.
-            player_on_surface = player.on_ground
-            if player_on_surface and 300 < player.car_data.position[2] < CEILING_Z - 300 and \
-                    -BACK_WALL_Y + 300 < player.car_data.position[1] < BACK_WALL_Y - 300 and \
-                    -SIDE_WALL_X + 300 < player.car_data.position[0] < SIDE_WALL_X - 300 and \
-                    np.linalg.norm(player.car_data.position - state.ball.position) < 120 and \
-                    cosine_similarity(
-                        state.ball.position - player.car_data.position, -player.car_data.up()) > 0.9:
-                player_on_surface = False
-
-            # fix on_ground in goals to prevent rewarding resets in goal
-            if not player_on_surface and abs(player.car_data.position[1]) > BACK_WALL_Y - 10:
-                player_on_surface = True
             last = self.last_state.players[i]
 
             if player.ball_touched:
@@ -425,7 +411,8 @@ class ZeroSumReward(RewardFunction):
                 min_height = 120
                 max_height = CEILING_Z - BALL_RADIUS
                 rnge = max_height - min_height
-                if not player.on_ground and state.ball.position[2] > min_height and previous_model_actions is not None and \
+                if not player.on_ground and state.ball.position[
+                    2] > min_height and previous_model_actions is not None and \
                         self.cancel_jump_touch_indices is not None and \
                         previous_model_actions[i] not in self.cancel_jump_touch_indices:
                     # x_from_wall = min(SIDE_WALL_X - BALL_RADIUS - abs(state.ball.position[0]), 20)
@@ -513,6 +500,10 @@ class ZeroSumReward(RewardFunction):
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
                 self.cons_touches = 0
 
+            # reset the flip reset gotten after one second
+            if self.reset_timer > 1 / self.time_interval:
+                self.got_reset = [False] * len(state.players)
+
             # punish low ball to encourage wall play, reward higher ball
             # punish below 350, 0 at 350, positive above
             # −0.000002x2+0.005x−1
@@ -534,7 +525,7 @@ class ZeroSumReward(RewardFunction):
                 if not self.fancy_dtap or (self.fancy_dtap and self.dtap_dict["hit_towards_goal"]):
                     player_rewards[i] += self.velocity_bg_w * vel_bg_reward
                     # no vel_bg reward unless hit towards goal when doing fancy dtap
-                if self.got_reset[i] and player.has_jump and not player_on_surface:
+                if self.got_reset[i] and player.has_jump and not player.on_ground:
                     player_rewards[i] += self.has_flip_reset_vbg_w * \
                                          vel_bg_reward
 
@@ -759,7 +750,9 @@ class ZeroSumReward(RewardFunction):
             # change 6/27/2023, on_ground can be true for a tick while touching the ball with all wheels
             # it's not a reliable check for reset
             # rewriting to remove that and add checks for location instead
-            if not last.has_jump and player.has_jump and not player_on_surface:
+            if player.on_ground and state.ball.position[2] > 200 and \
+                    np.linalg.norm(state.ball.position - player.car_data.position) < 120 and \
+                    cosine_similarity(state.ball.position - player.car_data.position, -player.car_data.up()) > 0.9:
                 if not self.got_reset[i]:  # first reset of episode
                     #  1 reward for
                     player_rewards[i] += self.quick_flip_reset_w * \
@@ -767,7 +760,8 @@ class ZeroSumReward(RewardFunction):
                 self.got_reset[i] = True
                 # player_rewards[i] += self.flip_reset_w * np.clip(cosine_similarity(
                 #     np.asarray([0, 0, CEILING_Z - player.car_data.position[2]]), -player.car_data.up()), 0.1, 1)
-                if self.kickoff_timer - self.reset_timer > self.flip_reset_delay_steps:
+                if (self.kickoff_timer - self.reset_timer > self.flip_reset_delay_steps and self.prevent_chain_reset) or \
+                        not self.prevent_chain_reset:
                     if previous_model_actions is not None and self.cancel_flip_reset_indices is not None and \
                             previous_model_actions[i] not in self.cancel_flip_reset_indices:
                         player_rewards[i] += self.flip_reset_w
@@ -775,11 +769,10 @@ class ZeroSumReward(RewardFunction):
                     if self.cons_resets > 1:
                         player_rewards[i] += self.inc_flip_reset_w * \
                                              min((1.4 ** self.cons_resets), 6) / 6
-                if self.prevent_chain_reset:
-                    self.reset_timer = self.kickoff_timer
+                self.reset_timer = self.kickoff_timer
             # updated 6/27/23 to match the on_ground for flip reset new logic
-            if player_on_surface:
-                    #  self.got_reset[i] = False
+            elif player.on_ground:
+                #  self.got_reset[i] = False
                 self.cons_resets = 0
                 self.reset_timer = -100000
 
@@ -792,7 +785,7 @@ class ZeroSumReward(RewardFunction):
 
             # reward groups for selector reward
             if previous_model_actions is not None:
-                if previous_model_actions[i] in self.aerial_indices and not player_on_surface and \
+                if previous_model_actions[i] in self.aerial_indices and not player.on_ground and \
                         player.car_data.position[2] > 300:
                     player_self_rewards += self.aerial_reward_w
                 elif previous_model_actions[i] in self.ground_indices and player.on_ground and \
