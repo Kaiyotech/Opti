@@ -2,6 +2,7 @@ import numpy as np
 
 from rocket_learn.utils.gamestate_encoding import StateConstants
 from rocket_learn.utils.stat_trackers.stat_tracker import StatTracker
+from rlgym.utils.common_values import CEILING_Z, BACK_WALL_Y, SIDE_WALL_X
 
 
 # class ExitVelocity(StatTracker):
@@ -75,14 +76,24 @@ class FlipReset(StatTracker):
         players = gamestates[:, StateConstants.PLAYERS]
         num_players = len(players[0]) // 39
         has_jumps = players[:, StateConstants.HAS_JUMP]
-        on_grounds = players[:, StateConstants.ON_GROUND]
+        # on_grounds = players[:, StateConstants.ON_GROUND]
+        players_x = players[:, StateConstants.CAR_POS_X]
+        players_y = players[:, StateConstants.CAR_POS_Y]
+        players_z = players[:, StateConstants.CAR_POS_Z]
         for i in range(num_players):
             has_jumps_player = has_jumps[:, i]
-            changes = np.where(has_jumps_player[:-1] < has_jumps_player[1:], True, False)
-            on_grounds_player = on_grounds[:, i] == 1
-            self.flip_reset_count += (~on_grounds_player[1:] & changes).sum()
+            changes = np.where(has_jumps_player[:1] < has_jumps_player[:-1], True, False)
+            player_x = players_x[:, i]
+            player_y = players_y[:, i]
+            player_z = players_z[:, i]
+            on_grounds_player = np.where((player_z < 18) | (player_z > CEILING_Z - 18) |
+                                         ((-SIDE_WALL_X + 18) > player_x) |
+                                         ((SIDE_WALL_X - 18) > player_x) |
+                                         ((-BACK_WALL_Y + 18) > player_y) |
+                                         ((BACK_WALL_Y - 18) > player_y), True, False)
+            self.flip_reset_count += (~on_grounds_player & changes).sum()
 
-        self.count += on_grounds.size
+        self.count += has_jumps.size
 
     def get_stat(self):
         return self.flip_reset_count / (self.count or 1)
