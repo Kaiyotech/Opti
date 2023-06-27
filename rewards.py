@@ -377,6 +377,15 @@ class ZeroSumReward(RewardFunction):
         norm_ball_vel = norm(state.ball.linear_velocity)
         xy_norm_ball_vel = norm(state.ball.linear_velocity[:-1])
         for i, player in enumerate(state.players):
+            # necessary to replace some player.on_ground with this since it's what I actually meant to be checking
+            # otherwise the ball counts as on_ground, surface here means wall, floor, ceiling.
+            player_on_surface = False
+            if player.car_data.position[2] < 18 or player.car_data.position[2] > CEILING_Z - 18 or \
+                    (-SIDE_WALL_X + 18) > player.car_data.position[0] or \
+                    (SIDE_WALL_X - 18) < player.car_data.position[0] or \
+                    (-BACK_WALL_Y + 18) > player.car_data.position[1] or \
+                    (BACK_WALL_Y - 18) < player.car_data.position[1]:
+                player_on_surface = True
             last = self.last_state.players[i]
 
             if player.ball_touched:
@@ -520,7 +529,7 @@ class ZeroSumReward(RewardFunction):
                 if not self.fancy_dtap or (self.fancy_dtap and self.dtap_dict["hit_towards_goal"]):
                     player_rewards[i] += self.velocity_bg_w * vel_bg_reward
                     # no vel_bg reward unless hit towards goal when doing fancy dtap
-                if self.got_reset[i] and player.has_jump and not player.on_ground:
+                if self.got_reset[i] and player.has_jump and not player_on_surface:
                     player_rewards[i] += self.has_flip_reset_vbg_w * \
                                          vel_bg_reward
 
@@ -742,7 +751,10 @@ class ZeroSumReward(RewardFunction):
                 player_self_rewards[i] += self.kickoff_w * -1
 
             # flip reset
-            if not last.has_jump and player.has_jump and player.car_data.position[2] > 200 and not player.on_ground:
+            # change 6/27/2023, on_ground can be true for a tick while touching the ball with all wheels
+            # it's not a reliable check for reset
+            # rewriting to remove that and add checks for location instead
+            if not last.has_jump and player.has_jump and not player_on_surface:
                 if not self.got_reset[i]:  # first reset of episode
                     #  1 reward for
                     player_rewards[i] += self.quick_flip_reset_w * \
@@ -760,8 +772,9 @@ class ZeroSumReward(RewardFunction):
                                              min((1.4 ** self.cons_resets), 6) / 6
                 if self.prevent_chain_reset:
                     self.reset_timer = self.kickoff_timer
-            if player.on_ground:
-                #  self.got_reset[i] = False
+            # updated 6/27/23 to match the on_ground for flip reset new logic
+            if player_on_surface:
+                    #  self.got_reset[i] = False
                 self.cons_resets = 0
                 self.reset_timer = -100000
 
@@ -774,7 +787,7 @@ class ZeroSumReward(RewardFunction):
 
             # reward groups for selector reward
             if previous_model_actions is not None:
-                if previous_model_actions[i] in self.aerial_indices and not player.on_ground and \
+                if previous_model_actions[i] in self.aerial_indices and not player_on_surface and \
                         player.car_data.position[2] > 300:
                     player_self_rewards += self.aerial_reward_w
                 elif previous_model_actions[i] in self.ground_indices and player.on_ground and \
