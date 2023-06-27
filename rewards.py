@@ -379,12 +379,17 @@ class ZeroSumReward(RewardFunction):
         for i, player in enumerate(state.players):
             # necessary to replace some player.on_ground with this since it's what I actually meant to be checking
             # otherwise the ball counts as on_ground, surface here means wall, floor, ceiling.
-            player_on_surface = False
-            if player.car_data.position[2] < 18 or player.car_data.position[2] > CEILING_Z - 18 or \
-                    (-SIDE_WALL_X + 18) > player.car_data.position[0] or \
-                    (SIDE_WALL_X - 18) < player.car_data.position[0] or \
-                    (-BACK_WALL_Y + 18) > player.car_data.position[1] or \
-                    (BACK_WALL_Y - 18) < player.car_data.position[1]:
+            player_on_surface = player.on_ground
+            if player_on_surface and 300 < player.car_data.position[2] < CEILING_Z - 300 and \
+                    -BACK_WALL_Y + 300 < player.car_data.position[1] < BACK_WALL_Y - 300 and \
+                    -SIDE_WALL_X + 300 < player.car_data.position[0] < SIDE_WALL_X - 300 and \
+                    np.linalg.norm(player.car_data.position - state.ball.position) < 120 and \
+                    cosine_similarity(
+                        state.ball.position - player.car_data.position, -player.car_data.up()) > 0.9:
+                player_on_surface = False
+
+            # fix on_ground in goals to prevent rewarding resets in goal
+            if not player_on_surface and abs(player.car_data.position[1]) > BACK_WALL_Y - 10:
                 player_on_surface = True
             last = self.last_state.players[i]
 
