@@ -421,7 +421,7 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 15, fps * 20],
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 15, fps * 22.5, fps * 30],
                                                              avg_frames=None,
                                                              min_frames=fps * 5)),
                  # TimeoutCondition(fps * 15),
