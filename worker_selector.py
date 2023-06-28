@@ -421,9 +421,9 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 2, fps * 2, fps * 2],
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 20, fps * 30, fps * 40],
                                                              avg_frames=None,
-                                                             min_frames=fps * 5)),
+                                                             min_frames=fps * 10)),
                  # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]
@@ -566,7 +566,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0002,  # 3 seconds # 0.00175,  # 1 second
+                                selector_skip_k=0.0001, # 4 seconds
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
