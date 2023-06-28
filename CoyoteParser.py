@@ -781,6 +781,10 @@ class SelectorParser(ActionParser):
             mirrored = False
             # if self.prev_model[i] != action:
             #     self.prev_action[i] = None
+            # send pretrained out immediately
+            if len(action) > 1 and not np.isnan(action).any():
+                parsed_actions.append(action)
+                continue
             action = int(action[0])  # change ndarray [0.] to 0
             # action = 22  # TODO testing remove this
             # zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
