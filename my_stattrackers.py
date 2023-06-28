@@ -86,11 +86,11 @@ class FlipReset(StatTracker):
             player_x = players_x[:, i]
             player_y = players_y[:, i]
             player_z = players_z[:, i]
-            on_grounds_player = np.where((player_z < 18) | (player_z > CEILING_Z - 18) |
-                                         ((-SIDE_WALL_X + 18) > player_x) |
-                                         ((SIDE_WALL_X - 18) > player_x) |
-                                         ((-BACK_WALL_Y + 18) > player_y) |
-                                         ((BACK_WALL_Y - 18) > player_y), True, False)
+            on_grounds_player = np.where((player_z < 300) | (player_z > CEILING_Z - 300) |
+                                         ((-SIDE_WALL_X + 700) > player_x) |
+                                         ((SIDE_WALL_X - 700) > player_x) |
+                                         ((-BACK_WALL_Y + 700) > player_y) |
+                                         ((BACK_WALL_Y - 700) > player_y), True, False)
             self.flip_reset_count += (~on_grounds_player & changes).sum()
 
         self.count += has_jumps.size

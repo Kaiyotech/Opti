@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from rlgym.utils.gamestates import PlayerData, GameState, PhysicsObject
 
 from rlgym.utils.obs_builders import ObsBuilder
+from rlgym.utils.math import cosine_similarity
 
 import copy
 import math
@@ -78,8 +79,15 @@ class CoyoteObsBuilder(ObsBuilder):
                  selector_infinite_boost=None,
                  doubletap_indicator=False,
                  dtap_dict=None,
+                 flip_reset_counter=None,
                  ):
         super().__init__()
+        if flip_reset_counter:
+            self.flip_reset_counter = 0
+            self.had_jump = None
+            self.reset_timer = 0
+        else:
+            self.flip_reset_counter=None
         self.doubletap_indicator = doubletap_indicator
         self.dtap_dict = dtap_dict
         if self.doubletap_indicator:
@@ -156,6 +164,7 @@ class CoyoteObsBuilder(ObsBuilder):
         self.add_handbrake = add_handbrake
         self.dodge_deadzone = dodge_deadzone
         self.any_timers = add_boosttime or add_jumptime or add_fliptime or add_airtime or add_handbrake
+        self.kickoff_timer = 0
 
         self.boosttimes = [0] * 8
         self.jumptimes = [0] * 8
@@ -169,9 +178,11 @@ class CoyoteObsBuilder(ObsBuilder):
         self.is_jumpings = [False] * 8
         self.has_jumpeds = [False] * 8
         self.handbrakes = [0] * 8
+        self.had_jump = [0] * 8
 
     def reset(self, initial_state: GameState):
         self.n = 0
+        self.kickoff_timer = 0
         self.state = None
         if self.obs_info is None:
             self.boost_timers = np.zeros(self.boost_locations.shape[0])
@@ -252,6 +263,9 @@ class CoyoteObsBuilder(ObsBuilder):
                         initial_state.ball.position[2] > 500:
                     self.dtap_dict["hit_towards_bb"] = True
 
+        self.flip_reset_counter = [0] * 8
+        self.reset_timer = 0
+
     def pre_step(self, state: GameState):
         # dist = state.ball.position - state.players[0].car_data.position
         # dist_norm = np.linalg.norm(dist)
@@ -260,6 +274,7 @@ class CoyoteObsBuilder(ObsBuilder):
         # create player/team agnostic items (do these even exist?)
         self.n = 0
         self._update_timers(state)
+        self.kickoff_timer += 1
         # create team specific things
         self.blue_obs = self.boost_timers / self.BOOST_TIMER_STD
         self.orange_obs = self.inverted_boost_timers / self.BOOST_TIMER_STD
@@ -339,6 +354,9 @@ class CoyoteObsBuilder(ObsBuilder):
                     self.demo_timers[cid] = 3
             else:  # Not demoed
                 self.demo_timers[cid] = 0
+        if self.flip_reset_counter is not None:
+            if self.kickoff_timer - self.reset_timer > 1 / self.time_interval and state.ball.position[2] < BALL_RADIUS * 2:
+                self.flip_reset_counter = [0] * len(state.players)
 
     def _update_addl_timers(self, player: PlayerData, state: GameState, prev_actions: np.ndarray):
         cid = self.n
@@ -780,6 +798,15 @@ class CoyoteObsBuilder(ObsBuilder):
                                      int(player.on_ground and player.car_data.position[2] > 150),
                                      int(defending)
                                      ]))
+
+        if self.flip_reset_counter is not None:
+            if not self.had_jump[cid] and player.has_jump and state.ball.position[2] > 200 and \
+                    np.linalg.norm(state.ball.position - player.car_data.position) < 110 and \
+                    cosine_similarity(state.ball.position - player.car_data.position, -player.car_data.up()) > 0.9:
+                self.flip_reset_counter[cid] = 1
+                self.reset_timer = self.kickoff_timer
+            player_data.extend(list([int(self.flip_reset_counter[cid])]))
+            self.had_jump[cid] = player.has_jump
 
         if self.doubletap_indicator:
             player_data.extend(list([int(self.backboard_bounce),

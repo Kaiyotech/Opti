@@ -370,6 +370,11 @@ class ZeroSumReward(RewardFunction):
             self.cons_touches = 0
         elif self.orange_touch_timer < self.blue_touch_timer and state.players[self.orange_toucher].on_ground:
             self.cons_touches = 0
+
+        # reset the flip reset gotten after one second and ball near ground
+        if self.kickoff_timer - self.reset_timer > 1 / self.time_interval and ball_near_ground:
+            self.got_reset = [False] * len(state.players)
+
         # Calculate rewards
         player_rewards = np.zeros(len(state.players))
         player_self_rewards = np.zeros(len(state.players))
@@ -499,10 +504,6 @@ class ZeroSumReward(RewardFunction):
             # ball got too low, don't credit bounces
             if self.cons_touches > 0 and state.ball.position[2] <= 140:
                 self.cons_touches = 0
-
-            # reset the flip reset gotten after one second
-            if self.reset_timer > 1 / self.time_interval:
-                self.got_reset = [False] * len(state.players)
 
             # punish low ball to encourage wall play, reward higher ball
             # punish below 350, 0 at 350, positive above
@@ -750,8 +751,8 @@ class ZeroSumReward(RewardFunction):
             # change 6/27/2023, on_ground can be true for a tick while touching the ball with all wheels
             # it's not a reliable check for reset
             # rewriting to remove that and add checks for location instead
-            if player.on_ground and state.ball.position[2] > 200 and \
-                    np.linalg.norm(state.ball.position - player.car_data.position) < 120 and \
+            if not last.has_jump and player.has_jump and state.ball.position[2] > 200 and \
+                    np.linalg.norm(state.ball.position - player.car_data.position) < 110 and \
                     cosine_similarity(state.ball.position - player.car_data.position, -player.car_data.up()) > 0.9:
                 if not self.got_reset[i]:  # first reset of episode
                     #  1 reward for

@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_19.01"
+    run_id = "selector_run_test20.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_19.01",
+                        name="Selector_Run_test20.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -93,28 +93,29 @@ if __name__ == "__main__":
                                                                  selector=True,
                                                                  doubletap_indicator=True,
                                                                  dtap_dict=dtap_status,
+                                                                 flip_reset_counter=True,
                                                                  ),
 
                                         lambda: ZeroSumReward(zero_sum=Constants_selector.ZERO_SUM,
                                                               tick_skip=frame_skip,
                                                               goal_w=10,
                                                               concede_w=-10,
-                                                              team_spirit=0.7,
+                                                              team_spirit=1,
                                                               demo_w=3,
                                                               got_demoed_w=-3,
                                                               punish_action_change_w=0,
                                                               decay_punish_action_change_w=0,
-                                                              flip_reset_w=2,
-                                                              flip_reset_goal_w=5,
-                                                              aerial_goal_w=5,
-                                                              double_tap_w=5,
+                                                              flip_reset_w=0.5,
+                                                              flip_reset_goal_w=3,
+                                                              aerial_goal_w=3,
+                                                              double_tap_w=8,
                                                               # cons_air_touches_w=,
                                                               # jump_touch_w=0.5,
-                                                              # wall_touch_w=1,
+                                                              wall_touch_w=1.5,
                                                               flatten_wall_height=True,
                                                               # exit_velocity_w=1,
                                                               # acel_ball_w=1,
-                                                              backboard_bounce_rew=2,
+                                                              # backboard_bounce_rew=2,
                                                               velocity_pb_w=0,  # 0.005,
                                                               # velocity_bg_w=0.02,
                                                               kickoff_w=0.05,
@@ -131,14 +132,14 @@ if __name__ == "__main__":
                                                               # cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               # cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               dtap_dict=dtap_status,
-                                                              aerial_reward_w=0.1,
+                                                              aerial_reward_w=0.05,
                                                               ground_reward_w=0.003,
                                                               defend_reward_w=0.003,
-                                                              wall_reward_w=0.01,
+                                                              wall_reward_w=0.05,
                                                               aerial_indices=[3, 6, 7, 8, 28, 29],
                                                               wall_indices=[8, 25, 26, 28, 29],
                                                               ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
-                                                              defend_indices=[*range(2, 10), 27, 28],
+                                                              defend_indices=[3, 6, 7, 8, 28],
                                                               ),
                                         lambda: parser,
                                         save_every=logger.config.save_every * 3,
@@ -152,7 +153,7 @@ if __name__ == "__main__":
                                         )
     action_size = 30
     # boost_size = 2
-    input_size = 434 + (Constants_selector.STACK_SIZE * action_size)
+    input_size = 435 + (Constants_selector.STACK_SIZE * action_size)
     # shape = (action_size, boost_size)
     critic = Sequential(Linear(input_size, 256), LeakyReLU(), Linear(256, 256), LeakyReLU(),
                         Linear(256, 256), LeakyReLU(),
@@ -199,7 +200,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1687797080.487604/Opti_5/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1687797080.487604/Opti_5/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
