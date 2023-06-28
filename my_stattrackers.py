@@ -91,7 +91,7 @@ class FlipReset(StatTracker):
                                          ((SIDE_WALL_X - 700) > player_x) |
                                          ((-BACK_WALL_Y + 700) > player_y) |
                                          ((BACK_WALL_Y - 700) > player_y), True, False)
-            self.flip_reset_count += (~on_grounds_player & changes).sum()
+            self.flip_reset_count += (~on_grounds_player[1:] & changes).sum()
 
         self.count += has_jumps.size
 
