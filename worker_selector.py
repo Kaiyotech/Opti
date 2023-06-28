@@ -337,10 +337,10 @@ if __name__ == "__main__":
                         got_demoed_w=-3,
                         punish_action_change_w=0,
                         decay_punish_action_change_w=0,
-                        # flip_reset_w=0.5,
-                        # flip_reset_goal_w=5,
-                        # aerial_goal_w=5,
-                        # double_tap_w=5,
+                        flip_reset_w=0.5,
+                        flip_reset_goal_w=3,
+                        aerial_goal_w=3,
+                        double_tap_w=8,
                         # cons_air_touches_w=,
                         # jump_touch_w=0.5,
                         wall_touch_w=1.5,
@@ -422,9 +422,9 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
 
     terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 15, fps * 22.5, fps * 30],
+                 TerminalToTruncatedWrapper(RandomTruncationBallGround(avg_frames_per_mode=[fps * 20, fps * 30, fps * 40],
                                                              avg_frames=None,
-                                                             min_frames=fps * 5)),
+                                                             min_frames=fps * 10)),
                  # TimeoutCondition(fps * 15),
                  # NoTouchTimeoutCondition(fps * 30),
                  ]
@@ -512,6 +512,7 @@ if __name__ == "__main__":
                                    selector_infinite_boost=selector_infinite_boost,
                                    doubletap_indicator=True,
                                    dtap_dict=dtap_status,
+                                   flip_reset_counter=True,
                                    )
     # TODO fix testing
     setter = CoyoteSetter(mode="selector", dtap_dict=dtap_status)
@@ -563,7 +564,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0002,  # 3 seconds # 0.00175,  # 1 second
+                                selector_skip_k=0.0001, # 4 seconds
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,

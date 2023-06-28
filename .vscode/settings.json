@@ -1,7 +1,0 @@
-{
-"python.linting.enabled": false,
-"python.linting.lintOnSave": false,
-"python.analysis.ignore": [
-    "**"
-]
-}
