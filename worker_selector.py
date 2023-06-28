@@ -351,7 +351,7 @@ if __name__ == "__main__":
                         velocity_pb_w=0,  # 0.005,
                         velocity_bg_w=0.02,
                         kickoff_w=0.05,
-                        # punish_dist_goal_score_w=-1,
+                        punish_dist_goal_score_w=-1,
                         # # boost_gain_w=0.15,
                         # # punish_boost=False,
                         # # use_boost_punish_formula=False,
