@@ -340,7 +340,7 @@ if __name__ == "__main__":
                         flip_reset_w=0.5,
                         flip_reset_goal_w=3,
                         aerial_goal_w=3,
-                        double_tap_w=8,
+                        double_tap_w=4,
                         # cons_air_touches_w=,
                         # jump_touch_w=0.5,
                         wall_touch_w=1.5,
@@ -367,7 +367,7 @@ if __name__ == "__main__":
                         aerial_reward_w=0.05,
                         ground_reward_w=0.003,
                         defend_reward_w=0.003,
-                        wall_reward_w=0.05,
+                        wall_reward_w=0.075,
                         aerial_indices=[3, 6, 7, 8, 28, 29],
                         wall_indices=[8, 25, 26, 28, 29],
                         ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
@@ -566,7 +566,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0001, # 4 seconds
+                                selector_skip_k=0.0004, # 2 seconds
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
