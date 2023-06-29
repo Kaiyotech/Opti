@@ -343,7 +343,7 @@ if __name__ == "__main__":
                         double_tap_w=4,
                         # cons_air_touches_w=,
                         # jump_touch_w=0.5,
-                        wall_touch_w=1.5,
+                        wall_touch_w=2,
                         flatten_wall_height=True,
                         # exit_velocity_w=1,
                         # acel_ball_w=1,
@@ -564,7 +564,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 batch_mode=batch_mode,
                                 step_size=Constants_selector.STEP_SIZE,
-                                selector_skip_k=0.0004, # 2 seconds
+                                selector_skip_k=0.0007, # 1.6 seconds
                                 # selector_boost_skip_k=0.0018,  # 1 seconds
                                 # unlock_selector_indices=simple_actions,
                                 # unlock_indices_group=simple_actions,
