@@ -132,10 +132,10 @@ class CoyoteSetter(DynamicGMSetter):
                             # HalfFlip(),
                         ),
                         (0.12, 0.02, 0.14, 0.04,  # default, ko_repl, repl, aerial
-                         0.05, 0, 0, 0.8,  # ground-air, rand grouwnd, rand air, flip reset
-                         0.12, 0.08, 0.1, 0,  # wall dribble, wall flip reset, fast-low wall, low flip reset
+                         0.05, 0, 0, 0.04,  # ground-air, rand grouwnd, rand air, flip reset
+                         0.12, 0.12, 0.1, 0,  # wall dribble, wall flip reset, fast-low wall, low flip reset
                          0.04, 0.05, 0.04, 0.02,  # ceiling, air dribble, pinch, team pinch
-                         0.02, 0, 0.04, 0.04)  # full pinch, ground dribble, double-tap, easy_doubletap
+                         0.02, 0, 0.08, 0)  # full pinch, ground dribble, double-tap, easy_doubletap
                         # # test
                         # (0, 0, 0, 0,  # default, ko_repl, repl, aerial
                         #  0.25, 0, 0, 0,  # ground-air, rand ground, rand air, flip reset
