@@ -97,3 +97,42 @@ class FlipReset(StatTracker):
 
     def get_stat(self):
         return self.flip_reset_count / (self.count or 1)
+
+
+class ActionGroupingTracker:
+    # check if actions were used at the appropriate time
+
+    def __init__(self, aerial_indices, ground_indices, defend_indices, wall_indices):
+        self.name = "Action Grouping Tracker"
+        self.count = 0
+        self.flip_reset_count = 0
+
+    def reset(self):
+        self.count = 0
+        self.flip_reset_count = 0
+
+    def update(self, gamestates: np.ndarray, mask: np.ndarray):
+        players = gamestates[:, StateConstants.PLAYERS]
+        num_players = len(players[0]) // 39
+        has_jumps = players[:, StateConstants.HAS_JUMP]
+        # on_grounds = players[:, StateConstants.ON_GROUND]
+        players_x = players[:, StateConstants.CAR_POS_X]
+        players_y = players[:, StateConstants.CAR_POS_Y]
+        players_z = players[:, StateConstants.CAR_POS_Z]
+        for i in range(num_players):
+            has_jumps_player = has_jumps[:, i]
+            changes = np.where(has_jumps_player[:1] < has_jumps_player[:-1], True, False)
+            player_x = players_x[:, i]
+            player_y = players_y[:, i]
+            player_z = players_z[:, i]
+            on_grounds_player = np.where((player_z < 300) | (player_z > CEILING_Z - 300) |
+                                         ((-SIDE_WALL_X + 700) > player_x) |
+                                         ((SIDE_WALL_X - 700) > player_x) |
+                                         ((-BACK_WALL_Y + 700) > player_y) |
+                                         ((BACK_WALL_Y - 700) > player_y), True, False)
+            self.flip_reset_count += (~on_grounds_player[1:] & changes).sum()
+
+        self.count += has_jumps.size
+
+    def get_stat(self):
+        return self.flip_reset_count / (self.count or 1)
