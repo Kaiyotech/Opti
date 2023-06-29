@@ -481,9 +481,9 @@ if __name__ == "__main__":
         matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
                                 past_version_prob=past_version_prob,
                                 full_team_trainings=1, full_team_evaluations=1,
-                                force_non_latest_orange=streamer_mode,
+                                force_non_latest_orange=True,
                                 non_latest_version_prob=non_latest_version_prob,
-                                showmatch=True,
+                                showmatch=False,
                                 orange_agent_text_file='orange_stream_file.txt'
                                 )
 
