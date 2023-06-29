@@ -23,7 +23,7 @@ from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
     BehindBall, TouchHeight, DistToBall, AirTouch, AirTouchHeight, BallHeight, BallSpeed, CarOnGround, GoalSpeed, \
     MaxGoalSpeed
-from my_stattrackers import GoalSpeedTop5perc, FlipReset
+from my_stattrackers import GoalSpeedTop5perc, FlipReset, ActionGroupingTracker
 from rlgym.utils.reward_functions.common_rewards import VelocityReward, EventReward
 from rlgym.utils.reward_functions.combined_reward import CombinedReward
 
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         ent_coef=0.03,
     )
 
-    run_id = "selector_run_21.01"
+    run_id = "selector_run_test21.01"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_21.01",
+                        name="Selector_Run_test21.01",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -147,6 +147,10 @@ if __name__ == "__main__":
                                         logger=logger,
                                         clear=False,
                                         stat_trackers=stat_trackers,
+                                        # action_grouping_tracker=ActionGroupingTracker(aerial_indices=[3, 6, 7, 8, 28, 29],
+                                        #                                               wall_indices=[8, 25, 26, 28, 29],
+                                        #                                               ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
+                                        #                                               defend_indices=[3, 6, 7, 8, 28]),
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
                                         pretrained_agents=Constants_selector.pretrained_agents
