@@ -51,8 +51,8 @@ if __name__ == "__main__":
         epochs=30,
         gamma=gamma,
         save_every=5,
-        model_every=125,
-        ent_coef=0.03,
+        model_every=25,
+        ent_coef=0.01,
     )
 
     run_id = "selector_run_test21.01"
@@ -204,7 +204,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1687983160.6807442/Opti_10/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1687984002.5334554/Opti_860/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
