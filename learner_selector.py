@@ -18,6 +18,8 @@ import Constants_selector
 
 from utils.misc import count_parameters
 
+import math
+
 import os
 from torch import set_num_threads
 from rocket_learn.utils.stat_trackers.common_trackers import Speed, Demos, TimeoutRate, Touch, EpisodeLength, Boost, \
@@ -43,8 +45,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=5e-6,
-        critic_lr=5e-6,
+        actor_lr=1e-5,
+        critic_lr=1e-5,
         n_steps=Constants_selector.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=None,
@@ -55,10 +57,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "selector_run_test21.01"
+    run_id = "selector_run_22.00"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="Selector_Run_test21.01",
+                        name="Selector_Run_22.00",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -81,6 +83,18 @@ if __name__ == "__main__":
                    "ball_hit_bb": False,
                    "hit_towards_goal": False,
                    }
+    initial_selector_skip_k = 0.0000475  # initial 6 seconds
+
+
+    def skip_schedule(n_updates: int):
+        if n_updates < 300:
+            return initial_selector_skip_k / math.exp(-n_updates * (1 / 100))
+        else:
+            step = initial_selector_skip_k / math.exp(-300 * (1 / 100))
+            n_updates -= 300
+            # 0.025 is about a quarter second, or 7.5 frames, seems a good minimum
+            return min(step / math.exp(-n_updates * (1 / 3000)), 0.025)
+
 
     rollout_gen = RedisRolloutGenerator("Opti_Selector",
                                         redis,
@@ -108,18 +122,18 @@ if __name__ == "__main__":
                                                               flip_reset_w=0.5,
                                                               flip_reset_goal_w=3,
                                                               aerial_goal_w=3,
-                                                              double_tap_w=8,
+                                                              double_tap_w=4,
                                                               # cons_air_touches_w=,
                                                               # jump_touch_w=0.5,
-                                                              wall_touch_w=1.5,
+                                                              wall_touch_w=2,
                                                               flatten_wall_height=True,
                                                               # exit_velocity_w=1,
                                                               # acel_ball_w=1,
                                                               # backboard_bounce_rew=2,
                                                               velocity_pb_w=0,  # 0.005,
-                                                              velocity_bg_w=0.005,
+                                                              velocity_bg_w=0.02,
                                                               kickoff_w=0.05,
-                                                              # punish_dist_goal_score_w=-1,
+                                                              punish_dist_goal_score_w=-1,
                                                               # # boost_gain_w=0.15,
                                                               # # punish_boost=False,
                                                               # # use_boost_punish_formula=False,
@@ -128,14 +142,15 @@ if __name__ == "__main__":
                                                               # # punish_low_boost_w=-0.02,
                                                               # cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               # cancel_wall_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                                                              # cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                                                              cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9,
+                                                                                         *range(10, 28)],
                                                               # cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               # cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                                                               dtap_dict=dtap_status,
-                                                              aerial_reward_w=0.05,
-                                                              ground_reward_w=0.003,
-                                                              defend_reward_w=0.003,
-                                                              wall_reward_w=0.05,
+                                                              aerial_reward_w=0.01,
+                                                              ground_reward_w=0.001,
+                                                              defend_reward_w=0.001,
+                                                              wall_reward_w=0.015,
                                                               aerial_indices=[3, 6, 7, 8, 28, 29],
                                                               wall_indices=[8, 25, 26, 28, 29],
                                                               ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
@@ -153,7 +168,9 @@ if __name__ == "__main__":
                                         #                                               defend_indices=[3, 6, 7, 8, 28]),
                                         # gamemodes=("1v1", "2v2", "3v3"),
                                         max_age=1,
-                                        pretrained_agents=Constants_selector.pretrained_agents
+                                        pretrained_agents=Constants_selector.pretrained_agents,
+                                        selector_skip_k=initial_selector_skip_k,
+                                        selector_skip_schedule=skip_schedule,
                                         )
     action_size = 30
     # boost_size = 2
@@ -204,7 +221,7 @@ if __name__ == "__main__":
         max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1687984002.5334554/Opti_860/checkpoint.pt")
+    # alg.load("Selector_saves/Opti_1688053944.0601995/Opti_865/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
