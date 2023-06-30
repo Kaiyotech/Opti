@@ -58,9 +58,9 @@ model_name = "necto-model-30Y.pt"
 necto = NectoV1(model_string=model_name, n_players=6)
 
 pretrained_agents = {
-    nexto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-    kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
-    necto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
+    nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+    kbb: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
+    necto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
     }
 
 # "recover_0",

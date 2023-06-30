@@ -472,10 +472,11 @@ if __name__ == "__main__":
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
 
-        # pretrained_agents = {
-        #     nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-        #     kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
-        # }
+        pretrained_agents = {
+            nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+            kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
+            necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
+        }
 
         non_latest_version_prob = [0, 1, 0, 0]
 
