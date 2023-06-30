@@ -474,10 +474,11 @@ if __name__ == "__main__":
         #              NoTouchTimeoutCondition(fps * 30),
         #              ]
 
-        # pretrained_agents = {
-        #     nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-        #     kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
-        # }
+        pretrained_agents = {
+            nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+            kbb: {'prob': 0 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
+            necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
+        }
 
         non_latest_version_prob = [0, 1, 0, 0]
 
@@ -486,7 +487,7 @@ if __name__ == "__main__":
                                 full_team_trainings=1, full_team_evaluations=1,
                                 force_non_latest_orange=streamer_mode,
                                 non_latest_version_prob=non_latest_version_prob,
-                                showmatch=True,
+                                showmatch=False,
                                 orange_agent_text_file='orange_stream_file.txt'
                                 )
 
