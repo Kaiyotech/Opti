@@ -476,7 +476,7 @@ if __name__ == "__main__":
 
         pretrained_agents = {
             nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
-            kbb: {'prob': 0 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
+            kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
             necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
         }
 
