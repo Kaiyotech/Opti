@@ -832,7 +832,7 @@ class SelectorParser(ActionParser):
                 #     check_radius = 1100  # 800
                 self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
             elif action == 29:  # wall terminal
-                self.force_selector_choice[i] = not player.on_ground
+                self.force_selector_choice[i] = not player.on_ground and player.car_data.position[2] > 800
 
             if 22 <= action <= 23:  # freeze
                 if self.prev_model_actions[i] == action:  # action didn't change
