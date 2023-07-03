@@ -356,7 +356,7 @@ if __name__ == "__main__":
                         boost_gain_w=0.15,
                         punish_boost=True,
                         use_boost_punish_formula=False,
-                        boost_spend_w=-0.3  # -0.1,
+                        boost_spend_w=-0.3,  # -0.1,
                         boost_gain_small_w=0.15,
                         punish_low_boost_w=-0.02,
                         # cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
