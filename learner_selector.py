@@ -90,10 +90,11 @@ if __name__ == "__main__":
         if n_updates < 300:
             return initial_selector_skip_k / math.exp(-n_updates * (1 / 100))
         else:
-            step = initial_selector_skip_k / math.exp(-300 * (1 / 100))
-            n_updates -= 300
+            # step = initial_selector_skip_k / math.exp(-300 * (1 / 100))
+            step = initial_selector_skip_k / math.exp(-300 * (1 / 300))
+            # n_updates -= 665
             # 0.025 is about a quarter second, or 7.5 frames, seems a good minimum
-            return min(step / math.exp(-n_updates * (1 / 3000)), 0.025)
+            return min(step / math.exp(-n_updates * (1 / 300)), 0.025)
 
 
     rollout_gen = RedisRolloutGenerator("Opti_Selector",
@@ -218,10 +219,10 @@ if __name__ == "__main__":
         disable_gradient_logging=True,
         action_selection_dict=action_dict,
         num_actions=action_size,
-        max_grad_norm=None,
+        # max_grad_norm=None,
     )
 
-    # alg.load("Selector_saves/Opti_1688062788.9954789/Opti_5/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1688274735.6054552/Opti_1075/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
