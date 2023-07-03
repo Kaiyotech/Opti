@@ -391,7 +391,7 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0.01
     past_version_prob = 0.2
-    deterministic_streamer = False
+    deterministic_streamer = True
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
@@ -473,12 +473,12 @@ if __name__ == "__main__":
         parser.register_selection_listener(dispatcher)
 
         pretrained_agents = {
-            nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+            nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
             kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
             necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
         }
 
-        non_latest_version_prob = [0, 1, 0, 0]
+        non_latest_version_prob = [1, 0, 0, 0]
 
         matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
                                 past_version_prob=past_version_prob,
