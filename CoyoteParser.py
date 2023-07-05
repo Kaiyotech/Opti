@@ -786,6 +786,9 @@ class SelectorParser(ActionParser):
                 parsed_actions.append(action)
                 continue
             action = int(action[0])  # change ndarray [0.] to 0
+            # action changed, reset previous actions for stability of model swaps to keep in distribution
+            if action != self.prev_model_actions[i]:
+                self.prev_actions[i] = np.asarray([0] * 8)
             # action = 22  # TODO testing remove this
             # zero_boost = bool(action >= self.get_model_action_size())  # boost action 1 means no boost usage
             # if action >= self.get_model_action_size():
