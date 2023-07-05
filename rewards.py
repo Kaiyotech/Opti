@@ -785,7 +785,8 @@ class ZeroSumReward(RewardFunction):
                 player_rewards[i] += self.backboard_bounce_rew
 
             # reward groups for selector reward
-            if previous_model_actions is not None:
+            if previous_model_actions is not None and self.aerial_indices is not None and self.ground_indices is not None and \
+                    self.defend_indices is not None and self.wall_indices is not None:
                 if previous_model_actions[i] in self.aerial_indices and not player.on_ground and \
                         player.car_data.position[2] > 300:
                     player_self_rewards += self.aerial_reward_w
