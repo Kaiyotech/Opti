@@ -641,7 +641,7 @@ class SelectorParser(ActionParser):
             (SubAgent("aerial_jit.pt"),  # 2
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                      mask_aerial_opp=True)),
-            (SubAgent("flick_2_jit.pt"), # flick bump
+            (SubAgent("flick_1_jit.pt"), # flick bump
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
             (SubAgent("flipreset_3_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
