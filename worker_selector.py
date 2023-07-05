@@ -335,12 +335,12 @@ if __name__ == "__main__":
                         team_spirit=1,
                         # demo_w=3,
                         # got_demoed_w=-3,
-                        punish_action_change_w=0,
-                        decay_punish_action_change_w=0,
+                        # punish_action_change_w=0,
+                        # decay_punish_action_change_w=0,
                         # flip_reset_w=0.25,
-                        flip_reset_goal_w=3,
+                        flip_reset_goal_w=5,
                         aerial_goal_w=3,
-                        double_tap_w=4,
+                        double_tap_w=5,
                         # cons_air_touches_w=,
                         # jump_touch_w=0.5,
                         # wall_touch_w=0.25,
@@ -360,8 +360,8 @@ if __name__ == "__main__":
                         #boost_gain_small_w=0.15,
                         #punish_low_boost_w=-0.01,
                         # cancel_jump_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
-                        cancel_wall_touch_indices=[0, 1, 2, 3, 4, 5, 9, *range(10, 28)],
-                        cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
+                        # cancel_wall_touch_indices=[0, 1, 2, 3, 4, 5, 9, *range(10, 28)],
+                        # cancel_flip_reset_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                         # cancel_cons_air_touch_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                         # cancel_backboard_bounce_indices=[0, 1, 2, 4, 5, 9, *range(10, 28)],
                         dtap_dict=dtap_status,
@@ -369,10 +369,10 @@ if __name__ == "__main__":
                         # ground_reward_w=0.001,
                         # defend_reward_w=0.001,
                         # wall_reward_w=0.01,
-                        aerial_indices=[3, 6, 7, 8, 28, 29],
-                        wall_indices=[8, 25, 26, 28, 29],
-                        ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
-                        defend_indices=[3, 6, 7, 8, 28],
+                        # aerial_indices=[3, 6, 7, 8, 28, 29],
+                        # wall_indices=[8, 25, 26, 28, 29],
+                        # ground_indices=[0, 1, 2, 4, 5, *range(9, 25), 27, 29],
+                        # defend_indices=[3, 6, 7, 8, 28],
                         )
     # obs_output = np.zeros()
 
@@ -390,15 +390,15 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.01
-    past_version_prob = 0.2
+    past_version_prob = 0,  # 0.2
     deterministic_streamer = False
     force_old_deterministic = False
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0.2
     host = "127.0.0.1"
-    non_latest_version_prob = [0.8, 0.075, 0.075, 0.05]
-    # non_latest_version_prob = [1, 0, 0, 0]
+    # non_latest_version_prob = [0.8, 0.075, 0.075, 0.05]
+    non_latest_version_prob = [1, 0, 0, 0]
     gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
     # gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     simulator = True

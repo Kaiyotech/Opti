@@ -419,7 +419,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         oppo_stop = team_size
 
     retstate = copy_state(state)
-    assert 10 <= position_index <= 28
+    assert 5 <= position_index <= 7
 
     if player.team_num == 1:
         inverted = True
@@ -442,79 +442,79 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         # Ball position first
         ball_pos = np.asarray([0, 0, 0])
         # 2000 uu away, 0 straight +y, 1 +x+y, 4 -y, 7 -x+y
-        if position_index < 18:
-            position_index = position_index - 10
-            angle_rad = position_index * np.pi / 4
-            fwd = np.asarray([0, 1])
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
-            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
-                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance in rotated direction
-            forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
-            if abs(forward_point[0]) > 4096:
-                new_dist = recovery_distance - abs(forward_point[0] - 4096) * 1.414
-                forward_point = (new_dist * rot_fwd) + player_car.position[:2]
-            elif abs(forward_point[1]) > 5120:
-                new_dist = recovery_distance - abs(forward_point[1] - 5120) * 1.414
-                forward_point = (new_dist * rot_fwd) + player_car.position[:2]
-            if position_index in [11, 13, 15, 17]:  # 45 angle needs to clip on the 45 to keep it correct
-                # edges are 2944 and 3968, if we're outside the corner then we need to project it to the line of corner
-                if (-2944 > forward_point[0] or forward_point[0] > 2944) and (-3968 > forward_point[1] or forward_point[1] > 3968):
-                    quad = np.array([1, 1])
-                    if forward_point[0] < 0:
-                        quad[0] = -1
-                    if forward_point[1] < 0:
-                        quad[1] = -1
-                    corner_point_1 = np.array([4096, 3968]) * quad
-                    corner_point_2 = np.array([2944, 5120]) * quad
-                    dist = corner_point_2 - corner_point_1
-                    nx = (((forward_point[0] - corner_point_1[0]) * dist[0]) +
-                          ((forward_point[1] - corner_point_1[1]) * dist[1])) / (dist[0] * dist[0] + dist[1] * dist[1])
-                    forward_point = (dist * nx) + corner_point_1
-            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
-            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
-        elif position_index < 20:  # 18 and 19 are back left and back right boost
-            if position_index == 18:
-                ball_pos = np.asarray([3072, -4096, 94])
-            elif position_index == 19:
-                ball_pos = np.asarray([-3072, -4096, 94])
-
-        # elif position_index == 20:  # 20 is closest opponent
-        #     ball_pos = oppo_car[0].position
-        #     ball_pos[2] = 94
-        elif position_index == 20:  # 20 is back post entry, approx 1000, 4800
+        # if position_index < 18:
+        #     position_index = position_index - 10
+        #     angle_rad = position_index * np.pi / 4
+        #     fwd = np.asarray([0, 1])
+        #     fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
+        #     rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+        #                           fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+        #     # distance in rotated direction
+        #     forward_point = (recovery_distance * rot_fwd) + player_car.position[:2]
+        #     if abs(forward_point[0]) > 4096:
+        #         new_dist = recovery_distance - abs(forward_point[0] - 4096) * 1.414
+        #         forward_point = (new_dist * rot_fwd) + player_car.position[:2]
+        #     elif abs(forward_point[1]) > 5120:
+        #         new_dist = recovery_distance - abs(forward_point[1] - 5120) * 1.414
+        #         forward_point = (new_dist * rot_fwd) + player_car.position[:2]
+        #     if position_index in [11, 13, 15, 17]:  # 45 angle needs to clip on the 45 to keep it correct
+        #         # edges are 2944 and 3968, if we're outside the corner then we need to project it to the line of corner
+        #         if (-2944 > forward_point[0] or forward_point[0] > 2944) and (-3968 > forward_point[1] or forward_point[1] > 3968):
+        #             quad = np.array([1, 1])
+        #             if forward_point[0] < 0:
+        #                 quad[0] = -1
+        #             if forward_point[1] < 0:
+        #                 quad[1] = -1
+        #             corner_point_1 = np.array([4096, 3968]) * quad
+        #             corner_point_2 = np.array([2944, 5120]) * quad
+        #             dist = corner_point_2 - corner_point_1
+        #             nx = (((forward_point[0] - corner_point_1[0]) * dist[0]) +
+        #                   ((forward_point[1] - corner_point_1[1]) * dist[1])) / (dist[0] * dist[0] + dist[1] * dist[1])
+        #             forward_point = (dist * nx) + corner_point_1
+        #     forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+        #     forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+        #     ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
+        # elif position_index < 20:  # 18 and 19 are back left and back right boost
+        #     if position_index == 18:
+        #         ball_pos = np.asarray([3072, -4096, 94])
+        #     elif position_index == 19:
+        #         ball_pos = np.asarray([-3072, -4096, 94])
+        #
+        # # elif position_index == 20:  # 20 is closest opponent
+        # #     ball_pos = oppo_car[0].position
+        # #     ball_pos[2] = 94
+        if position_index == 5:  # 20 is back post entry, approx 1000, 4800
             x_pos = 1000
             if ball.position[0] >= 0:
                 x_pos = -1000
             ball_pos = np.asarray([x_pos, -4800, 94])
-        elif position_index == 22:  # 22 is behind for half-flip, relative
-            angle_rad = np.pi
-            fwd = player_car.forward()[:2]  # vector in forward direction just xy
-            if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
-                fwd = player_car.up()[:2]
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
-            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
-                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance of 2500 in rotated direction
-            forward_point = (2500 * rot_fwd) + player_car.position[:2]
-            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
-            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
-        elif position_index == 23:  # 23 is forward, relative
-            angle_rad = 0
-            fwd = player_car.forward()[:2]  # vector in forward direction just xy
-            if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
-                fwd = player_car.up()[:2]
-            fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
-            rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
-                                  fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
-            # distance of 2300 in rotated direction
-            forward_point = (2300 * rot_fwd) + player_car.position[:2]
-            forward_point[0] = np.clip(forward_point[0], -4096, 4096)
-            forward_point[1] = np.clip(forward_point[1], -5120, 5120)
-            ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
-        elif position_index == 25:  # same z
+        # elif position_index == 22:  # 22 is behind for half-flip, relative
+        #     angle_rad = np.pi
+        #     fwd = player_car.forward()[:2]  # vector in forward direction just xy
+        #     if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
+        #         fwd = player_car.up()[:2]
+        #     fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
+        #     rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+        #                           fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+        #     # distance of 2500 in rotated direction
+        #     forward_point = (2500 * rot_fwd) + player_car.position[:2]
+        #     forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+        #     forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+        #     ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
+        # elif position_index == 23:  # 23 is forward, relative
+        #     angle_rad = 0
+        #     fwd = player_car.forward()[:2]  # vector in forward direction just xy
+        #     if abs(fwd[0]) < 0.01 and abs(fwd[1]) < 0.01:
+        #         fwd = player_car.up()[:2]
+        #     fwd = fwd / (np.linalg.norm(fwd) + 1e-8)  # make unit
+        #     rot_fwd = np.asarray([fwd[0] * np.cos(angle_rad) - fwd[1] * np.sin(angle_rad),
+        #                           fwd[0] * np.sin(angle_rad) + fwd[1] * np.cos(angle_rad)])
+        #     # distance of 2300 in rotated direction
+        #     forward_point = (2300 * rot_fwd) + player_car.position[:2]
+        #     forward_point[0] = np.clip(forward_point[0], -4096, 4096)
+        #     forward_point[1] = np.clip(forward_point[1], -5120, 5120)
+        #     ball_pos = np.asarray([forward_point[0], forward_point[1], 94])
+        elif position_index == 7:  # same z
             fwd = player_car.forward()[1]  # vector in forward direction just y
             if abs(fwd) == 0:
                 fwd = player_car.forward()[0]
@@ -551,11 +551,11 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
         #     z_pos = player_car.position[2] - (0.707 * length)
         #     z_pos = np.clip(z_pos, 300, 1750)
         #     ball_pos = np.asarray([player_car.position[0], y_pos, z_pos])
-        elif position_index == 26:  # back boost this side
-            x_pos = 3072 if player_car.position[0] >= 0 else -3072
-            ball_pos = np.asarray([x_pos, -4096, 40])
+        # elif position_index == 26:  # back boost this side
+        #     x_pos = 3072 if player_car.position[0] >= 0 else -3072
+        #     ball_pos = np.asarray([x_pos, -4096, 40])
 
-    elif position_index == 21 or position_index == 24:
+    elif position_index == 6:
         ball_pos = state.inverted_ball.position if inverted else state.ball.position
 
     # override with passed in ball position
@@ -566,7 +566,7 @@ def override_abs_state(player, state, position_index, ball_position: np.ndarray 
     retstate.inverted_ball.position = ball_pos
 
     # Ball velocity next
-    if position_index != 21 and position_index != 24:
+    if position_index != 6:
         retstate.ball.linear_velocity = np.zeros(3)
         retstate.inverted_ball.linear_velocity = np.zeros(3)
         retstate.ball.angular_velocity = np.zeros(3)
@@ -634,117 +634,36 @@ class SelectorParser(ActionParser):
         super().__init__()
 
         self.models = [
-            (SubAgent("kickoff_1_jit.pt"), CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3)),
             (SubAgent("kickoff_2_jit.pt"), CoyoteObsBuilder_Legacy(
                 expanding=True, tick_skip=4, team_size=3)),
             (SubAgent("gp_jit.pt"),
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-            (SubAgent("aerial_jit.pt"),  # 3
+            (SubAgent("aerial_jit.pt"),  # 2
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                      mask_aerial_opp=True)),
-            (SubAgent("flick_1_jit.pt"),
+            (SubAgent("flick_2_jit.pt"), # flick bump
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-            (SubAgent("flick_2_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, embed_players=True)),
-            (SubAgent("flipreset_1_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                                     mask_aerial_opp=True)),
-            (SubAgent("flipreset_2_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                                     mask_aerial_opp=True)),
             (SubAgent("flipreset_3_jit.pt"),
              CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                                      mask_aerial_opp=True)),
-            (SubAgent("pinch_jit.pt"),
-             CoyoteObsBuilder_Legacy(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False)),
-            (SubAgent("recovery_jit.pt"),  # 10 straight +y
+            (SubAgent("recovery_jit.pt"),  # 5 recover back post
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # +x +y
+            (SubAgent("recovery_jit.pt"),  # 6, actual ball
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # direction
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # direction
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # direction
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 15  direction
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # direction
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 17 direction end (-x +y)
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 18 back left boost
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 19 back right boost
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 20, used to be closest opponent, now back post entry
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("recovery_jit.pt"),  # 21, actual ball
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # 22 behind, freeze
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # 23 forward (for the speedflip), freeze, relative
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("halfflip_jit.pt"),  # 24 actual ball
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # 25 same z
+            (SubAgent("walldash_jit.pt"),  # 7 same z
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
                               only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
                               add_handbrake=True, add_boosttime=True)),
-            # (SubAgent("walldash_jit.pt"),  # 26 up 45
-            #  CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-            #                   only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-            #                   add_handbrake=True, add_boosttime=True)),
-            # (SubAgent("walldash_jit.pt"),  # 27 down 45
-            #  CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-            #                   only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-            #                   add_handbrake=True, add_boosttime=True)),
-            (SubAgent("walldash_jit.pt"),  # 26 back boost this side
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=1, extra_boost_info=False,
-                              only_closest_opp=True, add_fliptime=True, add_airtime=True, add_jumptime=True,
-                              add_handbrake=True, add_boosttime=True)),
-            (SubAgent("demo_jit.pt"),  # demo
-             CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
-                              only_closest_opp=True)),
-            (SubAgent("dtap_jit.pt"),  # doubletap
+            (SubAgent("dtap_jit.pt"),  # 8 doubletap
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               mask_aerial_opp=True, doubletap_indicator=True)),
-            (SubAgent("wall_jit.pt"),  # 29 ball to wall
+            (SubAgent("wall_jit.pt"),  # 9 ball to wall
              CoyoteObsBuilder(expanding=True, tick_skip=4, team_size=3, extra_boost_info=False,
                               only_closest_opp=True)),
-            # 32 is turn left with throttle, 33 is straight with throttle, 34 is right with boost
-            # 35 36 37 are without boost
-            # not using these simple actions this time
         ]
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None
@@ -809,7 +728,7 @@ class SelectorParser(ActionParser):
             newplayer = player
             new_prev_action = self.prev_actions[i]
             # 29 is wall, which gets mirrored if blue x negative or orange x positive for car
-            if action == 29:
+            if action == 9:
                 if (player.team_num == 0 and player.car_data.position[0] < 0) or \
                         (player.team_num == 1 and player.car_data.position[0] > 0):
                     newstate = mirror_state_over_y(state)
@@ -820,35 +739,15 @@ class SelectorParser(ActionParser):
                     mirrored = True
 
             # 21, 24 are actual ball, just override player
-            if 10 <= action <= 26:
+            if 5 <= action <= 7:
                 newstate = override_abs_state(player, state, action)
 
             zero_boost = False
             # remove boost from dashes
-            if 10 <= action <= 21:
+            if 5 <= action <= 6:
                 zero_boost = True
 
-            if 10 <= action <= 26:
-                # if reaching the "ball" or ball soon, allow a new choice by selector
-                check_radius = 300
-                # if action in [11, 13, 15, 17]:  # these are the 45 degree ones, need bigger radius to reach
-                #     check_radius = 1100  # 800
-                self.force_selector_choice[i] = check_terminal_selector(newstate, player, check_radius=check_radius)
-            elif action == 29:  # wall terminal
-                self.force_selector_choice[i] = player.car_data.position[2] > 1000
-
-            if 22 <= action <= 23:  # freeze
-                if self.prev_model_actions[i] == action:  # action didn't change
-                    # newplayer = copy_player(player)
-                    # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state,
-                    #                                                     ball_pos=self.ball_position[i],
-                    #                                                     shift=self.ball_shift_y[i])
-                    newstate = override_abs_state(player, newstate, action, self.ball_position[i])
-                else:  # action submodel changed or reaching the objective
-                    # newplayer = copy_player(player)
-                    # newstate, self.ball_shift_y[i] = speedflip_override(newplayer, state)
-                    newstate = override_abs_state(player, newstate, action)
-                    self.ball_position[i] = newstate.ball.position  # save new position
+            self.force_selector_choice[i] = check_terminal_selector(state, player, action)
 
             obs = self.models[action][1].build_obs(
                 newplayer, newstate, new_prev_action, obs_info=self.obs_info, zero_boost=zero_boost,
@@ -878,12 +777,32 @@ class SelectorParser(ActionParser):
         self.selection_listener = listener
 
 
-def check_terminal_selector(state: GameState, player: PlayerData, check_radius=300) -> bool:
-    player_position = player.inverted_car_data.position if player.team_num == 1 else player.car_data.position
-    ball_position = state.inverted_ball.position if player.team_num == 1 else state.ball.position
-    if np.linalg.norm(player_position - ball_position) < check_radius:
-        return True
-    return False
+def check_terminal_selector(state: GameState, player: PlayerData, action_index: int) -> bool:
+    # kickoff checks if it touches the ball
+    if action_index == 0:
+        return player.ball_touched
+    # GP/flick bump, above certain height
+    if action_index == 1 or action_index == 3:
+        return player.car_data.position[2] > 600
+    # aerial and dtap, outside of defending space and near ground
+    if action_index == 2 or action_index == 8 or action_index == 4:
+        y = player.inverted_car_data.position[1] if player.team_num else player.car_data.position[1]
+        ball_y = state.inverted_ball.position[1] if player.team_num else state.ball.position[1]
+        if y < -3920 and -2000 < player.car_data.position[0] < 2000 and state.ball.position[2] > 400 and \
+                (state.ball.linear_velocity[1] * state.ball.position[1]) > 0 and ball_y < -1500:
+            # aerial defending space
+            return False
+        return player.car_data.position[2] < 300
+    # direction checks, if adding 45 back do the 1100 here
+    if 5 <= action_index <= 6:
+        check_radius = 300
+        player_position = player.inverted_car_data.position if player.team_num == 1 else player.car_data.position
+        ball_position = state.inverted_ball.position if player.team_num == 1 else state.ball.position
+        return np.linalg.norm(player_position - ball_position) < check_radius
+    if action_index == 7:
+        return player.car_data.position[2] < 100
+    if action_index == 9:
+        return player.car_data.position[2] > 1000
 
 
 if __name__ == '__main__':
