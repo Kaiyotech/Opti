@@ -222,7 +222,7 @@ if __name__ == "__main__":
         # max_grad_norm=None,
     )
 
-    alg.load("Selector_saves/Opti_1688587771.1237257/Opti_330/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1688656635.5412486/Opti_345/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
