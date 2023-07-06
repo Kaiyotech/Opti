@@ -90,9 +90,9 @@ if __name__ == "__main__":
         if n_updates < 300:
             return initial_selector_skip_k / math.exp(-n_updates * (1 / 100))
         else:
-            # step = initial_selector_skip_k / math.exp(-300 * (1 / 100))
-            step = initial_selector_skip_k / math.exp(-300 * (1 / 300))
-            # n_updates -= 665
+            step = initial_selector_skip_k / math.exp(-300 * (1 / 100))
+            # step = initial_selector_skip_k / math.exp(-300 * (1 / 300))
+            n_updates -= 300
             # 0.025 is about a quarter second, or 7.5 frames, seems a good minimum
             return min(step / math.exp(-n_updates * (1 / 300)), 0.025)
 
@@ -222,7 +222,7 @@ if __name__ == "__main__":
         # max_grad_norm=None,
     )
 
-    # alg.load("Selector_saves/Opti_1688274735.6054552/Opti_1075/checkpoint.pt")
+    alg.load("Selector_saves/Opti_1688587771.1237257/Opti_330/checkpoint.pt")
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
