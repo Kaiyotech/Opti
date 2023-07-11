@@ -61,9 +61,9 @@ if __name__ == "__main__":
     non_latest_version_prob = [1, 0, 0, 0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = False
-    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}
+    gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
     visualize = False
-    simulator = False
+    simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
@@ -167,7 +167,6 @@ if __name__ == "__main__":
                              TimeoutCondition(fps * 300),
                              ],
         reward_function=rew,
-        tick_skip=frame_skip,
     )
 
     # local Redis
@@ -218,6 +217,7 @@ if __name__ == "__main__":
                                 simulator=simulator,
                                 visualize=False,
                                 live_progress=False,
+                                tick_skip=Constants_gp.FRAME_SKIP,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa

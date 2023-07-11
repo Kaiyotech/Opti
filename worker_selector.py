@@ -575,6 +575,7 @@ if __name__ == "__main__":
                                 # parser_boost_split=parser.get_model_action_size(),
                                 # initial_choice_block_indices=[2, 37],
                                 # initial_choice_block_weight=0.5,
+                                tick_skip=Constants_selector.FRAME_SKIP,
                                 )
 
     worker.env._match._obs_builder.env = worker.env
