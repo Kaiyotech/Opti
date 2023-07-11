@@ -399,7 +399,7 @@ if __name__ == "__main__":
     host = "127.0.0.1"
     non_latest_version_prob = [0.7, 0.175, 0.075, 0.05]
     # non_latest_version_prob = [1, 0, 0, 0]
-    gamemode_weights = {'1v1': 0.30, '2v2': 0.25, '3v3': 0.45}  # TODO testing fix this
+    gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
     # gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
     simulator = True
     visualize = False
@@ -475,7 +475,7 @@ if __name__ == "__main__":
         #              ]
 
         pretrained_agents = {
-            nexto: {'prob': 0.33, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
+            nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
             kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"},
             necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
         }
@@ -487,7 +487,7 @@ if __name__ == "__main__":
                                 full_team_trainings=1, full_team_evaluations=1,
                                 force_non_latest_orange=streamer_mode,
                                 non_latest_version_prob=non_latest_version_prob,
-                                showmatch=False,
+                                showmatch=True,
                                 orange_agent_text_file='orange_stream_file.txt'
                                 )
 
