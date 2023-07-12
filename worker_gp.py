@@ -8,6 +8,8 @@ from CoyoteObs import CoyoteObsBuilder
 from rocket_learn.rollout_generator.redis.redis_rollout_worker import RedisRolloutWorker
 from rocket_learn.matchmaker.matchmaker import Matchmaker
 from rocket_learn.agent.types import PretrainedAgent
+from rocket_learn.utils.truncated_condition import TerminalToTruncatedWrapper
+from mybots_terminals import RandomTruncationBallGround
 from CoyoteParser import CoyoteAction
 from rewards import ZeroSumReward
 from torch import set_num_threads
@@ -57,10 +59,10 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.02
-    past_version_prob = 0  # 0.5  # 0.1
-    non_latest_version_prob = [1, 0, 0, 0]  # [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
+    past_version_prob = 0.4  # 0.5  # 0.1
+    non_latest_version_prob = [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
-    force_old_deterministic = False
+    force_old_deterministic = True
     gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
     visualize = False
     simulator = True
@@ -112,7 +114,7 @@ if __name__ == "__main__":
                 kbb: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "KBB"}
             }
 
-            non_latest_version_prob = [0, 1, 0, 0]
+            non_latest_version_prob = [1, 0, 0, 0]
 
             matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
                                     past_version_prob=past_version_prob,
@@ -123,9 +125,9 @@ if __name__ == "__main__":
                                     orange_agent_text_file='orange_stream_file.txt'
                                     )
                                     
-            gamemode_weights = {'1v1': 1, '2v2': 0, '3v3': 0}
+            gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
 
-            setter = EndKickoff()
+            # setter = EndKickoff()
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
@@ -139,6 +141,13 @@ if __name__ == "__main__":
         from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
             NoTouchTimeoutCondition
 
+    terminals = [GoalScoredCondition(),
+                 TerminalToTruncatedWrapper(
+                     RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 20, fps * 30],
+                                                avg_frames=None,
+                                                min_frames=fps * 10)),
+                 ]
+
     match = Match(
         game_speed=game_speed,
         spawn_opponents=True,
@@ -148,10 +157,7 @@ if __name__ == "__main__":
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),
         action_parser=CoyoteAction(),
-        terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
-                             TimeoutCondition(fps * 300),
-                             ],
+        terminal_conditions=terminals,
         reward_function=rew,
         tick_skip=frame_skip,
     ) if not simulator else Sim_Match(
@@ -162,10 +168,7 @@ if __name__ == "__main__":
                                      extra_boost_info=True, embed_players=True,
                                      infinite_boost_odds=infinite_boost_odds),
         action_parser=CoyoteAction(),
-        terminal_conditions=[GoalScoredCondition(),
-                             NoTouchTimeoutCondition(fps * 15),
-                             TimeoutCondition(fps * 300),
-                             ],
+        terminal_conditions=terminals,
         reward_function=rew,
     )
 

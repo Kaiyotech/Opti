@@ -40,8 +40,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=2e-5,
-        critic_lr=2e-5,
+        actor_lr=5e-5,
+        critic_lr=5e-5,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
@@ -52,10 +52,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run3.53"
+    run_id = "gp_run_2v2_3.54"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run3.53",
+                        name="GP_Run_2v2_3.54",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -155,7 +155,6 @@ if __name__ == "__main__":
     )
 
     alg.load("GP_saves/Opti_1683132125.3858902/Opti_42240/checkpoint.pt")
-    
 
     alg.agent.optimizer.param_groups[0]["lr"] = logger.config.actor_lr
     alg.agent.optimizer.param_groups[1]["lr"] = logger.config.critic_lr
