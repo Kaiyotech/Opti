@@ -263,7 +263,8 @@ class CoyoteObsBuilder(ObsBuilder):
                         initial_state.ball.position[2] > 500:
                     self.dtap_dict["hit_towards_bb"] = True
 
-        self.flip_reset_counter = [0] * 8
+        if self.flip_reset_counter is not None:
+            self.flip_reset_counter = [0] * 8
         self.reset_timer = 0
 
     def pre_step(self, state: GameState):
