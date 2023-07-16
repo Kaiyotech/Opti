@@ -22,6 +22,9 @@ from pretrained_agents.necto.necto_v1 import NectoV1
 from pretrained_agents.nexto.nexto_v2 import NextoV2
 from pretrained_agents.KBB.kbb import KBB
 
+from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
+            NoTouchTimeoutCondition
+
 set_num_threads(1)
 
 if __name__ == "__main__":
@@ -86,6 +89,14 @@ if __name__ == "__main__":
     matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
                             full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
                             non_latest_version_prob=non_latest_version_prob)
+                            
+  
+    terminals = [GoalScoredCondition(),
+                 TerminalToTruncatedWrapper(
+                     RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 20, fps * 30],
+                                                avg_frames=None,
+                                                min_frames=fps * 10)),
+                 ]
 
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -125,28 +136,19 @@ if __name__ == "__main__":
                                     orange_agent_text_file='orange_stream_file.txt'
                                     )
                                     
-            gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
+            gamemode_weights = {'1v1': 0.3, '2v2': 0.4, '3v3': 0.3}
+            
+            terminals = [GoalScoredCondition(), NoTouchTimeoutCondition(fps * 30), TimeoutCondition(fps * 300)]
 
             # setter = EndKickoff()
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
-            
+
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
-        from rlgym_sim.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
-            NoTouchTimeoutCondition
     else:
         from rlgym.envs import Match
-        from rlgym.utils.terminal_conditions.common_conditions import GoalScoredCondition, TimeoutCondition, \
-            NoTouchTimeoutCondition
-
-    terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(
-                     RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 20, fps * 30],
-                                                avg_frames=None,
-                                                min_frames=fps * 10)),
-                 ]
 
     match = Match(
         game_speed=game_speed,
