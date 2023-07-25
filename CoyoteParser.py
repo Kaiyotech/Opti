@@ -668,7 +668,7 @@ class SelectorParser(ActionParser):
         self._lookup_table = self.make_lookup_table(len(self.models))
         # self.prev_action = None
         # self.prev_model = None
-        self.prev_actions = np.asarray([[0] * 8] * 8)
+        self.prev_actions = np.asarray([[0.] * 8] * 8)
         self.prev_model_actions = np.asarray([-1] * 6)
 
     @staticmethod

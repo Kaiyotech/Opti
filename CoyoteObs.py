@@ -93,7 +93,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.doubletap_indicator:
             self.floor_bounce = False
             self.backboard_bounce = False
-            self.prev_ball_vel = np.asarray([0] * 3)
+            self.prev_ball_vel = np.asarray([0.] * 3)
         assert not (selector_infinite_boost is not None and not selector)
         self.n = 0
         self.selector_infinite_boost = selector_infinite_boost
