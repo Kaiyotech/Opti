@@ -52,6 +52,7 @@ if __name__ == "__main__":
                         tick_skip=Constants_gp.FRAME_SKIP,
                         flatten_wall_height=True,
                         slow_w=-0.005,
+                        turtle_w=-0.05
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
