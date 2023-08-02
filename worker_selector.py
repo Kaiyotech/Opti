@@ -404,6 +404,7 @@ if __name__ == "__main__":
     simulator = True
     visualize = False
     batch_mode = True
+    selector_skip_k=0.0004
 
     model_name = "necto-model-30Y.pt"
     necto = NectoV1(model_string=model_name, n_players=6)
@@ -459,7 +460,7 @@ if __name__ == "__main__":
 
     def setup_streamer():
         global game_speed, evaluation_prob, past_version_prob, auto_minimize, infinite_boost_odds, streamer_mode, \
-            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, terminals
+            simulator, past_version_prob, pretrained_agents, non_latest_version_prob, matchmaker, terminals, selector_skip_k
         streamer_mode = True
         evaluation_prob = 0
         game_speed = 1
@@ -467,12 +468,9 @@ if __name__ == "__main__":
         infinite_boost_odds = 0
         simulator = False
         past_version_prob = 0
+        # selector_skip_k = 5e-7
         dispatcher = SelectionDispatcher(r, Constants_selector.SELECTION_CHANNEL)
         parser.register_selection_listener(dispatcher)
-        # terminals = [GoalScoredCondition(),
-        #              TimeoutCondition(fps * 60),
-        #              NoTouchTimeoutCondition(fps * 30),
-        #              ]
 
         pretrained_agents = {
             nexto: {'prob': 1, 'eval': True, 'p_deterministic_training': 1., 'key': "Nexto"},
@@ -480,12 +478,12 @@ if __name__ == "__main__":
             necto: {'prob': 0, 'eval': True, 'p_deterministic_training': 1., 'key': "Necto"},
         }
 
-        non_latest_version_prob = [0, 1, 0, 0]
+        non_latest_version_prob = [1, 0, 0, 0]
 
         matchmaker = Matchmaker(sigma_target=1, pretrained_agents=pretrained_agents,
                                 past_version_prob=past_version_prob,
                                 full_team_trainings=1, full_team_evaluations=1,
-                                force_non_latest_orange=streamer_mode,
+                                force_non_latest_orange=True,
                                 non_latest_version_prob=non_latest_version_prob,
                                 showmatch=True,
                                 orange_agent_text_file='orange_stream_file.txt'
