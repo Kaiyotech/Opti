@@ -147,6 +147,7 @@ if __name__ == "__main__":
 
         elif sys.argv[3] == 'VISUALIZE':
             visualize = True
+            terminals = [GoalScoredCondition(), NoTouchTimeoutCondition(fps * 30), TimeoutCondition(fps * 10)]
 
     if simulator:
         from rlgym_sim.envs import Match as Sim_Match
@@ -226,6 +227,7 @@ if __name__ == "__main__":
                                 visualize=visualize,
                                 live_progress=False,
                                 tick_skip=Constants_gp.FRAME_SKIP,
+                                random_boost_states_on_reset=True,
                                 )
 
     worker.env._match._obs_builder.env = worker.env  # noqa
