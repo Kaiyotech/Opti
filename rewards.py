@@ -706,7 +706,7 @@ class ZeroSumReward(RewardFunction):
             # slow
             vel = player.car_data.linear_velocity
             if self.slow_w != 0 and np.linalg.norm(vel) < 300 and np.linalg.norm(last.car_data.linear_velocity) < 300 and \
-                np.lingalg.norm(player.car_data.position - state.ball.position) < 400:
+                np.linalg.norm(player.car_data.position - state.ball.position) < 400:
                 player_self_rewards[i] += self.slow_w
 
             # vel player to end object
