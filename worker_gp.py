@@ -92,12 +92,14 @@ if __name__ == "__main__":
                             non_latest_version_prob=non_latest_version_prob)
                             
   
-    terminals = [GoalScoredCondition(),
-                 TerminalToTruncatedWrapper(
-                     RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 20, fps * 30],
-                                                avg_frames=None,
-                                                min_frames=fps * 10)),
-                 ]
+    # terminals = [GoalScoredCondition(),
+                 # TerminalToTruncatedWrapper(
+                     # RandomTruncationBallGround(avg_frames_per_mode=[fps * 10, fps * 20, fps * 30],
+                                                # avg_frames=None,
+                                                # min_frames=fps * 10)),
+                 # ]
+    terminals = [GoalScoredCondition(), TerminalToTruncatedWrapper(TimeoutCondition(fps * 300)),
+                TerminalToTruncatedWrapper(NoTouchTimeoutCondition(fps * 30))]
 
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -221,7 +223,7 @@ if __name__ == "__main__":
                                 # full_team_evaluations=True,
                                 epic_rl_exe_path=epic_rl_exe_path,
                                 simulator=simulator,
-                                visualize=False,
+                                visualize=visualize,
                                 live_progress=False,
                                 tick_skip=Constants_gp.FRAME_SKIP,
                                 )
