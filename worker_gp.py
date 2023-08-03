@@ -63,7 +63,7 @@ if __name__ == "__main__":
     auto_minimize = True
     game_speed = 100
     evaluation_prob = 0.02
-    past_version_prob = 0.2  # 0.5  # 0.1
+    past_version_prob = 1  # 0.5  # 0.1
     non_latest_version_prob = [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = True
