@@ -40,8 +40,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=2e-5,
-        critic_lr=2e-5,
+        actor_lr=0,
+        critic_lr=5e-5,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
@@ -52,10 +52,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run_2v2_3.56"
+    run_id = "gp_run_2v2_3.57"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run_2v2_3.56",
+                        name="GP_Run_2v2_3.57",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -84,24 +84,25 @@ if __name__ == "__main__":
                                                               # double_tap_w=5,
                                                               velocity_bg_w=0.075 / 2,  # fix for the tick skip change
                                                               velocity_pb_w=0,
-                                                              boost_gain_w=0.15,
+                                                              boost_gain_w=0,
                                                               punish_boost=True,
                                                               use_boost_punish_formula=False,
                                                               boost_spend_w=-0.45,
-                                                              boost_gain_small_w=0.25,
+                                                              boost_gain_small_w=0,
                                                               punish_low_boost_w=-0.02,
-                                                              demo_w=0.5,
+                                                              demo_w=5,
                                                               acel_ball_w=1,
                                                               team_spirit=1,
                                                               # cons_air_touches_w=2,
                                                               jump_touch_w=4,
-                                                              wall_touch_w=2.5,
+                                                              wall_touch_w=4,
                                                               touch_grass_w=0,
                                                               punish_bad_spacing_w=-0.1,
-                                                              handbrake_ctrl_w=-0.005,
+                                                              handbrake_ctrl_w=0,
                                                               tick_skip=Constants_gp.FRAME_SKIP,
                                                               flatten_wall_height=True,
-                                                              slow_w=-0.001,
+                                                              slow_w=-0.1,
+                                                              turtle_w=-0.2
                                                               ),
                                         lambda: CoyoteAction(),
                                         save_every=logger.config.save_every * 3,

@@ -44,7 +44,7 @@ if __name__ == "__main__":
                         acel_ball_w=1,
                         team_spirit=1,
                         # cons_air_touches_w=2,
-                        jump_touch_w=6,
+                        jump_touch_w=4,
                         wall_touch_w=4,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
