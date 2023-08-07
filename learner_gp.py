@@ -41,7 +41,7 @@ if __name__ == "__main__":
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
         actor_lr=5e-6,
-        critic_lr=5e-6
+        critic_lr=5e-6,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
