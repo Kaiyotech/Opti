@@ -72,7 +72,7 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_fliptime=False,
                  add_airtime=False,
                  add_boosttime=False,
-                 dodge_deadzone=0.8,
+                 dodge_deadzone=0.5,
                  flip_dir=True,
                  end_object: PhysicsObject = None,
                  mask_aerial_opp=False,
