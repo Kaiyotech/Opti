@@ -967,7 +967,7 @@ class ZeroSumReward(RewardFunction):
 
             for i in range(len(initial_state.players)):
                 if self.has_flippeds[i]:
-                    self.fliptimes[i] = 78
+                    self.fliptimes[i] = 120
             # self.has_doublejumpeds = [False] * len(initial_state.players)
             # self.flipdirs = [
             #     [0] * 2 for _ in range(len(initial_state.players))]
@@ -1163,8 +1163,9 @@ class ZeroSumReward(RewardFunction):
         if self.has_flippeds[cid]:
             self.fliptimes[cid] += self.time_interval * 120
             # FLIP_TORQUE_TIME = 78 ticks
+            # PITCH_LOCK_TIME = 120 ticks
             self.fliptimes[cid] = min(
-                78, self.fliptimes[cid])
+                120, self.fliptimes[cid])
 
         ret = 0
 
