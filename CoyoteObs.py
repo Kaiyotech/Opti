@@ -428,8 +428,9 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.has_flippeds[cid]:
             self.fliptimes[cid] += self.time_interval * 120
             # FLIP_TORQUE_TIME = 78 ticks
+            # PITCH_LOCK_TIME = 120 ticks
             self.fliptimes[cid] = min(
-                78, self.fliptimes[cid])
+                120, self.fliptimes[cid])
 
         # update handbrake
         if prev_actions[7] == 1:
