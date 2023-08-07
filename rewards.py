@@ -103,7 +103,7 @@ class ZeroSumReward(RewardFunction):
             curve_wave_zap_dash_w=0,
             walldash_w=0,
             # dash_w=0,
-            dodge_deadzone=0.8,
+            dodge_deadzone=0.5,
             goal_speed_exp=1,  # fix this eventually
             min_goal_speed_rewarded_kph=0,
             touch_height_exp=1,
