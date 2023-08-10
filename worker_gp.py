@@ -67,7 +67,7 @@ if __name__ == "__main__":
     non_latest_version_prob = [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = True
-    gamemode_weights = {'1v1': 0, '2v2': 1, '3v3': 0}
+    gamemode_weights = {'1v1': 0.3, '2v2': 0.7, '3v3': 0}
     visualize = False
     simulator = True
     batch_mode = True
