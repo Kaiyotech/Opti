@@ -639,7 +639,7 @@ class ZeroSumReward(RewardFunction):
                 player_self_rewards[i] += self.turtle_w
                 
             # touch wall
-            if player.car_data.on_ground and player.car_data.position[2] > 300:
+            if player.on_ground and player.car_data.position[2] > 300:
                 player_self_rewards[i] += self.touch_wall_w
 
             # spacing punishment
