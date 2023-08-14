@@ -430,7 +430,7 @@ class ZeroSumReward(RewardFunction):
                             (state.ball.position[2] ** self.touch_height_exp) - min_height) / rnge
 
                 # wall touch
-                min_height = 500
+                min_height = 350
                 if player.on_ground and state.ball.position[2] > min_height and previous_model_actions is not None and \
                         self.cancel_wall_touch_indices is not None and \
                         previous_model_actions[i] not in self.cancel_wall_touch_indices:
