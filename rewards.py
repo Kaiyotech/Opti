@@ -114,6 +114,7 @@ class ZeroSumReward(RewardFunction):
             boost_remain_touch_w=0,
             supersonic_bonus_vpb_w=0,
             turtle_w=0,
+            touch_wall_w=0,
             zero_touch_grass_if_ss=False,
             final_reward_ball_dist_w=0,
             final_reward_boost_w=0,
@@ -217,6 +218,7 @@ class ZeroSumReward(RewardFunction):
         self.final_reward_ball_dist_w = final_reward_ball_dist_w
         self.zero_touch_grass_if_ss = zero_touch_grass_if_ss
         self.turtle_w = turtle_w
+        self.touch_wall_w = touch_wall_w
         self.supersonic_bonus_vpb_w = supersonic_bonus_vpb_w
         self.boost_remain_touch_w = boost_remain_touch_w
         self.touch_ball_w = touch_ball_w
@@ -635,6 +637,10 @@ class ZeroSumReward(RewardFunction):
                     np.linalg.norm(player.car_data.angular_velocity) < 5 and last.car_data.up()[2] < 0.1 and \
                     last.car_data.position[2] < 55:
                 player_self_rewards[i] += self.turtle_w
+                
+            # touch wall
+            if player.car_data.on_ground and player.car_data.position[2] > 300:
+                player_self_rewards[i] += self.touch_wall_w
 
             # spacing punishment
             mid = len(player_rewards) // 2

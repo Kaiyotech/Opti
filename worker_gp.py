@@ -48,12 +48,13 @@ if __name__ == "__main__":
                         wall_touch_w=4,
                         touch_grass_w=0,
                         punish_bad_spacing_w=-0.1,
-                        handbrake_ctrl_w=-0.0035,
+                        handbrake_ctrl_w=-0.006,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         flatten_wall_height=True,
                         slow_w=-0.1,
-                        turtle_w=-1,
+                        turtle_w=-4,
                         punish_dist_goal_score_w=-3,
+                        touch_wall_w = 0.05,
 
                         )
     frame_skip = Constants_gp.FRAME_SKIP
