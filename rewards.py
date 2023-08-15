@@ -18,6 +18,9 @@ from typing import Tuple, List
 # TODO remove this
 from CoyoteObs import print_state
 
+GRAVITY = 650
+MASS = 180
+
 
 def _closest_to_ball(state: GameState) -> Tuple[int, int]:
     # returns [blue_closest, orange_closest]
@@ -157,7 +160,9 @@ class ZeroSumReward(RewardFunction):
             defend_reward_w=0,
             ground_reward_w=0,
             wall_reward_w=0,
+            energy_reward_w=0,
     ):
+        self.energy_reward_w = energy_reward_w
         self.wall_reward_w = wall_reward_w
         self.ground_reward_w = ground_reward_w
         self.defend_reward_w = defend_reward_w
@@ -708,6 +713,25 @@ class ZeroSumReward(RewardFunction):
                                      self.supersonic_bonus_vpb_w * speed_rew
                 if state.ball.position[0] != 0 and state.ball.position[1] != 0:
                     player_rewards[i] += self.kickoff_vpb_after_0_w * speed_rew
+
+            # energy reward
+            if self.energy_reward_w != 0:
+                # max_energy is supersonic at ceiling, use to norm, ignore jump/dodge and boost
+                max_energy = (MASS * GRAVITY * (CEILING_Z - 17)) + (0.5 * MASS * (CAR_MAX_SPEED * CAR_MAX_SPEED))
+                energy = 0
+                if player.has_jump:
+                    energy += 0.5 * MASS * (292 * 292)
+                if player.has_flip:
+                    energy += 0.5 * MASS * (550 * 550)
+                # add height PE
+                energy += MASS * GRAVITY * player.car_data.position[2]
+                # add KE
+                velocity = np.linalg.norm(player.car_data.linear_velocity)
+                energy += 0.5 * MASS * (velocity * velocity)
+                # add boost
+                energy += 7.97e5 * player.boost_amount * 100
+                norm_energy = energy / max_energy
+                player_self_rewards += norm_energy * self.energy_reward_w
 
             # slow
             vel = player.car_data.linear_velocity
