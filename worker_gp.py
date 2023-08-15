@@ -45,17 +45,16 @@ if __name__ == "__main__":
                         team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=4,
-                        wall_touch_w=4,
+                        wall_touch_w=15,
                         touch_grass_w=0,
-                        punish_bad_spacing_w=-0.1,
+                        punish_bad_spacing_w=0,
                         handbrake_ctrl_w=-0.006,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         flatten_wall_height=True,
                         slow_w=-0.1,
                         turtle_w=-4,
-                        punish_dist_goal_score_w=-3,
-                        touch_wall_w = 0.05,
-
+                        punish_dist_goal_score_w=-10,
+                        # touch_wall_w = 0.05,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip
