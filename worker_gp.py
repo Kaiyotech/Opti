@@ -55,7 +55,7 @@ if __name__ == "__main__":
                         turtle_w=-4,
                         punish_dist_goal_score_w=-10,
                         # touch_wall_w = 0.05,
-                        energy_reward_w=0.01,
+                        energy_reward_w=0.03,
                         )
     frame_skip = Constants_gp.FRAME_SKIP
     fps = 120 // frame_skip

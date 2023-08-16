@@ -731,7 +731,7 @@ class ZeroSumReward(RewardFunction):
                 # add boost
                 energy += 7.97e5 * player.boost_amount * 100
                 norm_energy = energy / max_energy
-                player_self_rewards += norm_energy * self.energy_reward_w
+                player_self_rewards[i] += norm_energy * self.energy_reward_w
 
             # slow
             vel = player.car_data.linear_velocity
