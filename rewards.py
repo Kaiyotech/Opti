@@ -731,6 +731,8 @@ class ZeroSumReward(RewardFunction):
                 # add boost
                 energy += 7.97e5 * player.boost_amount * 100
                 norm_energy = energy / max_energy
+                if player.is_demoed:
+                    norm_energy = 0
                 player_self_rewards[i] += norm_energy * self.energy_reward_w
 
             # slow
