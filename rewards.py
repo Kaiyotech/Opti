@@ -722,7 +722,7 @@ class ZeroSumReward(RewardFunction):
                 if player.has_jump:
                     energy += 0.5 * MASS * (292 * 292)
                 if player.has_flip:
-                    energy += 0.5 * MASS * (550 * 550)
+                    energy += 0.5 * MASS * (500 * 500)
                 # add height PE
                 energy += MASS * GRAVITY * player.car_data.position[2]
                 # add KE
