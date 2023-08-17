@@ -719,10 +719,6 @@ class ZeroSumReward(RewardFunction):
                 # max_energy is supersonic at ceiling, use to norm, ignore jump/dodge and boost
                 max_energy = (MASS * GRAVITY * (CEILING_Z - 17)) + (0.5 * MASS * (CAR_MAX_SPEED * CAR_MAX_SPEED))
                 energy = 0
-                if player.has_jump:
-                    energy += 0.5 * MASS * (292 * 292)
-                if player.has_flip:
-                    energy += 0.5 * MASS * (500 * 500)
                 # add height PE
                 energy += MASS * GRAVITY * player.car_data.position[2]
                 # add KE
@@ -730,6 +726,14 @@ class ZeroSumReward(RewardFunction):
                 energy += 0.5 * MASS * (velocity * velocity)
                 # add boost
                 energy += 7.97e5 * player.boost_amount * 100
+                if player.has_jump:
+                    energy += 0.5 * MASS * (292 * 292)
+                if player.has_flip:
+                    dodge_impulse = 500 + (velocity / 17) if velocity <= 1700 else (600 - (velocity - 1700))
+                    # cheat a bit to encourage the dodge usage
+                    dodge_impulse = max(dodge_impulse - 25, 0)
+                    energy += 0.5 * MASS * (dodge_impulse * dodge_impulse)
+
                 norm_energy = energy / max_energy
                 if player.is_demoed:
                     norm_energy = 0
