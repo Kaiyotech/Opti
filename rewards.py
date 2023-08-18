@@ -720,19 +720,19 @@ class ZeroSumReward(RewardFunction):
                 max_energy = (MASS * GRAVITY * (CEILING_Z - 17)) + (0.5 * MASS * (CAR_MAX_SPEED * CAR_MAX_SPEED))
                 energy = 0
                 # add height PE
-                energy += MASS * GRAVITY * player.car_data.position[2]
+                energy += 1.1 * MASS * GRAVITY * player.car_data.position[2]
                 # add KE
                 velocity = np.linalg.norm(player.car_data.linear_velocity)
                 energy += 0.5 * MASS * (velocity * velocity)
                 # add boost
                 energy += 7.97e5 * player.boost_amount * 100
                 if player.has_jump:
-                    energy += 0.5 * MASS * (292 * 292)
+                    energy += 0.8 * 0.5 * MASS * (292 * 292)
                 if player.has_flip:
                     dodge_impulse = 500 + (velocity / 17) if velocity <= 1700 else (600 - (velocity - 1700))
                     # cheat a bit to encourage the dodge usage
                     dodge_impulse = max(dodge_impulse - 25, 0)
-                    energy += 0.5 * MASS * (dodge_impulse * dodge_impulse)
+                    energy += 0.9 * 0.5 * MASS * (dodge_impulse * dodge_impulse)
 
                 norm_energy = energy / max_energy
                 if player.is_demoed:
