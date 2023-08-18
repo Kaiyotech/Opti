@@ -638,9 +638,9 @@ class ZeroSumReward(RewardFunction):
                     player_self_rewards[i] += self.kickoff_special_touch_ground_w
 
             # turtle
-            if player.car_data.up()[2] < 0.1 and player.car_data.position[2] < 55 and \
+            if player.car_data.up()[2] < 0.1 and player.car_data.position[2] < 45 and \
                     np.linalg.norm(player.car_data.angular_velocity) < 5 and last.car_data.up()[2] < 0.1 and \
-                    last.car_data.position[2] < 55:
+                    last.car_data.position[2] < 45:
                 player_self_rewards[i] += self.turtle_w
                 
             # touch wall
