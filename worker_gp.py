@@ -48,7 +48,7 @@ if __name__ == "__main__":
                         wall_touch_w=15,
                         touch_grass_w=0,
                         punish_bad_spacing_w=0,
-                        handbrake_ctrl_w=-0.006,
+                        handbrake_ctrl_w=0, #-0.006,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         flatten_wall_height=True,
                         slow_w=-0.1,
