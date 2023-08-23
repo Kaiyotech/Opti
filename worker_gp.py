@@ -99,17 +99,17 @@ if __name__ == "__main__":
     game_speed = 100
     evaluation_prob = 0.02
     past_version_prob = 1  # 0.5  # 0.1
-    non_latest_version_prob = [0.825, 0.0826, 0.0578, 0.0346]  # this includes past_version and pretrained
+    non_latest_version_prob = [0.7, 0.175, 0.125, 0.0]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = True
-    gamemode_weights = {'1v1': 0.3, '2v2': 0.7, '3v3': 0}
+    gamemode_weights = {'1v1': 0.4, '2v2': 0.6, '3v3': 0}
     visualize = False
     simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0
-    setter = CoyoteSetter(mode="normal", simulator=False)
+    setter = CoyoteSetter(mode="GP-Demo", simulator=False)
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
