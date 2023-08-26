@@ -103,6 +103,29 @@ class CoyoteSetter(DynamicGMSetter):
                         (0.1, 0.3, 0.1, 0.1, 0, 0, 0, 0, 0, 0.4)
                     )
                 ) 
+        elif mode == "GP-Wall":
+            for i in range(3):
+                self.setters.append(
+                    WeightedSampleSetter(
+                        (
+                            DefaultState(),
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(aerial_replays[i], random_boost=True)),
+                            AugmentSetter(GroundAirDribble()),
+                            AugmentSetter(WallDribble()),
+                            AugmentSetter(RandomState(cars_on_ground=True)),
+                            AugmentSetter(RandomState(cars_on_ground=False)),
+                            # Wavedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
+                            # Curvedash(zero_boost_weight=1, zero_ball_vel_weight=0.2) if i == 1 else
+                            AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
+                            AugmentSetter(ReplaySetter(demo_replays[i])),
+
+                        ),
+                        # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
+                        (0.05, 0.15, 0.2, 0.25, 0.35, 0, 0, 0, 0, 0)
+                    )
+                )
         elif mode == "selector":
             for i in range(3):
                 self.setters.append(
