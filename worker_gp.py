@@ -99,7 +99,7 @@ if __name__ == "__main__":
                         boost_gain_w=0,
                         punish_boost=True,
                         use_boost_punish_formula=False,
-                        boost_spend_w=-0.3,
+                        boost_spend_w=-0.5,
                         boost_gain_small_w=0,
                         punish_low_boost_w=0,
                         demo_w=5,
@@ -107,14 +107,14 @@ if __name__ == "__main__":
                         team_spirit=1,
                         # cons_air_touches_w=2,
                         jump_touch_w=1,
-                        wall_touch_w=2,
+                        wall_touch_w=15,
                         touch_grass_w=0,
                         punish_bad_spacing_w=0,
-                        handbrake_ctrl_w=0, #-0.006,
+                        handbrake_ctrl_w=-0.004, #-0.006,
                         tick_skip=Constants_gp.FRAME_SKIP,
                         flatten_wall_height=True,
-                        pun_rew_ball_height_w=0.004,
-                        dribble_w=-0.1,
+                        pun_rew_ball_height_w=0.02,
+                        dribble_w=-1,
                         aerial_goal_w=10,
                         slow_w=0,
                         turtle_w=0,
@@ -136,14 +136,14 @@ if __name__ == "__main__":
     non_latest_version_prob = [0.85, 0.1, 0.05, 0.0]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = True
-    gamemode_weights = {'1v1': 0.4, '2v2': 0.6, '3v3': 0}
+    gamemode_weights = {'1v1': 0.6, '2v2': 0.4, '3v3': 0}
     visualize = False
     simulator = True
     batch_mode = True
     team_size = 3
     dynamic_game = True
     infinite_boost_odds = 0
-    setter = CoyoteSetter(mode="GP-Wall", simulator=False)
+    setter = CoyoteSetter(mode="GP-Wall", simulator=True)
     host = "127.0.0.1"
     epic_rl_exe_path = None  # "D:/Program Files/Epic Games/rocketleague_old/Binaries/Win64/RocketLeague.exe"
 
