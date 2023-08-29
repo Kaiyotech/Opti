@@ -76,7 +76,7 @@ class CoyoteSetter(DynamicGMSetter):
                             AugmentSetter(ReplaySetter(replays[i], random_boost=True)),
                         ),
                         # (0.05, 0.50, 0.20, 0.20, 0.025, 0.025)
-                        (0.1, 0.5, 0.2, 0.1, 0.1, 0, 0, 0, 0)
+                        (0.05, 0.55, 0.2, 0.1, 0.1, 0, 0, 0, 0)
                     )
                 )
                 
@@ -351,6 +351,9 @@ class CoyoteSetter(DynamicGMSetter):
         elif mode == "test_mirror":
             for i in range(3):
                 self.setters.append(TestMirror())
+
+        else:
+            print("You didn't choose a setter properly")
 
     def reset(self, state_wrapper: StateWrapper):
         # if self.end_object_choice is not None and self.end_object_choice == "random":

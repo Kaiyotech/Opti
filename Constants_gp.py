@@ -5,7 +5,7 @@ FRAME_SKIP = 4
 TIME_HORIZON = 16  # horizon in seconds
 T_STEP = FRAME_SKIP / 120   # real time per rollout step
 ZERO_SUM = True
-STEP_SIZE = 1_000_000
+STEP_SIZE = 2_000_000
 DB_NUM = 4
 
 model_name = "nexto-model.pt"

@@ -40,8 +40,8 @@ if __name__ == "__main__":
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
     config = dict(
-        actor_lr=5e-6,
-        critic_lr=5e-6,
+        actor_lr=1e-6,
+        critic_lr=1e-6,
         n_steps=Constants_gp.STEP_SIZE,
         batch_size=100_000,
         minibatch_size=50_000,
@@ -52,10 +52,10 @@ if __name__ == "__main__":
         ent_coef=0.01,
     )
 
-    run_id = "gp_run_wall_3.02"
+    run_id = "gp_run_2v2_3.64"
     wandb.login(key=os.environ["WANDB_KEY"])
     logger = wandb.init(dir="./wandb_store",
-                        name="GP_Run_wall_3.02",
+                        name="GP_Run_2v2_3.64",
                         project="Opti",
                         entity="kaiyotech",
                         id=run_id,
@@ -162,4 +162,4 @@ if __name__ == "__main__":
 
     # alg.freeze_policy(100)
 
-    alg.run(iterations_per_save=logger.config.save_every, save_dir="GP_wall_saves")
+    alg.run(iterations_per_save=logger.config.save_every, save_dir="GP_saves")
