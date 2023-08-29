@@ -161,9 +161,7 @@ class ZeroSumReward(RewardFunction):
             ground_reward_w=0,
             wall_reward_w=0,
             energy_reward_w=0,
-            use_concede_even_zero_sum=False,
     ):
-        self.use_concede_even_zero_sum = use_concede_even_zero_sum
         self.energy_reward_w = energy_reward_w
         self.wall_reward_w = wall_reward_w
         self.ground_reward_w = ground_reward_w
@@ -236,7 +234,7 @@ class ZeroSumReward(RewardFunction):
         self.cons_resets = 0
         self.goal_w = goal_w
         self.concede_w = concede_w
-        if zero_sum and not self.use_concede_even_zero_sum:
+        if zero_sum:
             self.concede_w = 0
         self.velocity_pb_w = velocity_pb_w
         self.velocity_bg_w = velocity_bg_w * (tick_skip / 8)
@@ -878,10 +876,10 @@ class ZeroSumReward(RewardFunction):
                     player_rewards[orange] += self.punish_dist_goal_score_w * \
                                               (1 - np.exp(-goal_dist / CAR_MAX_SPEED))
 
-                elif self.orange_touch_timer < self.touch_timeout and self.zero_sum and not self.use_concede_even_zero_sum:
+                elif self.orange_touch_timer < self.touch_timeout and self.zero_sum:
                     player_rewards[mid:] -= goal_reward
 
-                if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout or self.use_concede_even_zero_sum:
+                if self.orange_touch_timer < self.touch_timeout or self.blue_touch_timer < self.touch_timeout:
                     player_rewards[mid:] += self.concede_w
 
             if d_orange > 0:
