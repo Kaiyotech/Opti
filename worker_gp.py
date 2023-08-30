@@ -17,6 +17,7 @@ from setter import CoyoteSetter
 from mybots_statesets import EndKickoff
 import Constants_gp
 import os
+from random_eval_matchmaker import RandomEvalMatchmaker
 
 from pretrained_agents.necto.necto_v1 import NectoV1
 from pretrained_agents.nexto.nexto_v2 import NextoV2
@@ -131,8 +132,8 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 0.02
-    past_version_prob = 1  # 0.5  # 0.1
+    evaluation_prob = 1
+    past_version_prob = 0  # 0.5  # 0.1
     non_latest_version_prob = [0.85, 0.1, 0.05, 0.0]  # this includes past_version and pretrained
     deterministic_streamer = True
     force_old_deterministic = True
@@ -156,9 +157,12 @@ if __name__ == "__main__":
 
     pretrained_agents = Constants_gp.pretrained_agents
 
-    matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
-                            full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
-                            non_latest_version_prob=non_latest_version_prob)
+    # matchmaker = Matchmaker(sigma_target=0.5, pretrained_agents=pretrained_agents, past_version_prob=past_version_prob,
+    #                         full_team_trainings=0.8, full_team_evaluations=1, force_non_latest_orange=False,
+    #                         non_latest_version_prob=non_latest_version_prob)
+
+    matchmaker = RandomEvalMatchmaker(sigma_target=0.5, past_version_prob=0, full_team_trainings=1, full_team_evaluations=1,
+                                      force_non_latest_orange=False, non_latest_version_prob=non_latest_version_prob)
                             
   
     # terminals = [GoalScoredCondition(),
