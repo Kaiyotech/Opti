@@ -1,7 +1,8 @@
 from redis import Redis
 import os
 from trueskill import Rating
-from rocket_learn.rollout_generator.redis.utils import get_rating, _unserialize, _serialize, get_ratings, decode_buffers, PRETRAINED_QUALITIES
+from rocket_learn.rollout_generator.redis.utils import get_rating, _unserialize, _serialize, get_ratings, decode_buffers, PRETRAINED_QUALITIES,QUALITIES\
+        ,OPPONENT_MODELS
 
 
 host = "127.0.0.1"
@@ -14,6 +15,11 @@ r = Redis(host=host,
 # past_version_ratings = {k: v for k, v in sorted(past_version_ratings.items(), key=lambda item: item[1].mu)}
 # quality_key = PRETRAINED_QUALITIES.format("3v3")
 # nexto = {k.decode("utf-8"): Rating(*_unserialize(v)) for k, v in r.hgetall(quality_key).items()}
+
+# rating = Rating()
+# for _gamemode in ['1v1', '2v2', '3v3']:
+#     for model in past_version_ratings.keys():
+#         r.hset(QUALITIES.format(_gamemode), model, _serialize(tuple(rating)))
 
 # new = Rating(mu=110, sigma=30)
 

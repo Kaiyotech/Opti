@@ -132,7 +132,7 @@ if __name__ == "__main__":
     local = True
     auto_minimize = True
     game_speed = 100
-    evaluation_prob = 1
+    evaluation_prob = 0
     past_version_prob = 0  # 0.5  # 0.1
     non_latest_version_prob = [0.85, 0.1, 0.05, 0.0]  # this includes past_version and pretrained
     deterministic_streamer = True
@@ -162,7 +162,8 @@ if __name__ == "__main__":
     #                         non_latest_version_prob=non_latest_version_prob)
 
     matchmaker = RandomEvalMatchmaker(sigma_target=0.5, past_version_prob=0, full_team_trainings=1, full_team_evaluations=1,
-                                      force_non_latest_orange=False, non_latest_version_prob=non_latest_version_prob)
+                                      force_non_latest_orange=False, non_latest_version_prob=non_latest_version_prob,
+                                      min_to_test=400)
                             
   
     # terminals = [GoalScoredCondition(),

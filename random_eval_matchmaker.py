@@ -13,7 +13,7 @@ class RandomEvalMatchmaker(BaseMatchmaker):
     def __init__(self, sigma_target=1, pretrained_agents: PretrainedAgents = None, non_latest_version_prob=[1, 0, 0, 0],
                  past_version_prob=1, full_team_trainings=0, full_team_evaluations=0, force_non_latest_orange=False,
                  showmatch=False,
-                 orange_agent_text_file=None):
+                 orange_agent_text_file=None, min_to_test=0):
         """
         :param sigma_target: The sigma value at which agents stop playing in eval matches frequently
         :param pretrained_agents: a configuration dict for how and how often to use pretrained agents in matchups.
@@ -23,6 +23,7 @@ class RandomEvalMatchmaker(BaseMatchmaker):
         :param full_team_evaluations: The probability that a match uses all agents of the same type on a given team in evals.
         :param force_non_latest_orange: A boolean that, if true, ensures the first player in the list is latest agent (if one exists in the match).
         """
+        self.min_to_test = min_to_test
         self.orange_agents_text_file = orange_agent_text_file
         self.showmatch = showmatch
         self.sigma_target = sigma_target
@@ -86,6 +87,9 @@ class RandomEvalMatchmaker(BaseMatchmaker):
             return [latest_version] * n_agents, [rating] * n_agents, False, n_agents // 2, n_agents // 2
 
         past_version_ratings = get_ratings(gamemode, redis)
+        past_version_ratings = {k: v for k, v in past_version_ratings.items()
+                                if int(k.split('-')[1].split('v')[1]) >= self.min_to_test}
+
         # This is the rating of the most recent eval model
         latest_rating = past_version_ratings[latest_key]
         past_version_ratings_keys, past_version_ratings_values = zip(
