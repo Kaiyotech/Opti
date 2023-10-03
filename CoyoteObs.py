@@ -72,7 +72,7 @@ class CoyoteObsBuilder(ObsBuilder):
                  add_fliptime=False,
                  add_airtime=False,
                  add_boosttime=False,
-                 dodge_deadzone=0.8,
+                 dodge_deadzone=0.5,
                  flip_dir=True,
                  end_object: PhysicsObject = None,
                  mask_aerial_opp=False,
@@ -227,7 +227,7 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.add_fliptime:
             for i in range(len(initial_state.players)):
                 if self.has_flippeds[i]:
-                    self.fliptimes[i] = 78
+                    self.fliptimes[i] = 120
             # self.has_doublejumpeds = [False] * len(initial_state.players)
             # self.flipdirs = [[0] * 2 for _ in range(len(initial_state.players) + 1)]
 
@@ -428,8 +428,9 @@ class CoyoteObsBuilder(ObsBuilder):
         if self.has_flippeds[cid]:
             self.fliptimes[cid] += self.time_interval * 120
             # FLIP_TORQUE_TIME = 78 ticks
+            # PITCH_LOCK_TIME = 120 ticks
             self.fliptimes[cid] = min(
-                78, self.fliptimes[cid])
+                120, self.fliptimes[cid])
 
         # update handbrake
         if prev_actions[7] == 1:
@@ -561,7 +562,7 @@ class CoyoteObsBuilder(ObsBuilder):
             boosttime / 12,
             jumptime / 24,
             airtime / 150,
-            fliptime / 78,
+            fliptime / 120,
             braketime,
             flip_dir_1,
             flip_dir_2

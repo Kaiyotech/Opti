@@ -106,7 +106,7 @@ class ZeroSumReward(RewardFunction):
             curve_wave_zap_dash_w=0,
             walldash_w=0,
             # dash_w=0,
-            dodge_deadzone=0.8,
+            dodge_deadzone=0.5,
             goal_speed_exp=1,  # fix this eventually
             min_goal_speed_rewarded_kph=0,
             touch_height_exp=1,
@@ -1003,7 +1003,7 @@ class ZeroSumReward(RewardFunction):
 
             for i in range(len(initial_state.players)):
                 if self.has_flippeds[i]:
-                    self.fliptimes[i] = 78
+                    self.fliptimes[i] = 120
             # self.has_doublejumpeds = [False] * len(initial_state.players)
             # self.flipdirs = [
             #     [0] * 2 for _ in range(len(initial_state.players))]
@@ -1199,8 +1199,9 @@ class ZeroSumReward(RewardFunction):
         if self.has_flippeds[cid]:
             self.fliptimes[cid] += self.time_interval * 120
             # FLIP_TORQUE_TIME = 78 ticks
+            # PITCH_LOCK_TIME = 120 ticks
             self.fliptimes[cid] = min(
-                78, self.fliptimes[cid])
+                120, self.fliptimes[cid])
 
         ret = 0
 
